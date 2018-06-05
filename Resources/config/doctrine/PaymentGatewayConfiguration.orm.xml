@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration" table="idci_payment_gateway_configuration">
+        <id name="id" type="uuid" column="id">
+            <generator strategy="CUSTOM"/>
+            <custom-id-generator class="Ramsey\Uuid\Doctrine\UuidGenerator"/>
+        </id>
+        <field name="alias" type="string" column="alias" unique="true"/>
+        <field name="gatewayName" type="string" column="gateway_name"/>
+        <field name="parameters" type="array" column="parameters"/>
+    </entity>
+</doctrine-mapping>
