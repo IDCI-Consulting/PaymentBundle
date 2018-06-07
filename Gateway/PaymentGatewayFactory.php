@@ -24,6 +24,27 @@ class PaymentGatewayFactory
         $this->paymentGatewayList = $paymentGatewayList;
     }
 
+    public function getPaymentGatewayList(): array
+    {
+        return $this->paymentGatewayList;
+    }
+
+    public function getPaymentGatewayFQCN(string $gatewayName): string
+    {
+        if (!isset($this->paymentGatewayList[$gatewayName])) {
+            throw new UndefinedPaymentGatewayException(sprintf('No gateway exist for the gateway name : %s', $gatewayName));
+        }
+
+        return $this->paymentGatewayList[$gatewayName];
+    }
+
+    public function buildFromGatewayName(string $gatewayName): PaymentGatewayInterface
+    {
+        $gatewayFQCN = $this->getPaymentGatewayFQCN($gatewayName);
+
+        return new $gatewayFQCN();
+    }
+
     public function buildFromAlias(string $alias): PaymentGatewayInterface
     {
         $paymentGatewayConfigurationRepository = $this->om->getRepository(PaymentGatewayConfiguration::class);
