@@ -10,6 +10,7 @@
         </id>
         <field name="alias" type="string" column="alias" unique="true"/>
         <field name="gatewayName" type="string" column="gateway_name"/>
-        <field name="parameters" type="array" column="parameters"/>
+        <field name="enabled" type="boolean" column="enabled"/>
+        <field name="parameters" type="json_array" column="parameters"/>
     </entity>
 </doctrine-mapping>

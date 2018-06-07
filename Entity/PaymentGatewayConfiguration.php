@@ -22,6 +22,11 @@ class PaymentGatewayConfiguration
     private $gatewayName;
 
     /**
+     * @var bool
+     */
+    private $enabled;
+
+    /**
      * @var array
      */
     private $parameters;
@@ -63,6 +68,18 @@ class PaymentGatewayConfiguration
     public function getParameters()
     {
         return $this->parameters;
+    }
+
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
+    }
+
+    public function setEnabled(bool $enable): self
+    {
+        $this->enabled = $enable;
+
+        return $this;
     }
 
     public function addParameter($parameterKey, $parameterValue): self
