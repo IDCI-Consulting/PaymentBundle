@@ -11,4 +11,4 @@ services:
 
     IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayFactory:
         arguments:
-            $paymentGatewayList: ['%idci_payment.gateways%']
+            $paymentGatewayList: '%idci_payment.gateways%'
