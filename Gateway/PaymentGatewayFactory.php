@@ -34,7 +34,7 @@ class PaymentGatewayFactory
     public function getPaymentGatewayFQCN(string $gatewayName): string
     {
         if (!isset($this->paymentGatewayList[$gatewayName])) {
-            throw new UndefinedPaymentGatewayException(sprintf('No gateway exist for the gateway name : %s', $gatewayName));
+            throw new UndefinedPaymentGatewayException(sprintf('No gateway found with the gateway name : %s', $gatewayName));
         }
 
         return $this->paymentGatewayList[$gatewayName];
@@ -49,7 +49,7 @@ class PaymentGatewayFactory
         ;
 
         if (null === $payment) {
-            throw new UndefinedPaymentException(sprintf('No payment exist for the uuid : %s', $uuid));
+            throw new UndefinedPaymentException(sprintf('No payment found with the uuid : %s', $uuid));
         }
 
         return $this
@@ -67,7 +67,7 @@ class PaymentGatewayFactory
         ;
 
         if (null === $paymentGatewayConfiguration) {
-            throw new UndefinedPaymentGatewayException(sprintf('No gateway exist for the alias : %s', $alias));
+            throw new UndefinedPaymentGatewayException(sprintf('No gateway found with the alias : %s', $alias));
         }
 
         return $this->buildFromPaymentGatewayConfiguration($paymentGatewayConfiguration);
