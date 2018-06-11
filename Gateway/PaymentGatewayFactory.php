@@ -49,7 +49,7 @@ class PaymentGatewayFactory
         ;
 
         if (null === $payment) {
-            throw new UndefinedPaymentException(sprintf('No gateway exist for the alias : %s', $alias));
+            throw new UndefinedPaymentException(sprintf('No payment exist for the uuid : %s', $uuid));
         }
 
         return $this
