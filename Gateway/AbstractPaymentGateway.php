@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentFactory;
@@ -26,10 +27,12 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
     protected $payment;
 
     public function __construct(
+        ObjectManager $om,
         PaymentFactory $paymentFactory,
         PaymentGatewayConfiguration $paymentGatewayConfiguration,
         ?Payment $payment = null
     ) {
+        $this->om = $om;
         $this->paymentFactory = $paymentFactory;
         $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
         $this->payment = $payment;
@@ -42,6 +45,9 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
                 ->create($parameters)
                 ->setGatewayConfigurationAlias($this->paymentGatewayConfiguration->getAlias())
             ;
+
+            $this->om->persist($this->payment);
+            $this->om->flush();
         }
 
         return $this->payment;
