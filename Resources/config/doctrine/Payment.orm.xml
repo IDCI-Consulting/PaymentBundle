@@ -9,14 +9,15 @@
             <custom-id-generator class="Ramsey\Uuid\Doctrine\UuidGenerator"/>
         </id>
         <field name="itemId" type="string" column="item_id"/>
-        <field name="customerId" type="string" column="customer_id"/>
-        <field name="customerEmail" type="string" column="customer_email"/>
+        <field name="gatewayConfigurationAlias" type="string" column="gateway_configuration_alias"/>
+        <field name="customerId" type="string" column="customer_id" nullable="true"/>
+        <field name="customerEmail" type="string" column="customer_email" nullable="true"/>
         <field name="status" type="string" column="status"/>
         <field name="amount" type="integer" column="amount"/>
         <field name="currencyCode" type="string" column="currency_code"/>
-        <field name="description" type="text" column="description"/>
+        <field name="description" type="text" column="description" nullable="true"/>
         <field name="createdAt" type="datetime" column="created_at"/>
-        <field name="updatedAt" type="string" column="updated_at"/>
+        <field name="updatedAt" type="datetime" column="updated_at"/>
         <lifecycle-callbacks>
             <lifecycle-callback type="prePersist" method="onPrePersist" />
             <lifecycle-callback type="preUpdate" method="onPreUpdate" />

@@ -6,7 +6,11 @@ use Ramsey\Uuid\Uuid;
 
 class Payment
 {
-    const CANCELED_STATUS = 'canceled';
+    const STATUS_CREATED = 'created';
+
+    const STATUS_VALIDATED = 'validated';
+
+    const STATUS_CANCELED = 'canceled';
 
     /**
      * @var Uuid
@@ -16,15 +20,20 @@ class Payment
     /**
      * @var string
      */
-    private $itemId;
+    private $gatewayConfigurationAlias;
 
     /**
      * @var string
      */
+    private $itemId;
+
+    /**
+     * @var string|null
+     */
     private $customerId;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $customerEmail;
 
@@ -44,7 +53,7 @@ class Payment
     private $currencyCode;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $description;
 
@@ -57,6 +66,13 @@ class Payment
      * @var \DateTime
      */
     private $updatedAt;
+
+    public function __get($name)
+    {
+        $method = sprintf('get%s', ucfirst($name));
+
+        return $this->$method();
+    }
 
     public function __toString(): string
     {
@@ -83,6 +99,18 @@ class Payment
         return $this->id;
     }
 
+    public function getGatewayConfigurationAlias(): string
+    {
+        return $this->gatewayConfigurationAlias;
+    }
+
+    public function setGatewayConfigurationAlias(string $gatewayConfigurationAlias): self
+    {
+        $this->gatewayConfigurationAlias = $gatewayConfigurationAlias;
+
+        return $this;
+    }
+
     public function getItemId(): ?string
     {
         return $this->itemId;
@@ -100,7 +128,7 @@ class Payment
         return $this->customerId;
     }
 
-    public function setCustomerId(string $customerId): self
+    public function setCustomerId(?string $customerId): self
     {
         $this->customerId = $customerId;
 
@@ -112,7 +140,7 @@ class Payment
         return $this->customerEmail;
     }
 
-    public function setCustomerEmail(string $customerEmail): self
+    public function setCustomerEmail(?string $customerEmail): self
     {
         $this->customerEmail = $customerEmail;
 
@@ -160,7 +188,7 @@ class Payment
         return $this->description;
     }
 
-    public function setDescription(string $description): self
+    public function setDescription(?string $description): self
     {
         $this->description = $description;
 
