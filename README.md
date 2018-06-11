@@ -1,8 +1,15 @@
 # PaymentBundle
 
-This Symfony bundle provide help for integrating payments solutions by the normalization of payment process thanks to gateways.
+This Symfony bundle provide help for integrating payments solutions by the normalization of payment process thanks to gateways. Each used gateway must have a configuration to set its parameters. For exemple to set an API key :
 
-![UML Diagram](./Resources/docs/uml-schema.png)
+```php
+    public function preProcess(Request $request)
+    {
+        Stripe\Stripe::setApiKey($this->paymentGatewayConfiguration->getParameters()['secret_key']);
+    }
+```
+
+A list of [commands](#command) is provided by this bundle to create, retrieve, update or delete gateway configurations.
 
 Supported Gateways
 -------
@@ -27,3 +34,10 @@ $ php bin/console app:payment-gateway-configuration:update
 # To delete a PaymentGatewayConfiguration
 $ php bin/console app:payment-gateway-configuration:update
 ```
+
+Resources
+---------
+
+##### UML Diagram
+
+![UML Diagram](./Resources/docs/uml-schema.png)
