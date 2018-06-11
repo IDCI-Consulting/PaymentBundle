@@ -2,7 +2,6 @@
 
 namespace IDCI\Bundle\PaymentBundle\Controller;
 
-use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayFactory;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentFactory;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -15,18 +14,14 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class PaymentController extends Controller
 {
-    private $om;
-
     private $paymentFactory;
 
     private $paymentGatewayFactory;
 
     public function __construct(
-        ObjectManager $om,
         PaymentFactory $paymentFactory,
         PaymentGatewayFactory $paymentGatewayFactory
     ) {
-        $this->om = $om;
         $this->paymentFactory = $paymentFactory;
         $this->paymentGatewayFactory = $paymentGatewayFactory;
     }
@@ -45,16 +40,10 @@ class PaymentController extends Controller
             'currency_code' => 'EUR',
         ]);
 
-        // To move ? >
-        $this->om->persist($payment);
-        $this->om->flush();
-        // < To move ?
-
         $request->getSession()->set('payment_id', $payment->getId());
-        $view = $gateway->buildHTMLView();
 
         return $this->render('@IDCIPaymentBundle/Resources/views/payment.html.twig', [
-            'view' => $view,
+            'view' => $gateway->buildHTMLView(),
         ]);
     }
 
