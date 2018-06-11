@@ -9,13 +9,6 @@ use IDCI\Bundle\PaymentBundle\Payment\PaymentFactory;
 
 abstract class AbstractPaymentGateway implements PaymentGatewayInterface
 {
-    //private $returnUrl;
-
-    /**
-     * @var PaymentFactory
-     */
-    protected $paymentFactory;
-
     /**
      * @var PaymentGatewayConfiguration
      */
@@ -28,12 +21,10 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
 
     public function __construct(
         ObjectManager $om,
-        PaymentFactory $paymentFactory,
         PaymentGatewayConfiguration $paymentGatewayConfiguration,
         ?Payment $payment = null
     ) {
         $this->om = $om;
-        $this->paymentFactory = $paymentFactory;
         $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
         $this->payment = $payment;
     }
@@ -41,7 +32,7 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
     public function createPayment(?array $parameters): Payment
     {
         if (null === $this->payment) {
-            $this->payment = $this->paymentFactory
+            $this->payment = PaymentFactory::getInstance()
                 ->create($parameters)
                 ->setGatewayConfigurationAlias($this->paymentGatewayConfiguration->getAlias())
             ;

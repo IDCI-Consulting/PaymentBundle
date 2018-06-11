@@ -6,7 +6,6 @@ use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
 use IDCI\Bundle\PaymentBundle\Exception\UndefinedPaymentGatewayException;
-use IDCI\Bundle\PaymentBundle\Payment\PaymentFactory;
 
 class PaymentGatewayFactory
 {
@@ -60,7 +59,7 @@ class PaymentGatewayFactory
 
         $paymentGatewayFQCN = $this->getPaymentGatewayFQCN($paymentGatewayConfiguration->getGatewayName());
 
-        return new $paymentGatewayFQCN($this->om, PaymentFactory::getInstance(), $paymentGatewayConfiguration, $payment);
+        return new $paymentGatewayFQCN($this->om, $paymentGatewayConfiguration, $payment);
     }
 
     public function buildFromAlias(string $alias): PaymentGatewayInterface
@@ -81,6 +80,6 @@ class PaymentGatewayFactory
     ): PaymentGatewayInterface {
         $paymentGatewayFQCN = $this->getPaymentGatewayFQCN($paymentGatewayConfiguration->getGatewayName());
 
-        return new $paymentGatewayFQCN($this->om, PaymentFactory::getInstance(), $paymentGatewayConfiguration);
+        return new $paymentGatewayFQCN($this->om, $paymentGatewayConfiguration);
     }
 }
