@@ -5,6 +5,7 @@ namespace IDCI\Bundle\PaymentBundle\Gateway;
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
+use IDCI\Bundle\PaymentBundle\Exception\UndefinedPaymentException;
 use IDCI\Bundle\PaymentBundle\Exception\UndefinedPaymentGatewayException;
 
 class PaymentGatewayFactory
@@ -47,26 +48,23 @@ class PaymentGatewayFactory
             ->findOneBy(['id' => $uuid])
         ;
 
-        $paymentGatewayConfiguration = $this
-            ->om
-            ->getRepository(PaymentGatewayConfiguration::class)
-            ->findOneBy(['alias' => $payment->getGatewayConfigurationAlias()])
-        ;
-
-        if (null === $paymentGatewayConfiguration) {
-            throw new UndefinedPaymentGatewayException(sprintf('No gateway exist for the alias : %s', $alias));
+        if (null === $payment) {
+            throw new UndefinedPaymentException(sprintf('No gateway exist for the alias : %s', $alias));
         }
 
-        $paymentGatewayFQCN = $this->getPaymentGatewayFQCN($paymentGatewayConfiguration->getGatewayName());
-
-        return new $paymentGatewayFQCN($this->om, $paymentGatewayConfiguration, $payment);
+        return $this
+            ->buildFromAlias($payment->getGatewayConfigurationAlias())
+            ->setPayment($payment)
+        ;
     }
 
     public function buildFromAlias(string $alias): PaymentGatewayInterface
     {
-        $paymentGatewayConfigurationRepository = $this->om->getRepository(PaymentGatewayConfiguration::class);
-
-        $paymentGatewayConfiguration = $paymentGatewayConfigurationRepository->findOneBy(['alias' => $alias]);
+        $paymentGatewayConfiguration = $this
+            ->om
+            ->getRepository(PaymentGatewayConfiguration::class)
+            ->findOneBy(['alias' => $alias])
+        ;
 
         if (null === $paymentGatewayConfiguration) {
             throw new UndefinedPaymentGatewayException(sprintf('No gateway exist for the alias : %s', $alias));

@@ -5,6 +5,7 @@ namespace IDCI\Bundle\PaymentBundle\Gateway;
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
+use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedPaymentException;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentFactory;
 
 abstract class AbstractPaymentGateway implements PaymentGatewayInterface
@@ -21,25 +22,32 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
 
     public function __construct(
         ObjectManager $om,
-        PaymentGatewayConfiguration $paymentGatewayConfiguration,
-        ?Payment $payment = null
+        PaymentGatewayConfiguration $paymentGatewayConfiguration
     ) {
         $this->om = $om;
         $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
+    }
+
+    public function setPayment(Payment $payment): self
+    {
         $this->payment = $payment;
+
+        return $this;
     }
 
     public function createPayment(?array $parameters): Payment
     {
-        if (null === $this->payment) {
-            $this->payment = PaymentFactory::getInstance()
-                ->create($parameters)
-                ->setGatewayConfigurationAlias($this->paymentGatewayConfiguration->getAlias())
-            ;
-
-            $this->om->persist($this->payment);
-            $this->om->flush();
+        if (null !== $this->payment) {
+            throw new AlreadyDefinedPaymentException('You can\'t define a payment twice');
         }
+
+        $this->payment = PaymentFactory::getInstance()
+            ->create($parameters)
+            ->setGatewayConfigurationAlias($this->paymentGatewayConfiguration->getAlias())
+        ;
+
+        $this->om->persist($this->payment);
+        $this->om->flush();
 
         return $this->payment;
     }
