@@ -3,8 +3,10 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use Doctrine\Common\Persistence\ObjectManager;
+use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
 use IDCI\Bundle\PaymentBundle\Exception\UndefinedPaymentGatewayException;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentFactory;
 
 class PaymentGatewayFactory
 {
@@ -14,13 +16,19 @@ class PaymentGatewayFactory
     private $om;
 
     /**
+     * @var PaymentFactory
+     */
+    private $paymentFactory;
+
+    /**
      * @var array
      */
     private $paymentGatewayList;
 
-    public function __construct(ObjectManager $om, array $paymentGatewayList)
+    public function __construct(ObjectManager $om, PaymentFactory $paymentFactory, array $paymentGatewayList)
     {
         $this->om = $om;
+        $this->paymentFactory = $paymentFactory;
         $this->paymentGatewayList = $paymentGatewayList;
     }
 
@@ -38,11 +46,27 @@ class PaymentGatewayFactory
         return $this->paymentGatewayList[$gatewayName];
     }
 
-    public function buildFromGatewayName(string $gatewayName): PaymentGatewayInterface
+    public function buildFromPaymentUuid(string $uuid): PaymentGatewayInterface
     {
-        $gatewayFQCN = $this->getPaymentGatewayFQCN($gatewayName);
+        $payment = $this
+            ->om
+            ->getRepository(Payment::class)
+            ->findOneBy(['id' => $uuid])
+        ;
 
-        return new $gatewayFQCN();
+        $paymentGatewayConfiguration = $this
+            ->om
+            ->getRepository(PaymentGatewayConfiguration::class)
+            ->findOneBy(['alias' => $payment->getGatewayConfigurationAlias()])
+        ;
+
+        if (null === $paymentGatewayConfiguration) {
+            throw new UndefinedPaymentGatewayException(sprintf('No gateway exist for the alias : %s', $alias));
+        }
+
+        $paymentGatewayFQCN = $this->getPaymentGatewayFQCN($paymentGatewayConfiguration->getGatewayName());
+
+        return new $paymentGatewayFQCN($this->paymentFactory, $paymentGatewayConfiguration, $payment);
     }
 
     public function buildFromAlias(string $alias): PaymentGatewayInterface
@@ -63,6 +87,6 @@ class PaymentGatewayFactory
     ): PaymentGatewayInterface {
         $paymentGatewayFQCN = $this->getPaymentGatewayFQCN($paymentGatewayConfiguration->getGatewayName());
 
-        return new $paymentGatewayFQCN($paymentGatewayConfiguration->getParameters());
+        return new $paymentGatewayFQCN($this->paymentFactory, $paymentGatewayConfiguration);
     }
 }
