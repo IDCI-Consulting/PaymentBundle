@@ -16,19 +16,13 @@ class PaymentGatewayFactory
     private $om;
 
     /**
-     * @var PaymentFactory
-     */
-    private $paymentFactory;
-
-    /**
      * @var array
      */
     private $paymentGatewayList;
 
-    public function __construct(ObjectManager $om, PaymentFactory $paymentFactory, array $paymentGatewayList)
+    public function __construct(ObjectManager $om, array $paymentGatewayList)
     {
         $this->om = $om;
-        $this->paymentFactory = $paymentFactory;
         $this->paymentGatewayList = $paymentGatewayList;
     }
 
@@ -66,7 +60,7 @@ class PaymentGatewayFactory
 
         $paymentGatewayFQCN = $this->getPaymentGatewayFQCN($paymentGatewayConfiguration->getGatewayName());
 
-        return new $paymentGatewayFQCN($this->paymentFactory, $paymentGatewayConfiguration, $payment);
+        return new $paymentGatewayFQCN($this->om, PaymentFactory::getInstance(), $paymentGatewayConfiguration, $payment);
     }
 
     public function buildFromAlias(string $alias): PaymentGatewayInterface
@@ -87,6 +81,6 @@ class PaymentGatewayFactory
     ): PaymentGatewayInterface {
         $paymentGatewayFQCN = $this->getPaymentGatewayFQCN($paymentGatewayConfiguration->getGatewayName());
 
-        return new $paymentGatewayFQCN($this->paymentFactory, $paymentGatewayConfiguration);
+        return new $paymentGatewayFQCN($this->om, PaymentFactory::getInstance(), $paymentGatewayConfiguration);
     }
 }
