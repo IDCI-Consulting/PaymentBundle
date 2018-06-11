@@ -1,12 +1,21 @@
 # PaymentBundle
 
-This Symfony bundle provide help for integrating payments solutions by the normalization of payment process thanks to gateways. Each used gateway must have a configuration to set its parameters. For exemple to set an API key :
+This Symfony bundle provide help for integrating payments solutions by the normalization of payment process thanks to gateways. Each used gateway must have a configuration to set its parameters.
+
+Example controller :
 
 ```php
-    public function preProcess(Request $request)
-    {
-        Stripe\Stripe::setApiKey($this->paymentGatewayConfiguration->getParameters()['secret_key']);
-    }
+$gateway = $this->paymentGatewayFactory->buildFromAlias('stripe_test'); // raw alias
+
+$payment = $gateway->createPayment([
+    'item_id' => 5,
+    'amount' => 500,
+    'currency_code' => 'EUR',
+]);
+
+return $this->render('@IDCIPaymentBundle/Resources/views/payment.html.twig', [
+    'view' => $gateway->buildHTMLView(),
+]);
 ```
 
 A list of [commands](#command) is provided by this bundle to create, retrieve, update or delete gateway configurations.
@@ -32,7 +41,7 @@ $ php bin/console app:payment-gateway-configuration:list
 $ php bin/console app:payment-gateway-configuration:update
 
 # To delete a PaymentGatewayConfiguration
-$ php bin/console app:payment-gateway-configuration:update
+$ php bin/console app:payment-gateway-configuration:delete
 ```
 
 Resources
