@@ -59,11 +59,11 @@ class CreatePaymentGatewayConfigurationCommand extends ContainerAwareCommand
         $question = new ConfirmationQuestion('Would you want to set it activated? [Y/n]', true);
         $enabled = $helper->ask($input, $output, $question);
 
-        $paymentGateway = $this->paymentGatewayFactory->buildFromGatewayName($gatewayName);
+        $paymentGatewayFQCN = $this->paymentGatewayFactory->getPaymentGatewayFQCN($gatewayName);
 
         $parameters = [];
 
-        foreach (array_keys($paymentGateway->getParameterNames()) as $parameterName) {
+        foreach ($paymentGatewayFQCN::getParameterNames() as $parameterName) {
             $question = new Question(sprintf('%s:', $parameterName));
 
             $parameters[$parameterName] = $helper->ask($input, $output, $question);
