@@ -1,5 +1,13 @@
 # PaymentBundle
-Symfony payment bundle
+
+This Symfony bundle provide help for integrating payments solutions by the normalization of payment process thanks to gateways.
+
+![UML Diagram](./Resources/docs/uml-schema.png)
+
+Supported Gateways
+-------
+
+* [Stripe](./Gateway/StripePaymentGateway.php) (for testing purpose)
 
 Command
 -------
