@@ -8,6 +8,17 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PaymentFactory
 {
+    private static $_instance;
+
+    public static function getInstance(): self
+    {
+        if (null === self::$_instance) {
+            self::$_instance = new PaymentFactory();
+        }
+
+        return self::$_instance;
+    }
+
     public function create(array $parameters): Payment
     {
         $resolver = new OptionsResolver();
