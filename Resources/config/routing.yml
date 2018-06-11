@@ -1,0 +1,4 @@
+---
+# Accomodation
+idci_payment_payment:
+    resource: IDCI\Bundle\PaymentBundle\Controller\PaymentController
