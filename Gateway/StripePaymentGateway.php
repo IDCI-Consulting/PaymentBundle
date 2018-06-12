@@ -25,25 +25,10 @@ class StripePaymentGateway extends AbstractPaymentGateway
 
     public function buildHTMLView(Payment $payment): string
     {
-        $publicKey = $this->paymentGatewayConfiguration->getParameters()['public_key'];
-        $amount = $payment->getAmount();
-
-        $view = <<<EOT
-        <form action="http://jarvis.inflexyon.docker/payment/process" method="POST">
-          <script
-            src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-            data-key="$publicKey"
-            data-amount="$amount"
-            data-name="Stripe.com"
-            data-description="Example charge"
-            data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
-            data-locale="auto"
-            data-zip-code="true">
-          </script>
-        </form>
-EOT;
-
-        return $view;
+        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/stripe.html.twig', [
+            'publicKey' => $this->paymentGatewayConfiguration->getParameters()['public_key'],
+            'payment' => $payment,
+        ]);
     }
 
     public static function getParameterNames(): ?array

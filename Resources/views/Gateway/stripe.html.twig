@@ -1,0 +1,12 @@
+<form action="{{ path('idci_payment_payment_process') }}" method="POST">
+  <script
+    src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+    data-key="{{ publicKey }}"
+    data-amount="{{ payment.amount }}"
+    data-name="Stripe.com"
+    data-description="Example charge"
+    data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
+    data-locale="auto"
+    data-zip-code="true">
+  </script>
+</form>
