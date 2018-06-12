@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Controller;
 
-use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayFactory;
+use IDCI\Bundle\PaymentBundle\Manager\PaymentGatewayManager;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentFactory;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -16,14 +16,14 @@ class PaymentController extends Controller
 {
     private $paymentFactory;
 
-    private $paymentGatewayFactory;
+    private $paymentGatewayManager;
 
     public function __construct(
         PaymentFactory $paymentFactory,
-        PaymentGatewayFactory $paymentGatewayFactory
+        PaymentGatewayManager $paymentGatewayManager
     ) {
         $this->paymentFactory = $paymentFactory;
-        $this->paymentGatewayFactory = $paymentGatewayFactory;
+        $this->paymentGatewayManager = $paymentGatewayManager;
     }
 
     /**
@@ -32,7 +32,7 @@ class PaymentController extends Controller
      */
     public function createAction(Request $request)
     {
-        $gateway = $this->paymentGatewayFactory->buildFromAlias('stripe_test'); // raw alias
+        $gateway = $this->paymentGatewayManager->getByAlias('stripe_test');
 
         $payment = $gateway->createPayment([
             'item_id' => 5,
@@ -43,7 +43,7 @@ class PaymentController extends Controller
         $request->getSession()->set('payment_id', $payment->getId());
 
         return $this->render('@IDCIPaymentBundle/Resources/views/payment.html.twig', [
-            'view' => $gateway->buildHTMLView(),
+            'view' => $gateway->buildHTMLView($payment),
         ]);
     }
 
@@ -53,7 +53,7 @@ class PaymentController extends Controller
      */
     public function process(Request $request)
     {
-        $gateway = $this->paymentGatewayFactory->buildFromPaymentUuid($request->getSession()->get('payment_id'));
+        $gateway = $this->paymentGatewayManager->getByPaymentUuid($request->getSession()->get('payment_id'));
 
         try {
             $gateway->preProcess($request);
