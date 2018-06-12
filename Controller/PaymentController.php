@@ -32,7 +32,7 @@ class PaymentController extends Controller
      */
     public function createAction(Request $request)
     {
-        $gateway = $this->paymentGatewayManager->getByAlias('stripe_test');
+        $gateway = $this->paymentGatewayManager->getByAlias('stripe_test'); // raw alias
 
         $payment = $gateway->createPayment([
             'item_id' => 5,
