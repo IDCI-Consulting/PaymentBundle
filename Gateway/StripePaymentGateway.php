@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use Stripe;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -22,16 +23,17 @@ class StripePaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    public function buildHTMLView(): string
+    public function buildHTMLView(Payment $payment): string
     {
         $publicKey = $this->paymentGatewayConfiguration->getParameters()['public_key'];
+        $amount = $payment->getAmount();
 
         $view = <<<EOT
         <form action="http://jarvis.inflexyon.docker/payment/process" method="POST">
           <script
             src="https://checkout.stripe.com/checkout.js" class="stripe-button"
             data-key="$publicKey"
-            data-amount="$this->payment->getAmount()"
+            data-amount="$amount"
             data-name="Stripe.com"
             data-description="Example charge"
             data-image="https://stripe.com/img/documentation/checkout/marketplace.png"

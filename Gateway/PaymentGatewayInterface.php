@@ -10,5 +10,5 @@ interface PaymentGatewayInterface
 
     public function createPayment(?array $parameters): Payment;
 
-    public function buildHTMLView(): string;
+    public function buildHTMLView(Payment $payment): string;
 }
