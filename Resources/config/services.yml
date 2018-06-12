@@ -9,6 +9,6 @@ services:
         resource: '../../*'
         exclude: '../../{Entity,Repository,Tests}'
 
-    IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayFactory:
-        arguments:
-            $paymentGatewayList: '%idci_payment.gateways%'
+    IDCI\Bundle\PaymentBundle\Gateway\StripePaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: stripe }
