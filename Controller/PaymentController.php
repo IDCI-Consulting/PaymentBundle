@@ -3,7 +3,6 @@
 namespace IDCI\Bundle\PaymentBundle\Controller;
 
 use IDCI\Bundle\PaymentBundle\Manager\PaymentGatewayManager;
-use IDCI\Bundle\PaymentBundle\Payment\PaymentFactory;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -14,15 +13,14 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class PaymentController extends Controller
 {
-    private $paymentFactory;
-
+    /**
+     * @var PaymentGatewayManager
+     */
     private $paymentGatewayManager;
 
     public function __construct(
-        PaymentFactory $paymentFactory,
         PaymentGatewayManager $paymentGatewayManager
     ) {
-        $this->paymentFactory = $paymentFactory;
         $this->paymentGatewayManager = $paymentGatewayManager;
     }
 
