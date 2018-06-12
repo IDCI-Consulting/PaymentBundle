@@ -4,7 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Command;
 
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
 use IDCI\Bundle\PaymentBundle\Exception\UnsupportedPaymentGatewayParametersConfiguration;
-use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayFactory;
+use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistry;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,11 +14,11 @@ use Symfony\Component\Console\Question\Question;
 
 class CreatePaymentGatewayConfigurationCommand extends ContainerAwareCommand
 {
-    private $paymentGatewayFactory;
+    private $paymentGatewayRegistry;
 
-    public function __construct(PaymentGatewayFactory $paymentGatewayFactory)
+    public function __construct(PaymentGatewayRegistry $paymentGatewayRegistry)
     {
-        $this->paymentGatewayFactory = $paymentGatewayFactory;
+        $this->paymentGatewayRegistry = $paymentGatewayRegistry;
 
         parent::__construct();
     }
@@ -37,21 +37,11 @@ class CreatePaymentGatewayConfigurationCommand extends ContainerAwareCommand
         $om = $this->getContainer()->get('doctrine')->getManager();
         $helper = $this->getHelper('question');
 
-        $paymentGatewayList = $this->paymentGatewayFactory->getPaymentGatewayList();
+        $paymentGatewayList = $this->paymentGatewayRegistry->getAll();
 
-        $question = new ChoiceQuestion('Please select the gateway', array_keys($paymentGatewayList), 0);
+        $question = new ChoiceQuestion('Please select the gateway', array_keys($this->paymentGatewayRegistry->getAll()), 0);
         $question->setErrorMessage('%s is an invalid choice.');
         $gatewayName = $helper->ask($input, $output, $question);
-
-        if (!class_exists($paymentGatewayList[$gatewayName])) {
-            throw new UnsupportedPaymentGatewayParametersConfiguration(
-                sprintf(
-                    'The parameters configuration for the gateway %s is not supported because the class %s doesn\'t exist',
-                    $gatewayName,
-                    $paymentGatewayList[$gatewayName]
-                )
-            );
-        }
 
         $question = new Question('What alias do you want to give ?');
         $alias = $helper->ask($input, $output, $question);
@@ -59,7 +49,7 @@ class CreatePaymentGatewayConfigurationCommand extends ContainerAwareCommand
         $question = new ConfirmationQuestion('Would you want to set it activated? [Y/n]', true);
         $enabled = $helper->ask($input, $output, $question);
 
-        $paymentGatewayFQCN = $this->paymentGatewayFactory->getPaymentGatewayFQCN($gatewayName);
+        $paymentGatewayFQCN = get_class($paymentGatewayList[$gatewayName]);
 
         $parameters = [];
 
