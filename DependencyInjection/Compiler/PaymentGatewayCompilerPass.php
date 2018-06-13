@@ -7,7 +7,6 @@
 
 namespace IDCI\Bundle\PaymentBundle\DependencyInjection\Compiler;
 
-use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistry;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -20,9 +19,7 @@ class PaymentGatewayCompilerPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        if (!$container->has(PaymentGatewayInterface::class) ||
-            !$container->hasDefinition(PaymentGatewayRegistry::class)
-        ) {
+        if (!$container->hasDefinition(PaymentGatewayRegistry::class)) {
             return;
         }
 
