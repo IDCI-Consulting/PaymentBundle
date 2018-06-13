@@ -8,7 +8,5 @@ interface PaymentGatewayInterface
 {
     public static function getParameterNames(): ?array;
 
-    public function createPayment(?array $parameters): Payment;
-
-    public function buildHTMLView(Payment $payment): string;
+    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): string;
 }

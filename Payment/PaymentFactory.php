@@ -27,6 +27,7 @@ class PaymentFactory
 
         return (new Payment())
             ->setItemId($resolvedParameters['item_id'])
+            ->setGatewayConfigurationAlias($resolvedParameters['gateway_configuration_alias'])
             ->setCustomerId($resolvedParameters['customer_id'])
             ->setCustomerEmail($resolvedParameters['customer_email'])
             ->setStatus(Payment::STATUS_CREATED)
@@ -51,11 +52,13 @@ class PaymentFactory
                 'currency_code',
             ])
             ->setDefaults([
+                'gateway_configuration_alias' => null,
                 'customer_id' => null,
                 'customer_email' => null,
                 'description' => null,
             ])
             ->setAllowedTypes('item_id', ['int', 'string'])
+            ->setAllowedTypes('gateway_configuration_alias', ['string'])
             ->setAllowedTypes('amount', ['int', 'double'])
             ->setAllowedTypes('currency_code', 'string')
             ->setAllowedTypes('customer_id', ['null', 'int', 'string'])
