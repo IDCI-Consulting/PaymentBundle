@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Controller;
 
-use IDCI\Bundle\PaymentBundle\Manager\PaymentGatewayManager;
+use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -14,14 +14,14 @@ use Symfony\Component\HttpFoundation\Request;
 class PaymentController extends Controller
 {
     /**
-     * @var PaymentGatewayManager
+     * @var PaymentManager
      */
-    private $paymentGatewayManager;
+    private $paymentManager;
 
     public function __construct(
-        PaymentGatewayManager $paymentGatewayManager
+        PaymentManager $paymentManager
     ) {
-        $this->paymentGatewayManager = $paymentGatewayManager;
+        $this->paymentManager = $paymentManager;
     }
 
     /**
@@ -30,18 +30,19 @@ class PaymentController extends Controller
      */
     public function createAction(Request $request)
     {
-        $gateway = $this->paymentGatewayManager->getByAlias('stripe_test'); // raw alias
+        $paymentContext = $this->paymentManager->getPaymentContextByAlias('stripe_test'); // raw alias
 
-        $payment = $gateway->createPayment([
+        $payment = $paymentContext->createPayment([
             'item_id' => 5,
             'amount' => 500,
             'currency_code' => 'EUR',
         ]);
 
+        // passing payment id in session for testing
         $request->getSession()->set('payment_id', $payment->getId());
 
         return $this->render('@IDCIPaymentBundle/Resources/views/payment.html.twig', [
-            'view' => $gateway->buildHTMLView($payment),
+            'view' => $paymentContext->buildHTMLView(),
         ]);
     }
 
@@ -51,11 +52,11 @@ class PaymentController extends Controller
      */
     public function process(Request $request)
     {
-        $gateway = $this->paymentGatewayManager->getByPaymentUuid($request->getSession()->get('payment_id'));
+        $paymentContext = $this->paymentManager->getPaymentContextByPaymentUuid($request->getSession()->get('payment_id'));
 
         try {
-            $gateway->preProcess($request);
-            $gateway->postProcess($request);
+            $paymentContext->preProcess($request);
+            $paymentContext->postProcess($request);
         } catch (\Exception $e) {
             $this->addFlash('error', $e->getMessage());
         }
