@@ -5,16 +5,16 @@ This Symfony bundle provide help for integrating payments solutions by the norma
 Example controller :
 
 ```php
-$gateway = $this->paymentGatewayManager->getByAlias('stripe_test'); // raw alias
+$paymentContext = $this->paymentManager->getPaymentContextByAlias('stripe_test'); // raw alias
 
-$payment = $gateway->createPayment([
+$payment = $paymentContext->createPayment([
     'item_id' => 5,
     'amount' => 500,
     'currency_code' => 'EUR',
 ]);
 
 return $this->render('@IDCIPaymentBundle/Resources/views/payment.html.twig', [
-    'view' => $gateway->buildHTMLView($payment),
+    'view' => $paymentContext->buildHTMLView(),
 ]);
 ```
 
