@@ -2,9 +2,10 @@
 
 namespace IDCI\Bundle\PaymentBundle\Entity;
 
+use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayConfigurationInterface;
 use Ramsey\Uuid\Uuid;
 
-class PaymentGatewayConfiguration
+class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterface
 {
     /**
      * @var Uuid
@@ -30,6 +31,18 @@ class PaymentGatewayConfiguration
      * @var array
      */
     private $parameters;
+
+    public function get(string $key)
+    {
+        return $this->parameters[$key];
+    }
+
+    public function set(string $key, $value): PaymentGatewayConfigurationInterface
+    {
+        $this->parameters[$key] = $value;
+
+        return $this;
+    }
 
     public function __toString(): string
     {
