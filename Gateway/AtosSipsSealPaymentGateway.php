@@ -6,7 +6,7 @@ use IDCI\Bundle\PaymentBundle\Entity\Payment;
 
 class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
 {
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): string
+    public function buildOptions(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): array
     {
         $options = [
             'keyVersion' => $paymentGatewayConfiguration->get('version'),
@@ -23,7 +23,7 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
             'paypageData.bypassReceiptPage' => $paymentGatewayConfiguration->get('bypass_receipt_page'),
         ];
 
-        $builtOptions = [
+        return [
             'options' => $options,
             'build' => implode('|', array_map(
                 function ($k, $v) { return sprintf('%s=%s', $k, $v); },
@@ -32,6 +32,11 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
             )),
             'secret' => $paymentGatewayConfiguration->get('secret'),
         ];
+    }
+
+    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): string
+    {
+        $builtOptions = $this->buildOptions($paymentGatewayConfiguration, $payment);
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/atos_sips_seal.html.twig', [
             'url' => 'http://jarvis.inflexyon.docker/payment/create', //raw,
