@@ -3,6 +3,7 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
+use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Stripe;
 use Symfony\Component\HttpFoundation\Request;
 

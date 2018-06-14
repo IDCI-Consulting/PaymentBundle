@@ -59,7 +59,7 @@ class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterfac
         return $this->alias;
     }
 
-    public function setAlias(string $alias): self
+    public function setAlias(string $alias): PaymentGatewayConfigurationInterface
     {
         $this->alias = $alias;
 
@@ -71,7 +71,7 @@ class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterfac
         return $this->gatewayName;
     }
 
-    public function setGatewayName(string $gatewayName): self
+    public function setGatewayName(string $gatewayName): PaymentGatewayConfigurationInterface
     {
         $this->gatewayName = $gatewayName;
 
@@ -83,7 +83,7 @@ class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterfac
         return $this->enabled;
     }
 
-    public function setEnabled(bool $enable): self
+    public function setEnabled(bool $enable): PaymentGatewayConfigurationInterface
     {
         $this->enabled = $enable;
 
@@ -95,14 +95,14 @@ class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterfac
         return $this->parameters;
     }
 
-    public function addParameter($parameterKey, $parameterValue): self
+    public function addParameter($parameterKey, $parameterValue): PaymentGatewayConfigurationInterface
     {
         $this->parameters[$parameterKey] = $parameterValue;
 
         return $this;
     }
 
-    public function setParameters(array $parameters): self
+    public function setParameters(array $parameters): PaymentGatewayConfigurationInterface
     {
         $this->parameters = [];
 

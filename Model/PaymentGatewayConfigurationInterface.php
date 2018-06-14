@@ -10,19 +10,19 @@ interface PaymentGatewayConfigurationInterface
 
     public function getAlias(): ?string;
 
-    public function setAlias(string $alias): self;
+    public function setAlias(string $alias): PaymentGatewayConfigurationInterface;
 
     public function getGatewayName(): ?string;
 
-    public function setGatewayName(string $gatewayName): self;
+    public function setGatewayName(string $gatewayName): PaymentGatewayConfigurationInterface;
 
     public function isEnabled(): bool;
 
-    public function setEnabled(bool $enable): self;
+    public function setEnabled(bool $enable): PaymentGatewayConfigurationInterface;
 
     public function getParameters();
 
-    public function addParameter($parameterKey, $parameterValue): self;
+    public function addParameter($parameterKey, $parameterValue): PaymentGatewayConfigurationInterface;
 
-    public function setParameters(array $parameters): self;
+    public function setParameters(array $parameters): PaymentGatewayConfigurationInterface;
 }

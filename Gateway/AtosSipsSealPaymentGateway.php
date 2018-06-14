@@ -5,7 +5,9 @@ namespace IDCI\Bundle\PaymentBundle\Gateway;
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Exception\AtosSipsSealFormException;
 use IDCI\Bundle\PaymentBundle\Exception\AtosSipsSealInvalidPaymentException;
+use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Worldline\Sips\Common\SipsEnvironment;
 use Worldline\Sips\Paypage\InitializationResponse;
 use Worldline\Sips\Paypage\PaypageRequest;
@@ -31,8 +33,8 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
         $paypageRequest->setAmount($payment->getAmount());
         $paypageRequest->setCurrencyCode($payment->getCurrencyCode());
         $paypageRequest->setOrderId(substr($payment->getId(), 0, 32)); // too long > 32
-        $paypageRequest->setNormalReturnUrl($paymentGatewayConfiguration->get('normal_return_url')); // not here
-        $paypageRequest->setAutomaticResponseUrl($paymentGatewayConfiguration->get('automatic_response_url')); // not here
+        $paypageRequest->setNormalReturnUrl($this->router->generate('idci_payment_payment_process', [], UrlGeneratorInterface::ABSOLUTE_URL)); // not here
+        $paypageRequest->setAutomaticResponseUrl($this->router->generate('idci_payment_payment_process', [], UrlGeneratorInterface::ABSOLUTE_URL)); // not here
         $paypageRequest->setCaptureDay($paymentGatewayConfiguration->get('capture_day'));
         $paypageRequest->setCaptureMode($paymentGatewayConfiguration->get('capture_mode'));
         $paypageRequest->setOrderChannel('INTERNET');

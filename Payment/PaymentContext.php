@@ -5,8 +5,8 @@ namespace IDCI\Bundle\PaymentBundle\Payment;
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedPaymentException;
-use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
+use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class PaymentContext

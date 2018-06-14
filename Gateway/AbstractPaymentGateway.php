@@ -4,7 +4,9 @@ namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
+use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 abstract class AbstractPaymentGateway implements PaymentGatewayInterface
 {
@@ -18,10 +20,16 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
      */
     protected $templating;
 
-    public function __construct(ObjectManager $om, \Twig_Environment $templating)
+    /**
+     * @var UrlGeneratorInterface
+     */
+    protected $router;
+
+    public function __construct(ObjectManager $om, \Twig_Environment $templating, UrlGeneratorInterface $router)
     {
         $this->om = $om;
         $this->templating = $templating;
+        $this->router = $router;
     }
 
     abstract public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): string;

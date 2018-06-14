@@ -39,7 +39,7 @@ class PaymentController extends Controller
      */
     public function createAction(Request $request)
     {
-        $paymentContext = $this->paymentManager->createPaymentContextByAlias('stripe_test'); // raw alias
+        $paymentContext = $this->paymentManager->createPaymentContextByAlias('atos_sips_seal_test'); // raw alias
 
         $payment = $paymentContext->createPayment([
             'item_id' => 5,
