@@ -3,7 +3,7 @@
 namespace IDCI\Bundle\PaymentBundle\Payment;
 
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
-use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayConfigurationInterface;
+use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
 use Symfony\Component\HttpFoundation\Request;
 

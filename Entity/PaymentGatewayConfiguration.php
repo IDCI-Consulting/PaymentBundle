@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Entity;
 
-use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayConfigurationInterface;
+use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Ramsey\Uuid\Uuid;
 
 class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterface
@@ -78,11 +78,6 @@ class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterfac
         return $this;
     }
 
-    public function getParameters()
-    {
-        return $this->parameters;
-    }
-
     public function isEnabled(): bool
     {
         return $this->enabled;
@@ -93,6 +88,11 @@ class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterfac
         $this->enabled = $enable;
 
         return $this;
+    }
+
+    public function getParameters()
+    {
+        return $this->parameters;
     }
 
     public function addParameter($parameterKey, $parameterValue): self
