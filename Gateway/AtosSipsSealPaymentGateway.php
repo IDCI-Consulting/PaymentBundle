@@ -13,7 +13,7 @@ use Worldline\Sips\SipsClient;
 
 class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
 {
-    public function buildClient(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration): SipsClient
+    private function buildClient(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration): SipsClient
     {
         return new SipsClient(
             new SipsEnvironment('SIMU'),
@@ -23,7 +23,7 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
         );
     }
 
-    public function buildResponse(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): InitializationResponse
+    private function buildResponse(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): InitializationResponse
     {
         $sipsClient = $this->buildClient($paymentGatewayConfiguration);
 
