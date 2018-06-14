@@ -30,6 +30,18 @@ class PaymentContext
      */
     private $payment;
 
+    public function __construct(
+        ObjectManager $om,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        PaymentGatewayInterface $paymentGateway,
+        ?Payment $payment = null
+    ) {
+        $this->om = $om;
+        $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
+        $this->paymentGateway = $paymentGateway;
+        $this->payment = $payment;
+    }
+
     public function createPayment(array $parameters): Payment
     {
         $parameters['gateway_configuration_alias'] = $this->paymentGatewayConfiguration->getAlias();
@@ -47,41 +59,14 @@ class PaymentContext
         return $this->paymentGateway->buildHTMLView($this->paymentGatewayConfiguration, $this->payment);
     }
 
-    public function __construct(
-        ObjectManager $om,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        PaymentGatewayInterface $paymentGateway,
-        ?Payment $payment = null
-    ) {
-        $this->om = $om;
-        $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
-        $this->paymentGateway = $paymentGateway;
-        $this->payment = $payment;
-    }
-
     public function getPaymentGatewayConfiguration(): PaymentGatewayConfigurationInterface
     {
         return $this->paymentGatewayConfiguration;
     }
 
-    public function setPaymentGatewayConfiguration(
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-    ): self {
-        $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
-
-        return $this;
-    }
-
     public function getPaymentGateway(): PaymentGatewayInterface
     {
         return $this->paymentGateway;
-    }
-
-    public function setPaymentGateway(PaymentGatewayInterface $paymentGateway): self
-    {
-        $this->paymentGateway = $paymentGateway;
-
-        return $this;
     }
 
     public function getPayment(): Payment
