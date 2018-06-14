@@ -58,7 +58,7 @@ class PaymentFactory
                 'description' => null,
             ])
             ->setAllowedTypes('item_id', ['int', 'string'])
-            ->setAllowedTypes('gateway_configuration_alias', ['string'])
+            ->setAllowedTypes('gateway_configuration_alias', ['null', 'string'])
             ->setAllowedTypes('amount', ['int', 'double'])
             ->setAllowedTypes('currency_code', 'string')
             ->setAllowedTypes('customer_id', ['null', 'int', 'string'])
