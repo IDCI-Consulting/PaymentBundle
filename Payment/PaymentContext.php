@@ -4,6 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Payment;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
+use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedPaymentException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -74,6 +75,11 @@ class PaymentContext
         return $this->paymentGateway;
     }
 
+    public function hasPayment(): bool
+    {
+        return isset($this->payment);
+    }
+
     public function getPayment(): ?Payment
     {
         return $this->payment;
@@ -81,6 +87,10 @@ class PaymentContext
 
     public function setPayment(Payment $payment): self
     {
+        if ($this->hasPayment()) {
+            throw new AlreadyDefinedPaymentException(sprintf('The payment context has already a payment defined.'));
+        }
+
         $this->payment = $payment;
 
         return $this;
