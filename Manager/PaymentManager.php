@@ -7,15 +7,22 @@ use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
 use IDCI\Bundle\PaymentBundle\Exception\NoPaymentGatewayConfigurationFoundException;
 use IDCI\Bundle\PaymentBundle\Exception\UndefinedPaymentException;
-use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistry;
+use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistryInterface;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContext;
 
 class PaymentManager
 {
+    /**
+     * @var ObjectManager
+     */
     private $om;
+
+    /**
+     * @var PaymentGatewayRegistryInterface
+     */
     private $paymentGatewayRegistry;
 
-    public function __construct(ObjectManager $om, PaymentGatewayRegistry $paymentGatewayRegistry)
+    public function __construct(ObjectManager $om, PaymentGatewayRegistryInterface $paymentGatewayRegistry)
     {
         $this->om = $om;
         $this->paymentGatewayRegistry = $paymentGatewayRegistry;

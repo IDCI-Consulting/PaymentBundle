@@ -8,6 +8,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PaymentFactory
 {
+    /**
+     * @var PaymentFactory
+     */
     private static $_instance;
 
     public static function getInstance(): self
