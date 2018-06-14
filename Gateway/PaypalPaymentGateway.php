@@ -3,6 +3,11 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
+use PayPal\Api\Payment as PaypalPayment;
+use PayPal\Api\PaymentExecution;
+use PayPal\Auth\OAuthTokenCredential;
+use PayPal\Rest\ApiContext;
+use Symfony\Component\HttpFoundation\Request;
 
 class PaypalPaymentGateway extends AbstractPaymentGateway
 {
@@ -20,5 +25,25 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
             'client_id',
             'client_secret',
         ];
+    }
+
+    public function executePayment(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Payment $payment
+    ) {
+        $apiContext = new ApiContext(new OAuthTokenCredential(
+            $paymentGatewayConfiguration->get('client_id'),
+            $paymentGatewayConfiguration->get('client_secret')
+        ));
+
+        $paypalPayment = PaypalPayment::get($request->get('paymentID'), $apiContext);
+
+        $execution = new PaymentExecution();
+        $execution->setPayerId($request->get('payerID'));
+
+        $result = $paypalPayment->execute($execution, $apiContext);
+
+        return true;
     }
 }

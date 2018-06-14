@@ -6,6 +6,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 class PaymentContext
 {
@@ -56,6 +57,11 @@ class PaymentContext
     public function buildHTMLView(): string
     {
         return $this->paymentGateway->buildHTMLView($this->paymentGatewayConfiguration, $this->payment);
+    }
+
+    public function executePayment(Request $request)
+    {
+        return $this->paymentGateway->executePayment($request, $this->paymentGatewayConfiguration, $this->payment);
     }
 
     public function getPaymentGatewayConfiguration(): PaymentGatewayConfigurationInterface

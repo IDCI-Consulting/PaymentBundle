@@ -2,6 +2,8 @@
 
 namespace IDCI\Bundle\PaymentBundle\Controller;
 
+use Doctrine\Common\Persistence\ObjectManager;
+use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -14,13 +16,20 @@ use Symfony\Component\HttpFoundation\Request;
 class PaymentController extends Controller
 {
     /**
+     * @var ObjectManager
+     */
+    private $om;
+
+    /**
      * @var PaymentManager
      */
     private $paymentManager;
 
     public function __construct(
+        ObjectManager $om,
         PaymentManager $paymentManager
     ) {
+        $this->om = $om;
         $this->paymentManager = $paymentManager;
     }
 
@@ -30,7 +39,7 @@ class PaymentController extends Controller
      */
     public function createAction(Request $request)
     {
-        $paymentContext = $this->paymentManager->createPaymentContextByAlias('atos_sips_seal_test'); // raw alias
+        $paymentContext = $this->paymentManager->createPaymentContextByAlias('stripe_test'); // raw alias
 
         $payment = $paymentContext->createPayment([
             'item_id' => 5,
@@ -54,9 +63,20 @@ class PaymentController extends Controller
     {
         $paymentContext = $this
             ->paymentManager
-            ->createPaymentContextByPaymentUuid($request->getSession()
-            ->get('payment_id'))
+            ->createPaymentContextByPaymentUuid($request->getSession()->get('payment_id'))
         ;
+
+        try {
+            $isValidated = $paymentContext->executePayment($request);
+        } catch (\Exception $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
+        $paymentContext->getPayment()->setStatus(
+            (isset($isValidated) && $isValidated) ? Payment::STATUS_VALIDATED : Payment::STATUS_CANCELED
+        );
+
+        $this->om->flush();
 
         return $this->redirect($this->generateUrl('idci_payment_payment_done'));
     }
