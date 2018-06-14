@@ -3,7 +3,6 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
-use Symfony\Component\HttpFoundation\Request;
 
 class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
 {
@@ -54,24 +53,5 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
             'capture_day',
             'bypass_receipt_page',
         ];
-    }
-
-    /**
-     * METHODS ONLY USED FOR TESTS.
-     */
-    public function preProcess(
-        Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Payment $payment
-    ) {
-        return;
-    }
-
-    public function postProcess(
-        Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Payment $payment
-    ) {
-        return;
     }
 }

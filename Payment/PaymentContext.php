@@ -6,7 +6,6 @@ use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
-use Symfony\Component\HttpFoundation\Request;
 
 class PaymentContext
 {
@@ -79,18 +78,5 @@ class PaymentContext
         $this->payment = $payment;
 
         return $this;
-    }
-
-    /**
-     * METHODS ONLY USED FOR TESTS.
-     */
-    public function preProcess(Request $request)
-    {
-        $this->paymentGateway->preProcess($request, $this->paymentGatewayConfiguration, $this->payment);
-    }
-
-    public function postProcess(Request $request)
-    {
-        $this->paymentGateway->postProcess($request, $this->paymentGatewayConfiguration, $this->payment);
     }
 }

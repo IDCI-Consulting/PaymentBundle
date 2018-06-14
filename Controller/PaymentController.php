@@ -58,13 +58,6 @@ class PaymentController extends Controller
             ->get('payment_id'))
         ;
 
-        try {
-            $paymentContext->preProcess($request);
-            $paymentContext->postProcess($request);
-        } catch (\Exception $e) {
-            $this->addFlash('error', $e->getMessage());
-        }
-
         return $this->redirect($this->generateUrl('idci_payment_payment_done'));
     }
 

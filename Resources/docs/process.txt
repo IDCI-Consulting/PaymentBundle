@@ -1,0 +1,102 @@
+-----------------
+PaymentController
+-----------------
+
+public function process(Request $request)
+    {
+        $paymentContext = $this
+            ->paymentManager
+            ->createPaymentContextByPaymentUuid($request->getSession()
+            ->get('payment_id'))
+        ;
+
+        try {
+            $paymentContext->preProcess($request);
+            $paymentContext->postProcess($request);
+        } catch (\Exception $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
+        return $this->redirect($this->generateUrl('idci_payment_payment_done'));
+    }
+
+--------------
+PaymentContext
+--------------
+
+/**
+     * METHODS ONLY USED FOR TESTS.
+     */
+    public function preProcess(Request $request)
+    {
+        $this->paymentGateway->preProcess($request, $this->paymentGatewayConfiguration, $this->payment);
+    }
+
+    public function postProcess(Request $request)
+    {
+        $this->paymentGateway->postProcess($request, $this->paymentGatewayConfiguration, $this->payment);
+    }
+
+--------------------
+StripePaymentGateway
+--------------------
+/**
+     * METHODS ONLY USED FOR TESTS.
+     */
+    public function preProcess(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Payment $payment
+    ) {
+        Stripe\Stripe::setApiKey($paymentGatewayConfiguration->get('secret_key'));
+    }
+
+    public function postProcess(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Payment $payment
+    ) {
+        $charge = \Stripe\Charge::create([
+            'amount' => $payment->getAmount(),
+            'currency' => $payment->getCurrencyCode(),
+            'description' => 'Example charge',
+            'source' => $request->get('stripeToken'),
+        ]);
+    }
+
+--------------------
+PaypalPaymentGateway
+--------------------
+
+/**
+     * METHODS ONLY USED FOR TESTS.
+     */
+    public function preProcess(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Payment $payment
+    ) {
+        try {
+            $apiContext = new ApiContext(new OAuthTokenCredential(
+                $paymentGatewayConfiguration->get('client_id'),
+                $paymentGatewayConfiguration->get('client_secret')
+            ));
+
+            $payment = PaypalPayment::get($request->get('paymentID'), $apiContext);
+
+            $execution = new PaymentExecution();
+            $execution->setPayerId($request->get('payerID'));
+
+            $result = $payment->execute($execution, $apiContext);
+        } catch (\Exception $e) {
+            dump($e->getMessage());
+        }
+    }
+
+    public function postProcess(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Payment $payment
+    ) {
+        return;
+    }
