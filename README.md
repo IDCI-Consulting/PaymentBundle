@@ -5,7 +5,7 @@ This Symfony bundle provide help for integrating payments solutions by the norma
 Example controller :
 
 ```php
-$paymentContext = $this->paymentManager->getPaymentContextByAlias('stripe_test'); // raw alias
+$paymentContext = $this->paymentManager->createPaymentContextByAlias('stripe_test'); // raw alias
 
 $payment = $paymentContext->createPayment([
     'item_id' => 5,
