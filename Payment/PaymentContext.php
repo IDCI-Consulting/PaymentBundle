@@ -57,12 +57,12 @@ class PaymentContext
 
     public function buildHTMLView(): string
     {
-        return $this->paymentGateway->buildHTMLView($this->paymentGatewayConfiguration, $this->payment);
+        return $this->getPaymentGateway()->buildHTMLView($this->getPaymentGatewayConfiguration(), $this->getPayment());
     }
 
-    public function executePayment(Request $request)
+    public function executePayment(Request $request): ?bool
     {
-        return $this->paymentGateway->executePayment($request, $this->paymentGatewayConfiguration, $this->payment);
+        return $this->getPaymentGateway()->executePayment($request, $this->getPaymentGatewayConfiguration(), $this->getPayment());
     }
 
     public function getPaymentGatewayConfiguration(): PaymentGatewayConfigurationInterface

@@ -57,7 +57,7 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Payment $payment
-    ) {
+    ): ?bool {
         $sipsClient = $this->buildClient($paymentGatewayConfiguration);
 
         $sipsResponse = $sipsClient->finalizeTransaction();

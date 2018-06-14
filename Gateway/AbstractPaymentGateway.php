@@ -4,6 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
+use Symfony\Component\HttpFoundation\Request;
 
 abstract class AbstractPaymentGateway implements PaymentGatewayInterface
 {
@@ -24,6 +25,12 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
     }
 
     abstract public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): string;
+
+    abstract public function executePayment(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Payment $payment
+    ): ?bool;
 
     abstract public static function getParameterNames(): ?array;
 }

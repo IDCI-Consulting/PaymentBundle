@@ -19,19 +19,11 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    public static function getParameterNames(): ?array
-    {
-        return [
-            'client_id',
-            'client_secret',
-        ];
-    }
-
     public function executePayment(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Payment $payment
-    ) {
+    ): ?bool {
         $apiContext = new ApiContext(new OAuthTokenCredential(
             $paymentGatewayConfiguration->get('client_id'),
             $paymentGatewayConfiguration->get('client_secret')
@@ -45,5 +37,13 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         $result = $paypalPayment->execute($execution, $apiContext);
 
         return true;
+    }
+
+    public static function getParameterNames(): ?array
+    {
+        return [
+            'client_id',
+            'client_secret',
+        ];
     }
 }

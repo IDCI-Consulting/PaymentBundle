@@ -16,19 +16,11 @@ class StripePaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    public static function getParameterNames(): ?array
-    {
-        return [
-            'public_key',
-            'secret_key',
-        ];
-    }
-
     public function executePayment(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Payment $payment
-    ) {
+    ): ?bool {
         Stripe\Stripe::setApiKey($paymentGatewayConfiguration->get('secret_key'));
 
         $charge = Stripe\Charge::create([
@@ -39,5 +31,13 @@ class StripePaymentGateway extends AbstractPaymentGateway
         ]);
 
         return true;
+    }
+
+    public static function getParameterNames(): ?array
+    {
+        return [
+            'public_key',
+            'secret_key',
+        ];
     }
 }
