@@ -12,3 +12,11 @@ services:
     IDCI\Bundle\PaymentBundle\Gateway\StripePaymentGateway:
         tags:
             - { name: idci_payment.gateways, alias: stripe }
+
+    IDCI\Bundle\PaymentBundle\Gateway\PaypalPaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: paypal }
+
+    IDCI\Bundle\PaymentBundle\Gateway\AtosSipsSealPaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: atos_sips_seal }
