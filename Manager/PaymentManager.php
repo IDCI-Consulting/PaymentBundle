@@ -21,7 +21,7 @@ class PaymentManager
         $this->paymentGatewayRegistry = $paymentGatewayRegistry;
     }
 
-    public function getPaymentContextByAlias(string $alias): PaymentContext
+    public function createPaymentContextByAlias(string $alias): PaymentContext
     {
         $paymentGatewayConfiguration = $this
             ->om
@@ -40,7 +40,7 @@ class PaymentManager
         );
     }
 
-    public function getPaymentContextByPaymentUuid(string $uuid): PaymentContext
+    public function createPaymentContextByPaymentUuid(string $uuid): PaymentContext
     {
         $payment = $this
             ->om
@@ -53,7 +53,7 @@ class PaymentManager
         }
 
         return $this
-            ->getPaymentContextByAlias($payment->getGatewayConfigurationAlias())
+            ->createPaymentContextByAlias($payment->getGatewayConfigurationAlias())
             ->setPayment($payment)
         ;
     }
