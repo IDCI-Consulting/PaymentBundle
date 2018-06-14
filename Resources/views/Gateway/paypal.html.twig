@@ -1,0 +1,43 @@
+<div id="paypal-button"></div>
+
+<script src="https://www.paypalobjects.com/api/checkout.js"></script>
+
+<script>
+    var EXECUTE_PAYMENT_URL = 'http://jarvis.inflexyon.docker/payment/process';
+
+    paypal.Button.render({
+
+        env: 'sandbox', // Or 'sandbox'
+
+        client: {
+            sandbox:    '{{ clientId }}',
+            production: 'xxxxxxxxx'
+        },
+
+        commit: true, // Show a 'Pay Now' button
+
+        payment: function(data, actions) {
+            return actions.payment.create({
+                payment: {
+                    transactions: [
+                        {
+                            amount: { total: '{{ payment.amount }}', currency: '{{ payment.currencyCode }}' }
+                        }
+                    ]
+                }
+            });
+        },
+
+        onAuthorize: function(data) {
+            return paypal.request.post(EXECUTE_PAYMENT_URL, {
+                paymentID: data.paymentID,
+                payerID:   data.payerID
+            }).then(function() {
+
+                // The payment is complete!
+                // You can now show a confirmation message to the customer
+            });
+        }
+
+    }, '#paypal-button');
+</script>
