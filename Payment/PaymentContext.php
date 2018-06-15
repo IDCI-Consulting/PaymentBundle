@@ -5,6 +5,7 @@ namespace IDCI\Bundle\PaymentBundle\Payment;
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedPaymentException;
+use IDCI\Bundle\PaymentBundle\Exception\UndefinedPaymentException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,6 +42,23 @@ class PaymentContext
         $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
         $this->paymentGateway = $paymentGateway;
         $this->payment = $payment;
+    }
+
+    public function loadPayment(Request $request): Payment
+    {
+        $paymentUuid = $this->paymentGateway->retrieveTransactionUuid($request);
+
+        $this->payment = $this
+            ->om
+            ->getRepository(Payment::class)
+            ->findOneBy(['id' => $paymentUuid])
+        ;
+
+        if (null === $this->payment) {
+            throw new UndefinedPaymentException(sprintf('No payment found with the uuid : %s', $paymentUuid));
+        }
+
+        return $this->payment;
     }
 
     public function createPayment(array $parameters): Payment

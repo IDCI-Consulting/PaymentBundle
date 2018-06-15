@@ -12,6 +12,14 @@ use Symfony\Component\HttpFoundation\Request;
 
 class PaypalPaymentGateway extends AbstractPaymentGateway
 {
+    private function buildApiContext(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration)
+    {
+        return new ApiContext(new OAuthTokenCredential(
+            $paymentGatewayConfiguration->get('client_id'),
+            $paymentGatewayConfiguration->get('client_secret')
+        ));
+    }
+
     public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): string
     {
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paypal.html.twig', [
@@ -20,15 +28,17 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    public function retrieveTransactionUuid(Request $request): ?string
+    {
+        return $request->get('transactionID');
+    }
+
     public function executePayment(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Payment $payment
     ): ?bool {
-        $apiContext = new ApiContext(new OAuthTokenCredential(
-            $paymentGatewayConfiguration->get('client_id'),
-            $paymentGatewayConfiguration->get('client_secret')
-        ));
+        $apiContext = $this->buildApiContext($paymentGatewayConfiguration);
 
         $paypalPayment = PaypalPayment::get($request->get('paymentID'), $apiContext);
 

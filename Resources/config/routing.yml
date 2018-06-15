@@ -1,4 +1,6 @@
 ---
-# Accomodation
-idci_payment_payment:
-    resource: IDCI\Bundle\PaymentBundle\Controller\PaymentController
+idci_payment_frontpayment:
+    resource: IDCI\Bundle\PaymentBundle\Controller\FrontPaymentController
+
+idci_payment_backendpayment:
+    resource: IDCI\Bundle\PaymentBundle\Controller\BackendPaymentController

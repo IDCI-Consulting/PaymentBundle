@@ -6,6 +6,8 @@ use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Exception\AtosSipsSealFormException;
 use IDCI\Bundle\PaymentBundle\Exception\AtosSipsSealInvalidPaymentException;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
+use PascalDeVink\ShortUuid\ShortUuid;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Worldline\Sips\Common\SipsEnvironment;
@@ -32,9 +34,17 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
         $paypageRequest = new PaypageRequest();
         $paypageRequest->setAmount($payment->getAmount());
         $paypageRequest->setCurrencyCode($payment->getCurrencyCode());
-        $paypageRequest->setOrderId(substr($payment->getId(), 0, 32)); // too long > 32
-        $paypageRequest->setNormalReturnUrl($this->router->generate('idci_payment_payment_process', [], UrlGeneratorInterface::ABSOLUTE_URL)); // not here
-        $paypageRequest->setAutomaticResponseUrl($this->router->generate('idci_payment_payment_process', [], UrlGeneratorInterface::ABSOLUTE_URL)); // not here
+        $paypageRequest->setOrderId((new ShortUuid())->encode(Uuid::fromString($payment->getId())));
+        $paypageRequest->setNormalReturnUrl($this->router->generate(
+            'idci_payment_backendpayment_return',
+            ['paymentGatewayConfigurationAlias' => $paymentGatewayConfiguration->getAlias()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        ));
+        $paypageRequest->setAutomaticResponseUrl($this->router->generate(
+            'idci_payment_backendpayment_return',
+            ['paymentGatewayConfigurationAlias' => $paymentGatewayConfiguration->getAlias()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        ));
         $paypageRequest->setCaptureDay($paymentGatewayConfiguration->get('capture_day'));
         $paypageRequest->setCaptureMode($paymentGatewayConfiguration->get('capture_mode'));
         $paypageRequest->setOrderChannel('INTERNET');
@@ -53,6 +63,23 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/atos_sips_seal.html.twig', [
             'sipsResponse' => $sipsResponse,
         ]);
+    }
+
+    public function retrieveTransactionUuid(Request $request): ?string
+    {
+        $datas = explode('|', $request->get('Data'));
+
+        $formattedData = [];
+
+        foreach ($datas as $data) {
+            $param = explode('=', $data);
+
+            if ('orderId' === $param[0]) {
+                return (new ShortUuid())->decode($param[1]);
+            }
+        }
+
+        return null;
     }
 
     public function executePayment(

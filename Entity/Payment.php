@@ -2,8 +2,6 @@
 
 namespace IDCI\Bundle\PaymentBundle\Entity;
 
-use Ramsey\Uuid\Uuid;
-
 class Payment
 {
     const STATUS_CREATED = 'created';
@@ -13,7 +11,7 @@ class Payment
     const STATUS_CANCELED = 'canceled';
 
     /**
-     * @var Uuid
+     * @var string
      */
     private $id;
 
@@ -94,7 +92,7 @@ class Payment
         $this->setUpdatedAt(new \DateTime('now'));
     }
 
-    public function getId(): ?Uuid
+    public function getId(): ?string
     {
         return $this->id;
     }

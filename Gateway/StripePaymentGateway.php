@@ -17,6 +17,11 @@ class StripePaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    public function retrieveTransactionUuid(Request $request): ?string
+    {
+        return $request->get('transaction_id');
+    }
+
     public function executePayment(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
