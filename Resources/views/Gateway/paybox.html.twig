@@ -1,0 +1,14 @@
+<form method="post" action="https://preprod-tpeweb.paybox.com/cgi/MYchoix_pagepaiement.cgi">
+    <input type="hidden" name="PBX_SITE" value="{{ options.PBX_SITE }}">
+    <input type="hidden" name="PBX_RANG" value="{{ options.PBX_RANG }}">
+    <input type="hidden" name="PBX_IDENTIFIANT" value="{{ options.PBX_IDENTIFIANT }}">
+    <input type="hidden" name="PBX_TOTAL" value="{{ options.PBX_TOTAL }}">
+    <input type="hidden" name="PBX_DEVISE" value="{{ options.PBX_DEVISE }}">
+    <input type="hidden" name="PBX_CMD" value="{{ options.PBX_CMD }}">
+    <input type="hidden" name="PBX_PORTEUR" value="{{ options.PBX_PORTEUR }}">
+    <input type="hidden" name="PBX_RETOUR" value="{{ options.PBX_RETOUR }}">
+    <input type="hidden" name="PBX_HASH" value="{{ options.PBX_HASH|upper }}">
+    <input type="hidden" name="PBX_TIME" value="{{ options.PBX_TIME }}">
+    <input type="hidden" name="PBX_HMAC" value="{{ options.PBX_HMAC }}">
+    <input type="submit" value="Payer">
+</form>

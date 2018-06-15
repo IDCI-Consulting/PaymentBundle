@@ -22,3 +22,7 @@ services:
     IDCI\Bundle\PaymentBundle\Gateway\AtosSipsSealPaymentGateway:
         tags:
             - { name: idci_payment.gateways, alias: atos_sips_seal }
+
+    IDCI\Bundle\PaymentBundle\Gateway\PayboxPaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: paybox }
