@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Entity\Payment;
+use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use PayPal\Api\Payment as PaypalPayment;
 use PayPal\Api\PaymentExecution;
@@ -20,11 +20,11 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         ));
     }
 
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): string
+    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
     {
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paypal.html.twig', [
             'clientId' => $paymentGatewayConfiguration->get('client_id'),
-            'payment' => $payment,
+            'transaction' => $transaction,
         ]);
     }
 
@@ -33,10 +33,10 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         return $request->get('transactionID');
     }
 
-    public function executePayment(
+    public function executeTransaction(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Payment $payment
+        Transaction $transaction
     ): ?bool {
         $apiContext = $this->buildApiContext($paymentGatewayConfiguration);
 

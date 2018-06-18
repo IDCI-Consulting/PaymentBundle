@@ -2,38 +2,38 @@
 
 namespace IDCI\Bundle\PaymentBundle\Payment;
 
-use IDCI\Bundle\PaymentBundle\Entity\Payment;
+use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class PaymentFactory
+class TransactionFactory
 {
     /**
-     * @var PaymentFactory
+     * @var TransactionFactory
      */
     private static $_instance;
 
     public static function getInstance(): self
     {
         if (null === self::$_instance) {
-            self::$_instance = new PaymentFactory();
+            self::$_instance = new TransactionFactory();
         }
 
         return self::$_instance;
     }
 
-    public function create(array $parameters): Payment
+    public function create(array $parameters): Transaction
     {
         $resolver = new OptionsResolver();
         $this->configureParameters($resolver);
         $resolvedParameters = $resolver->resolve($parameters);
 
-        return (new Payment())
+        return (new Transaction())
             ->setItemId($resolvedParameters['item_id'])
             ->setGatewayConfigurationAlias($resolvedParameters['gateway_configuration_alias'])
             ->setCustomerId($resolvedParameters['customer_id'])
             ->setCustomerEmail($resolvedParameters['customer_email'])
-            ->setStatus(Payment::STATUS_CREATED)
+            ->setStatus(Transaction::STATUS_CREATED)
             ->setAmount($resolvedParameters['amount'])
             ->setCurrencyCode($resolvedParameters['currency_code'])
             ->setDescription($resolvedParameters['description'])

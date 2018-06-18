@@ -3,7 +3,6 @@
 namespace IDCI\Bundle\PaymentBundle\Controller;
 
 use Doctrine\Common\Persistence\ObjectManager;
-use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -11,7 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * @Route("/payment")
+ * @Route("/transaction")
  */
 class FrontPaymentController extends Controller
 {
@@ -41,13 +40,13 @@ class FrontPaymentController extends Controller
     {
         $paymentContext = $this->paymentManager->createPaymentContextByAlias('atos_sips_seal_test'); // raw alias
 
-        $payment = $paymentContext->createPayment([
+        $paymentContext->createTransaction([
             'item_id' => 5,
             'amount' => 500,
             'currency_code' => 'EUR',
         ]);
 
-        return $this->render('@IDCIPaymentBundle/Resources/views/payment.html.twig', [
+        return $this->render('@IDCIPaymentBundle/Resources/views/create.html.twig', [
             'view' => $paymentContext->buildHTMLView(),
         ]);
     }

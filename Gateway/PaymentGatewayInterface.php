@@ -2,18 +2,18 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Entity\Payment;
+use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 interface PaymentGatewayInterface
 {
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): string;
+    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string;
 
-    public function executePayment(
+    public function executeTransaction(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Payment $payment
+        Transaction $transaction
     ): ?bool;
 
     public static function getParameterNames(): ?array;

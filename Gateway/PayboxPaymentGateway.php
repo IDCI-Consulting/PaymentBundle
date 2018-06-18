@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Entity\Payment;
+use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Payum\ISO4217\ISO4217;
 use Phaybox\Client;
@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class PayboxPaymentGateway extends AbstractPaymentGateway
 {
-    private function buildClient(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): Client
+    private function buildClient(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): Client
     {
         return new Client(
             $paymentGatewayConfiguration->get('client_id'),
@@ -22,16 +22,16 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         );
     }
 
-    private function buildOptions(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): array
+    private function buildOptions(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): array
     {
         $returnUrl = $this->router->generate('idci_payment_payment_process', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
         return $this
-            ->buildClient($paymentGatewayConfiguration, $payment)
+            ->buildClient($paymentGatewayConfiguration, $transaction)
             ->getTransaction([
-                'PBX_TOTAL' => $payment->getAmount(),
-                'PBX_DEVISE' => (new ISO4217())->findByAlpha3($payment->getCurrencyCode())->getNumeric(),
-                'PBX_CMD' => $payment->getId(),
+                'PBX_TOTAL' => $transaction->getAmount(),
+                'PBX_DEVISE' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
+                'PBX_CMD' => $transaction->getId(),
                 'PBX_PORTEUR' => 'me@mail.com',
                 'PBX_EFFECTUE' => $returnUrl,
                 'PBX_REFUSE' => $returnUrl,
@@ -41,19 +41,19 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ;
     }
 
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): string
+    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
     {
-        $options = $this->buildOptions($paymentGatewayConfiguration, $payment);
+        $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paybox.html.twig', [
             'options' => $options,
         ]);
     }
 
-    public function executePayment(
+    public function executeTransaction(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Payment $payment
+        Transaction $transaction
     ): ?bool {
         dump($request);
         die();

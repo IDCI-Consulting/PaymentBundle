@@ -3,10 +3,10 @@
 namespace IDCI\Bundle\PaymentBundle\Manager;
 
 use Doctrine\Common\Persistence\ObjectManager;
-use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
+use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Exception\NoPaymentGatewayConfigurationFoundException;
-use IDCI\Bundle\PaymentBundle\Exception\UndefinedPaymentException;
+use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistryInterface;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContext;
 
@@ -51,12 +51,12 @@ class PaymentManager
     {
         $payment = $this
             ->om
-            ->getRepository(Payment::class)
+            ->getRepository(Transaction::class)
             ->findOneBy(['id' => $uuid])
         ;
 
         if (null === $payment) {
-            throw new UndefinedPaymentException(sprintf('No payment found with the uuid : %s', $uuid));
+            throw new UndefinedTransactionException(sprintf('No payment found with the uuid : %s', $uuid));
         }
 
         return $this

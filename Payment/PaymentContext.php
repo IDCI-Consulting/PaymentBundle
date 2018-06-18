@@ -3,9 +3,9 @@
 namespace IDCI\Bundle\PaymentBundle\Payment;
 
 use Doctrine\Common\Persistence\ObjectManager;
-use IDCI\Bundle\PaymentBundle\Entity\Payment;
-use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedPaymentException;
-use IDCI\Bundle\PaymentBundle\Exception\UndefinedPaymentException;
+use IDCI\Bundle\PaymentBundle\Entity\Transaction;
+use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedTransactionException;
+use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,59 +28,59 @@ class PaymentContext
     private $paymentGateway;
 
     /**
-     * @var Payment
+     * @var Transaction
      */
-    private $payment;
+    private $transaction;
 
     public function __construct(
         ObjectManager $om,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         PaymentGatewayInterface $paymentGateway,
-        ?Payment $payment = null
+        ?Transaction $transaction = null
     ) {
         $this->om = $om;
         $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
         $this->paymentGateway = $paymentGateway;
-        $this->payment = $payment;
+        $this->transaction = $transaction;
     }
 
-    public function loadPayment(Request $request): Payment
+    public function loadTransaction(Request $request): Transaction
     {
-        $paymentUuid = $this->paymentGateway->retrieveTransactionUuid($request);
+        $transactionUuid = $this->paymentGateway->retrieveTransactionUuid($request);
 
-        $this->payment = $this
+        $this->transaction = $this
             ->om
-            ->getRepository(Payment::class)
-            ->findOneBy(['id' => $paymentUuid])
+            ->getRepository(Transaction::class)
+            ->findOneBy(['id' => $transactionUuid])
         ;
 
-        if (null === $this->payment) {
-            throw new UndefinedPaymentException(sprintf('No payment found with the uuid : %s', $paymentUuid));
+        if (null === $this->transaction) {
+            throw new UndefinedTransactionException(sprintf('No payment found with the uuid : %s', $transactionUuid));
         }
 
-        return $this->payment;
+        return $this->transaction;
     }
 
-    public function createPayment(array $parameters): Payment
+    public function createTransaction(array $parameters): Transaction
     {
         $parameters['gateway_configuration_alias'] = $this->paymentGatewayConfiguration->getAlias();
 
-        $this->payment = PaymentFactory::getInstance()->create($parameters);
+        $this->transaction = TransactionFactory::getInstance()->create($parameters);
 
-        $this->om->persist($this->payment);
+        $this->om->persist($this->transaction);
         $this->om->flush();
 
-        return $this->payment;
+        return $this->transaction;
     }
 
     public function buildHTMLView(): string
     {
-        return $this->getPaymentGateway()->buildHTMLView($this->getPaymentGatewayConfiguration(), $this->getPayment());
+        return $this->getPaymentGateway()->buildHTMLView($this->getPaymentGatewayConfiguration(), $this->getTransaction());
     }
 
     public function executePayment(Request $request): ?bool
     {
-        return $this->getPaymentGateway()->executePayment($request, $this->getPaymentGatewayConfiguration(), $this->getPayment());
+        return $this->getPaymentGateway()->executeTransaction($request, $this->getPaymentGatewayConfiguration(), $this->getTransaction());
     }
 
     public function getPaymentGatewayConfiguration(): PaymentGatewayConfigurationInterface
@@ -93,23 +93,23 @@ class PaymentContext
         return $this->paymentGateway;
     }
 
-    public function hasPayment(): bool
+    public function hasTransaction(): bool
     {
-        return isset($this->payment);
+        return isset($this->transaction);
     }
 
-    public function getPayment(): ?Payment
+    public function getTransaction(): ?Transaction
     {
-        return $this->payment;
+        return $this->transaction;
     }
 
-    public function setPayment(Payment $payment): self
+    public function setPayment(Transaction $transaction): self
     {
         if ($this->hasPayment()) {
-            throw new AlreadyDefinedPaymentException(sprintf('The payment context has already a payment defined.'));
+            throw new AlreadyDefinedTransactionException(sprintf('The payment context has already a transaction defined.'));
         }
 
-        $this->payment = $payment;
+        $this->transaction = $transaction;
 
         return $this;
     }

@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Exception;
 
-class AlreadyDefinedPaymentException extends \Exception
+class AlreadyDefinedTransactionException extends \Exception
 {
     public function __construct($message, $code = 0, \Exception $previous = null)
     {

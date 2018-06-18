@@ -1,11 +1,11 @@
 <form action="{{ path('idci_payment_backendpayment_return', {
-    'paymentGatewayConfigurationAlias': payment.gatewayConfigurationAlias
+    'paymentGatewayConfigurationAlias': transaction.gatewayConfigurationAlias
 }) }}" method="POST">
-    <input type="hidden" name="transaction_id" value="{{ payment.id }}">
+    <input type="hidden" name="transaction_id" value="{{ transaction.id }}">
     <script
         src="https://checkout.stripe.com/checkout.js" class="stripe-button"
         data-key="{{ publicKey }}"
-        data-amount="{{ payment.amount }}"
+        data-amount="{{ transaction.amount }}"
         data-name="Stripe.com"
         data-description="Example charge"
         data-image="https://stripe.com/img/documentation/checkout/marketplace.png"

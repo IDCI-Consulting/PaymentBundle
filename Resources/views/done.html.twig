@@ -1,9 +1,0 @@
-{% for label, messages in app.flashes(['warning', 'error']) %}
-    {% for message in messages %}
-        <div class="alert alert-{{ label }}">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endfor %}
-END !
-<a href="{{ path('idci_payment_payment_create') }}">Re-tester</a>

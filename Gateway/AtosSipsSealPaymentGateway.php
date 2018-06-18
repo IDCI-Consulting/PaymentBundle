@@ -2,9 +2,9 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Entity\Payment;
-use IDCI\Bundle\PaymentBundle\Exception\AtosSipsSealFormException;
-use IDCI\Bundle\PaymentBundle\Exception\AtosSipsSealInvalidPaymentException;
+use IDCI\Bundle\PaymentBundle\Entity\Transaction;
+use IDCI\Bundle\PaymentBundle\Exception\InvalidFormException;
+use IDCI\Bundle\PaymentBundle\Exception\InvalidTransactionException;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use PascalDeVink\ShortUuid\ShortUuid;
 use Ramsey\Uuid\Uuid;
@@ -20,21 +20,21 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
     private function buildClient(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration): SipsClient
     {
         return new SipsClient(
-            new SipsEnvironment('SIMU'),
+            new SipsEnvironment('SIMU'), // raw
             $paymentGatewayConfiguration->get('merchant_id'),
             $paymentGatewayConfiguration->get('secret'),
             $paymentGatewayConfiguration->get('version')
         );
     }
 
-    private function buildResponse(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): InitializationResponse
+    private function buildResponse(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): InitializationResponse
     {
         $sipsClient = $this->buildClient($paymentGatewayConfiguration);
 
         $paypageRequest = new PaypageRequest();
-        $paypageRequest->setAmount($payment->getAmount());
-        $paypageRequest->setCurrencyCode($payment->getCurrencyCode());
-        $paypageRequest->setOrderId((new ShortUuid())->encode(Uuid::fromString($payment->getId())));
+        $paypageRequest->setAmount($transaction->getAmount());
+        $paypageRequest->setCurrencyCode($transaction->getCurrencyCode());
+        $paypageRequest->setOrderId((new ShortUuid())->encode(Uuid::fromString($transaction->getId())));
         $paypageRequest->setNormalReturnUrl($this->router->generate(
             'idci_payment_backendpayment_return',
             ['paymentGatewayConfigurationAlias' => $paymentGatewayConfiguration->getAlias()],
@@ -47,17 +47,17 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
         ));
         $paypageRequest->setCaptureDay($paymentGatewayConfiguration->get('capture_day'));
         $paypageRequest->setCaptureMode($paymentGatewayConfiguration->get('capture_mode'));
-        $paypageRequest->setOrderChannel('INTERNET');
+        $paypageRequest->setOrderChannel('INTERNET'); // raw ?
 
         return $sipsClient->initialize($paypageRequest);
     }
 
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): string
+    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
     {
-        $sipsResponse = $this->buildResponse($paymentGatewayConfiguration, $payment);
+        $sipsResponse = $this->buildResponse($paymentGatewayConfiguration, $transaction);
 
         if ('00' !== $sipsResponse->getRedirectionStatusCode()) {
-            throw new AtosSipsSealFormException($sipsResponse);
+            throw new InvalidFormException($sipsResponse);
         }
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/atos_sips_seal.html.twig', [
@@ -82,17 +82,17 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
         return null;
     }
 
-    public function executePayment(
+    public function executeTransaction(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Payment $payment
+        Transaction $transaction
     ): ?bool {
         $sipsClient = $this->buildClient($paymentGatewayConfiguration);
 
         $sipsResponse = $sipsClient->finalizeTransaction();
 
         if ('3D_SUCCESS' !== $sipsResponse->getHolderAuthentStatus()) {
-            throw new AtosSipsSealInvalidPaymentException($sipsResponse->getHolderAuthentStatus());
+            throw new InvalidTransactionException($sipsResponse->getHolderAuthentStatus());
         }
 
         return true;

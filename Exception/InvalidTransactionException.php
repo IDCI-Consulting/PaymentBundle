@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Exception;
 
-class AtosSipsSealInvalidPaymentException extends \Exception
+class InvalidTransactionException extends \Exception
 {
     public function __construct($responseCode, $code = 0, \Exception $previous = null)
     {

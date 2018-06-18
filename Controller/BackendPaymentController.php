@@ -3,7 +3,6 @@
 namespace IDCI\Bundle\PaymentBundle\Controller;
 
 use Doctrine\Common\Persistence\ObjectManager;
-use IDCI\Bundle\PaymentBundle\Entity\Payment;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -11,7 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * @Route("/payment")
+ * @Route("/transaction")
  */
 class BackendPaymentController extends Controller
 {
@@ -44,7 +43,7 @@ class BackendPaymentController extends Controller
             ->createPaymentContextByAlias($paymentGatewayConfigurationAlias)
         ;
 
-        $paymentContext->loadPayment($request);
+        $paymentContext->loadTransaction($request);
 
         try {
             $isValidated = $paymentContext->executePayment($request);

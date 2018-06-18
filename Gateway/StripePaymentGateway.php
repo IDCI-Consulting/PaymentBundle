@@ -2,18 +2,18 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Entity\Payment;
+use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Stripe;
 use Symfony\Component\HttpFoundation\Request;
 
 class StripePaymentGateway extends AbstractPaymentGateway
 {
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): string
+    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
     {
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/stripe.html.twig', [
             'publicKey' => $paymentGatewayConfiguration->get('public_key'),
-            'payment' => $payment,
+            'transaction' => $transaction,
         ]);
     }
 
@@ -22,16 +22,16 @@ class StripePaymentGateway extends AbstractPaymentGateway
         return $request->get('transaction_id');
     }
 
-    public function executePayment(
+    public function executeTransaction(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Payment $payment
+        Transaction $transaction
     ): ?bool {
         Stripe\Stripe::setApiKey($paymentGatewayConfiguration->get('secret_key'));
 
         $charge = Stripe\Charge::create([
-            'amount' => $payment->getAmount(),
-            'currency' => $payment->getCurrencyCode(),
+            'amount' => $transaction->getAmount(),
+            'currency' => $transaction->getCurrencyCode(),
             'description' => 'Example charge',
             'source' => $request->get('stripeToken'),
         ]);

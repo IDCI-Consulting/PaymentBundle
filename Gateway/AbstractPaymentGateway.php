@@ -3,7 +3,7 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use Doctrine\Common\Persistence\ObjectManager;
-use IDCI\Bundle\PaymentBundle\Entity\Payment;
+use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -32,12 +32,12 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
         $this->router = $router;
     }
 
-    abstract public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Payment $payment): string;
+    abstract public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $payment): string;
 
-    abstract public function executePayment(
+    abstract public function executeTransaction(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Payment $payment
+        Transaction $transaction
     ): ?bool;
 
     abstract public static function getParameterNames(): ?array;
