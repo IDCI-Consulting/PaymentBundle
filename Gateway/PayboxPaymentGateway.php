@@ -50,6 +50,10 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    public function retrieveTransactionUuid(Request $request): string
+    {
+    }
+
     public function executeTransaction(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
