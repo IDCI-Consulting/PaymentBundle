@@ -1,6 +1,6 @@
 ---
-idci_payment_frontpayment:
-    resource: IDCI\Bundle\PaymentBundle\Controller\FrontPaymentController
+idci_payment_test_paymentgatewayfront:
+    resource: IDCI\Bundle\PaymentBundle\Controller\Test\PaymentGatewayFrontTestController
 
-idci_payment_backendpayment:
-    resource: IDCI\Bundle\PaymentBundle\Controller\BackendPaymentController
+idci_payment_paymentgateway:
+    resource: IDCI\Bundle\PaymentBundle\Controller\PaymentGatewayController
