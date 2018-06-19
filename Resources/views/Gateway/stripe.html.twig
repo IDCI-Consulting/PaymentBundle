@@ -1,4 +1,4 @@
-<form action="{{ path('idci_payment_backendpayment_return', {
+<form action="{{ path('idci_payment_paymentgateway_callback', {
     'paymentGatewayConfigurationAlias': transaction.gatewayConfigurationAlias
 }) }}" method="POST">
     <input type="hidden" name="transaction_id" value="{{ transaction.id }}">
@@ -7,9 +7,10 @@
         data-key="{{ publicKey }}"
         data-amount="{{ transaction.amount }}"
         data-name="Stripe.com"
-        data-description="Example charge"
+        data-description="{% if transaction.description is not null %}{{ transaction.description }}{% else %}Example charge{% endif %}"
         data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
         data-locale="auto"
-        data-zip-code="true">
+        data-zip-code="true"
+        data-currency="{{ transaction.currencyCode }}">
     </script>
 </form>

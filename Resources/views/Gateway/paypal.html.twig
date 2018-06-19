@@ -3,7 +3,7 @@
 <script src="https://www.paypalobjects.com/api/checkout.js"></script>
 
 <script>
-    var EXECUTE_PAYMENT_URL = '{{ path('idci_payment_backendpayment_return', {
+    var EXECUTE_PAYMENT_URL = '{{ path('idci_payment_paymentgateway_callback', {
         'paymentGatewayConfigurationAlias': transaction.gatewayConfigurationAlias
     }) }}';
 
