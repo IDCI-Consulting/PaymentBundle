@@ -7,12 +7,13 @@ use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * @Route("/transaction")
+ * @Route("/payment-gateway")
  */
-class FrontPaymentController extends Controller
+class PaymentGatewayController extends Controller
 {
     /**
      * @var ObjectManager
@@ -33,21 +34,24 @@ class FrontPaymentController extends Controller
     }
 
     /**
-     * @Route("/create")
+     * @Route("/{paymentGatewayConfigurationAlias}/callback")
      * @Method({"GET", "POST"})
      */
-    public function createAction(Request $request)
+    public function callbackAction(Request $request, $paymentGatewayConfigurationAlias)
     {
-        $paymentContext = $this->paymentManager->createPaymentContextByAlias('atos_sips_seal_test'); // raw alias
+        $paymentContext = $this
+            ->paymentManager
+            ->createPaymentContextByAlias($paymentGatewayConfigurationAlias)
+        ;
 
-        $paymentContext->createTransaction([
-            'item_id' => 5,
-            'amount' => 500,
-            'currency_code' => 'EUR',
-        ]);
+        $paymentContext->loadTransaction($request);
 
-        return $this->render('@IDCIPaymentBundle/Resources/views/create.html.twig', [
-            'view' => $paymentContext->buildHTMLView(),
-        ]);
+        try {
+            $isValidated = $paymentContext->executeTransaction($request);
+        } catch (\Exception $e) {
+            dump($e);
+        }
+
+        return new JsonResponse(array('status' => isset($isValidated) ? $isValidated : false));
     }
 }
