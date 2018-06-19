@@ -32,7 +32,12 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
         $this->router = $router;
     }
 
-    abstract public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $payment): string;
+    abstract public function buildHTMLView(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $payment
+    ): string;
+
+    abstract public function retrieveTransactionUuid(Request $request): ?string;
 
     abstract public function executeTransaction(
         Request $request,
