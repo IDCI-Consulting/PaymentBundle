@@ -11,17 +11,19 @@ interface PaymentContextInterface
 {
     public function createTransaction(array $parameters): Transaction;
 
-    public function buildHTMLView(): string;
+    public function loadTransaction(Request $request): Transaction;
 
     public function executeTransaction(Request $request): ?bool;
+
+    public function hasTransaction(): bool;
+
+    public function setTransaction(Transaction $transaction): self;
+
+    public function getTransaction(): ?Transaction;
+
+    public function buildHTMLView(): string;
 
     public function getPaymentGatewayConfiguration(): PaymentGatewayConfigurationInterface;
 
     public function getPaymentGateway(): PaymentGatewayInterface;
-
-    public function hasTransaction(): bool;
-
-    public function getTransaction(): ?Transaction;
-
-    public function setTransaction(Transaction $transaction): self;
 }

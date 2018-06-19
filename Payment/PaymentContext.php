@@ -10,7 +10,7 @@ use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-class PaymentContext
+class PaymentContext implements PaymentContextInterface
 {
     /**
      * @var ObjectManager
@@ -44,6 +44,18 @@ class PaymentContext
         $this->transaction = $transaction;
     }
 
+    public function createTransaction(array $parameters): Transaction
+    {
+        $parameters['gateway_configuration_alias'] = $this->paymentGatewayConfiguration->getAlias();
+
+        $this->transaction = TransactionFactory::getInstance()->create($parameters);
+
+        $this->om->persist($this->transaction);
+        $this->om->flush();
+
+        return $this->transaction;
+    }
+
     public function loadTransaction(Request $request): Transaction
     {
         $transactionUuid = $this->paymentGateway->retrieveTransactionUuid($request);
@@ -61,36 +73,9 @@ class PaymentContext
         return $this->transaction;
     }
 
-    public function createTransaction(array $parameters): Transaction
-    {
-        $parameters['gateway_configuration_alias'] = $this->paymentGatewayConfiguration->getAlias();
-
-        $this->transaction = TransactionFactory::getInstance()->create($parameters);
-
-        $this->om->persist($this->transaction);
-        $this->om->flush();
-
-        return $this->transaction;
-    }
-
-    public function buildHTMLView(): string
-    {
-        return $this->getPaymentGateway()->buildHTMLView($this->getPaymentGatewayConfiguration(), $this->getTransaction());
-    }
-
-    public function executePayment(Request $request): ?bool
+    public function executeTransaction(Request $request): ?bool
     {
         return $this->getPaymentGateway()->executeTransaction($request, $this->getPaymentGatewayConfiguration(), $this->getTransaction());
-    }
-
-    public function getPaymentGatewayConfiguration(): PaymentGatewayConfigurationInterface
-    {
-        return $this->paymentGatewayConfiguration;
-    }
-
-    public function getPaymentGateway(): PaymentGatewayInterface
-    {
-        return $this->paymentGateway;
     }
 
     public function hasTransaction(): bool
@@ -103,7 +88,22 @@ class PaymentContext
         return $this->transaction;
     }
 
-    public function setPayment(Transaction $transaction): self
+    public function buildHTMLView(): string
+    {
+        return $this->getPaymentGateway()->buildHTMLView($this->getPaymentGatewayConfiguration(), $this->getTransaction());
+    }
+
+    public function getPaymentGatewayConfiguration(): PaymentGatewayConfigurationInterface
+    {
+        return $this->paymentGatewayConfiguration;
+    }
+
+    public function getPaymentGateway(): PaymentGatewayInterface
+    {
+        return $this->paymentGateway;
+    }
+
+    public function setTransaction(Transaction $transaction): PaymentContextInterface
     {
         if ($this->hasPayment()) {
             throw new AlreadyDefinedTransactionException(sprintf('The payment context has already a transaction defined.'));
