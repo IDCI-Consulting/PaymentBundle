@@ -17,10 +17,24 @@ use Worldline\Sips\SipsClient;
 
 class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
 {
+    // Environment
+
+    const SIMU_ENVIRONMENT = 'SIMU';
+
+    const TEST_ENVIRONMENT = 'TEST';
+
+    const PROD_ENVIRONMENT = 'PROD';
+
+    // Status
+
+    const STATUS_SUCCESS = 'SUCCESS';
+
+    const STATUS_3D_SUCCESS = '3D_SUCCESS';
+
     private function buildClient(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration): SipsClient
     {
         return new SipsClient(
-            new SipsEnvironment('SIMU'), // raw
+            new SipsEnvironment(self::SIMU_ENVIRONMENT), // raw / put a var in config
             $paymentGatewayConfiguration->get('merchant_id'),
             $paymentGatewayConfiguration->get('secret'),
             $paymentGatewayConfiguration->get('version')
@@ -36,12 +50,12 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
         $paypageRequest->setCurrencyCode($transaction->getCurrencyCode());
         $paypageRequest->setOrderId((new ShortUuid())->encode(Uuid::fromString($transaction->getId())));
         $paypageRequest->setNormalReturnUrl($this->router->generate(
-            'idci_payment_backendpayment_return',
+            'idci_payment_paymentgateway_callback',
             ['paymentGatewayConfigurationAlias' => $paymentGatewayConfiguration->getAlias()],
             UrlGeneratorInterface::ABSOLUTE_URL
         ));
         $paypageRequest->setAutomaticResponseUrl($this->router->generate(
-            'idci_payment_backendpayment_return',
+            'idci_payment_paymentgateway_callback',
             ['paymentGatewayConfigurationAlias' => $paymentGatewayConfiguration->getAlias()],
             UrlGeneratorInterface::ABSOLUTE_URL
         ));
@@ -91,7 +105,14 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
 
         $sipsResponse = $sipsClient->finalizeTransaction();
 
-        if ('3D_SUCCESS' !== $sipsResponse->getHolderAuthentStatus()) {
+        if (
+            '00' !== $sipsResponse->getResponseCode() ||
+            '00' !== $sipsResponse->getAcquirerResponseCode() ||
+            (
+                self::STATUS_SUCCESS !== $sipsResponse->getHolderAuthentStatus() &&
+                self::STATUS_3D_SUCCESS !== $sipsResponse->getHolderAuthentStatus()
+            )
+        ) {
             throw new InvalidTransactionException($sipsResponse->getHolderAuthentStatus());
         }
 
@@ -108,7 +129,6 @@ class AtosSipsSealPaymentGateway extends AbstractPaymentGateway
             'normal_return_url',
             'capture_mode',
             'capture_day',
-            'bypass_receipt_page',
         ];
     }
 }
