@@ -9,6 +9,7 @@ use IDCI\Bundle\PaymentBundle\Exception\NoPaymentGatewayConfigurationFoundExcept
 use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistryInterface;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContext;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentContextInterface;
 
 class PaymentManager
 {
@@ -28,7 +29,16 @@ class PaymentManager
         $this->paymentGatewayRegistry = $paymentGatewayRegistry;
     }
 
-    public function createPaymentContextByAlias(string $alias): PaymentContext
+    public function getAllPaymentGatewayConfiguration(): array
+    {
+        return $this
+            ->om
+            ->getRepository(PaymentGatewayConfiguration::class)
+            ->findAll()
+        ;
+    }
+
+    public function createPaymentContextByAlias(string $alias): PaymentContextInterface
     {
         $paymentGatewayConfiguration = $this
             ->om
@@ -47,21 +57,21 @@ class PaymentManager
         );
     }
 
-    public function createPaymentContextByPaymentUuid(string $uuid): PaymentContext
+    public function createPaymentContextByPaymentUuid(string $uuid): PaymentContextInterface
     {
-        $payment = $this
+        $transaction = $this
             ->om
             ->getRepository(Transaction::class)
             ->findOneBy(['id' => $uuid])
         ;
 
-        if (null === $payment) {
-            throw new UndefinedTransactionException(sprintf('No payment found with the uuid : %s', $uuid));
+        if (null === $transaction) {
+            throw new UndefinedTransactionException(sprintf('No transaction found with the uuid : %s', $uuid));
         }
 
         return $this
             ->createPaymentContextByAlias($payment->getGatewayConfigurationAlias())
-            ->setPayment($payment)
+            ->setTransaction($transaction)
         ;
     }
 }
