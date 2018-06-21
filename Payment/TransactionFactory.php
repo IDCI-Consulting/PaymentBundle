@@ -4,6 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Payment;
 
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use Payum\ISO4217\ISO4217;
+use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TransactionFactory
@@ -62,12 +63,15 @@ class TransactionFactory
             ])
             ->setAllowedTypes('item_id', ['int', 'string'])
             ->setAllowedTypes('gateway_configuration_alias', ['null', 'string'])
-            ->setAllowedTypes('amount', ['int', 'double'])
+            ->setAllowedTypes('amount', ['int', 'double', 'string'])
             ->setAllowedTypes('currency_code', 'string')
             ->setAllowedTypes('customer_id', ['null', 'int', 'string'])
             ->setAllowedTypes('customer_email', ['null', 'string'])
             ->setAllowedTypes('description', ['null', 'string'])
             ->setAllowedValues('currency_code', $alpha3CurrencyCodes)
+            ->setNormalizer('amount', function (Options $options, $value) {
+                return (float) $value;
+            })
         ;
     }
 }
