@@ -1,5 +1,6 @@
-<form action="{{ sipsResponse.getRedirectionUrl }}">
-    <input type="hidden" name="redirectionVersion" value="{{ sipsResponse.getRedirectionVersion }}">
-    <input type="hidden" name="redirectionData" value="{{ sipsResponse.getRedirectionData }}">
-    <input type="submit" value="Go to PayPage">
+<form method="POST" action="{{ url }}">
+    <input type="hidden" name="InterfaceVersion" value="IR_WS_2.19" />
+    <input type="hidden" name="Data" value="{{ build }}" />
+    <input type="hidden" name="Seal" value="{{ seal }}" />
+    <input type="submit" value="Payer" />
 </form>

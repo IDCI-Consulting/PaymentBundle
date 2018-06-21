@@ -19,9 +19,11 @@ services:
         tags:
             - { name: idci_payment.gateways, alias: paypal }
 
-    IDCI\Bundle\PaymentBundle\Gateway\AtosSipsSealPaymentGateway:
+    IDCI\Bundle\PaymentBundle\Gateway\MercanetAtosSipsSealPaymentGateway:
+        arguments:
+            $serverUrl: '%idci_payment.mercanet.server_url%'
         tags:
-            - { name: idci_payment.gateways, alias: atos_sips_seal }
+            - { name: idci_payment.gateways, alias: mercanet_atos_sips_seal }
 
     IDCI\Bundle\PaymentBundle\Gateway\PayboxPaymentGateway:
         tags:

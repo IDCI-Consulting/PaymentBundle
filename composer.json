@@ -21,7 +21,6 @@
         "doctrine/common": "~2.0",
         "payum/iso4217": "~1.0",
         "stripe/stripe-php": "^6.7",
-        "worldline/sips-payment-sdk": "~1.0",
         "keeguon/phaybox": "^1.2",
         "pascaldevink/shortuuid": "~2.0"
     },
