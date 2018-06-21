@@ -4,10 +4,7 @@
     xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
     <entity name="IDCI\Bundle\PaymentBundle\Entity\Transaction" table="idci_transaction">
-        <id name="id" type="uuid" column="id">
-            <generator strategy="CUSTOM"/>
-            <custom-id-generator class="Ramsey\Uuid\Doctrine\UuidGenerator"/>
-        </id>
+        <id name="id" type="string" column="id"></id>
         <field name="itemId" type="string" column="item_id"/>
         <field name="gatewayConfigurationAlias" type="string" column="gateway_configuration_alias"/>
         <field name="customerId" type="string" column="customer_id" nullable="true"/>

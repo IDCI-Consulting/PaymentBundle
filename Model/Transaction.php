@@ -2,6 +2,9 @@
 
 namespace IDCI\Bundle\PaymentBundle\Model;
 
+use PascalDeVink\ShortUuid\ShortUuid;
+use Ramsey\Uuid\Uuid;
+
 class Transaction
 {
     const STATUS_CREATED = 'created';
@@ -64,6 +67,11 @@ class Transaction
      * @var \DateTime
      */
     protected $updatedAt;
+
+    public function __construct()
+    {
+        $this->id = (new ShortUuid())->encode(Uuid::fromString(Uuid::getFactory()->uuid4()));
+    }
 
     public function __toString(): string
     {
