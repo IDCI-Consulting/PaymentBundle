@@ -23,7 +23,7 @@
                 payment: {
                     transactions: [
                         {
-                            amount: { total: '{{ transaction.amount }}', currency: '{{ transaction.currencyCode }}' }
+                            amount: { total: '{{ transaction.amount / 100 }}', currency: '{{ transaction.currencyCode }}' }
                         }
                     ]
                 }

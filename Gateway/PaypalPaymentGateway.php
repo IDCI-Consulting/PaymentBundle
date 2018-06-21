@@ -22,8 +22,6 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
 
     public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
     {
-        $transaction->setAmount($transaction->getAmount() / 100);
-
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paypal.html.twig', [
             'clientId' => $paymentGatewayConfiguration->get('client_id'),
             'transaction' => $transaction,
