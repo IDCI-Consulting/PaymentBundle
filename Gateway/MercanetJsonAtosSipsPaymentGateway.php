@@ -2,10 +2,10 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Exception\InvalidAtosSipsInitializationException;
 use IDCI\Bundle\PaymentBundle\Exception\UnexpectedAtosSipsResponseCodeException;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -68,7 +68,7 @@ class MercanetJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
         return hash_hmac('sha256', $dataToSend, $secretKey);
     }
 
-    private function initializeGateway(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ) {
@@ -113,7 +113,7 @@ class MercanetJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
 
     public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
     {
-        $initializationData = $this->initializeGateway($paymentGatewayConfiguration, $transaction);
+        $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/mercanet_json_atos_sips.html.twig', [
             'initializationData' => $initializationData,
@@ -141,11 +141,11 @@ class MercanetJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
         return null;
     }
 
-    public function executeTransaction(
+    public function callback(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ): ?bool {
+    ): ?Transaction {
         if (!$request->request->has('Data')) {
             throw new \InvalidArgumentException("The request do not contains 'Data'");
         }
@@ -175,7 +175,9 @@ class MercanetJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
             throw new \Exception('Amount');
         }
 
-        return true;
+        $transaction->setStatus(Transaction::STATUS_VALIDATED);
+
+        return $transaction;
     }
 
     public static function getParameterNames(): ?array

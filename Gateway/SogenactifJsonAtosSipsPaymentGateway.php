@@ -2,10 +2,10 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Exception\InvalidAtosSipsInitializationException;
 use IDCI\Bundle\PaymentBundle\Exception\UnexpectedAtosSipsResponseCodeException;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -68,7 +68,7 @@ class SogenactifJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
         return hash_hmac('sha256', $dataToSend, $secretKey);
     }
 
-    private function initializeGateway(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ) {
@@ -114,7 +114,7 @@ class SogenactifJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
 
     public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
     {
-        $initializationData = $this->initializeGateway($paymentGatewayConfiguration, $transaction);
+        $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/sogenactif_json_atos_sips.html.twig', [
             'initializationData' => $initializationData,
@@ -139,14 +139,16 @@ class SogenactifJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
             }
         }
 
-        return null;
+        $transaction->setStatus(Transaction::STATUS_VALIDATED);
+
+        return $transaction;
     }
 
-    public function executeTransaction(
+    public function callback(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ): ?bool {
+    ): ?Transaction {
         if (!$request->request->has('Data')) {
             throw new \InvalidArgumentException("The request do not contains 'Data'");
         }

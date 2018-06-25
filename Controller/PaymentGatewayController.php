@@ -44,14 +44,8 @@ class PaymentGatewayController extends Controller
             ->createPaymentContextByAlias($paymentGatewayConfigurationAlias)
         ;
 
-        $paymentContext->loadTransaction($request);
+        $transaction = $paymentContext->handleGatewayCallback($request);
 
-        try {
-            $isValidated = $paymentContext->executeTransaction($request);
-        } catch (\Exception $e) {
-            dump($e);
-        }
-
-        return new JsonResponse(array('status' => isset($isValidated) ? $isValidated : false));
+        return new JsonResponse($transaction->toArray());
     }
 }

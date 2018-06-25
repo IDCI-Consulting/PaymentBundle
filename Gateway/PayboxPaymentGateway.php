@@ -3,7 +3,7 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use GuzzleHttp\Client;
-use IDCI\Bundle\PaymentBundle\Entity\Transaction;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
@@ -99,7 +99,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    private function initializeGateway(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ) {
@@ -128,7 +128,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
 
     public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
     {
-        $initializationData = $this->initializeGateway($paymentGatewayConfiguration, $transaction);
+        $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paybox.html.twig', [
             'initializationData' => $initializationData,
@@ -144,11 +144,11 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         return $request->get('reference');
     }
 
-    public function executeTransaction(
+    public function callback(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ): ?bool {
+    ): ?Transaction {
         if ('00000' !== $request->get('error')) {
             throw new \Exception('Transaction unauthorized');
         }
@@ -178,7 +178,9 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
 
         openssl_free_key($publicKey);
 
-        return true;
+        $transaction->setStatus(Transaction::STATUS_VALIDATED);
+
+        return $transaction;
     }
 
     public static function getParameterNames(): ?array
