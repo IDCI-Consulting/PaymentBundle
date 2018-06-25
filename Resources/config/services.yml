@@ -19,12 +19,54 @@ services:
         tags:
             - { name: idci_payment.gateways, alias: paypal }
 
-    IDCI\Bundle\PaymentBundle\Gateway\MercanetAtosSipsSealPaymentGateway:
+    IDCI\Bundle\PaymentBundle\Gateway\MercanetPostAtosSipsPaymentGateway:
         arguments:
-            $serverUrl: '%idci_payment.mercanet.server_url%'
+            $serverHostName: '%idci_payment.mercanet.server_host_name%'
         tags:
-            - { name: idci_payment.gateways, alias: mercanet_atos_sips_seal }
+            - { name: idci_payment.gateways, alias: mercanet_post_atos_sips }
+
+    IDCI\Bundle\PaymentBundle\Gateway\MercanetJsonAtosSipsPaymentGateway:
+        arguments:
+            $serverHostName: '%idci_payment.mercanet.server_host_name%'
+        tags:
+            - { name: idci_payment.gateways, alias: mercanet_json_atos_sips }
+
+    IDCI\Bundle\PaymentBundle\Gateway\SogenactifPostAtosSipsPaymentGateway:
+        arguments:
+            $serverHostName: '%idci_payment.sogenactif.server_host_name%'
+        tags:
+            - { name: idci_payment.gateways, alias: sogenactif_post_atos_sips }
+
+    IDCI\Bundle\PaymentBundle\Gateway\SogenactifJsonAtosSipsPaymentGateway:
+        arguments:
+            $serverHostName: '%idci_payment.sogenactif.server_host_name%'
+        tags:
+            - { name: idci_payment.gateways, alias: sogenactif_json_atos_sips }
+
+    IDCI\Bundle\PaymentBundle\Gateway\SogenactifBinAtosSipsPaymentGateway:
+        arguments:
+            $pathfile: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/param/sogenactif/pathfile.sogenactif')"
+            $requestBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/request')"
+            $responseBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/response')"
+        tags:
+            - { name: idci_payment.gateways, alias: sogenactif_bin_atos_sips }
+
+    IDCI\Bundle\PaymentBundle\Gateway\ScelliusBinAtosSipsPaymentGateway:
+        arguments:
+            $pathfile: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/param/scellius/pathfile.scellius')"
+            $requestBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/request')"
+            $responseBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/response')"
+        tags:
+            - { name: idci_payment.gateways, alias: scellius_bin_atos_sips }
 
     IDCI\Bundle\PaymentBundle\Gateway\PayboxPaymentGateway:
+        arguments:
+            $serverHostName: '%idci_payment.paybox.server_host_name%'
+            $keyPath: '%idci_payment.paybox.key_path%'
+            $publicKeyUrl: '%idci_payment.paybox.public_key_url%'
         tags:
             - { name: idci_payment.gateways, alias: paybox }
+
+    IDCI\Bundle\PaymentBundle\Gateway\OgonePaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: ogone }
