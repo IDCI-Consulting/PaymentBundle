@@ -56,7 +56,7 @@ class PaymentContext implements PaymentContextInterface
         return $this->transaction;
     }
 
-    public function loadTransaction(Request $request): Transaction
+    public function handleGatewayCallback(Request $request): ?Transaction
     {
         $transactionUuid = $this->paymentGateway->retrieveTransactionUuid($request);
 
@@ -70,12 +70,7 @@ class PaymentContext implements PaymentContextInterface
             throw new UndefinedTransactionException(sprintf('No payment found with the uuid : %s', $transactionUuid));
         }
 
-        return $this->transaction;
-    }
-
-    public function executeTransaction(Request $request): ?bool
-    {
-        return $this->getPaymentGateway()->executeTransaction($request, $this->getPaymentGatewayConfiguration(), $this->getTransaction());
+        return $this->getPaymentGateway()->callback($request, $this->getPaymentGatewayConfiguration(), $this->getTransaction());
     }
 
     public function hasTransaction(): bool
