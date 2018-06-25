@@ -3,7 +3,6 @@
 namespace IDCI\Bundle\PaymentBundle\Command;
 
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
-use IDCI\Bundle\PaymentBundle\Exception\UnsupportedPaymentGatewayParametersConfiguration;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistry;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
