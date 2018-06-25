@@ -3,6 +3,7 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
+use IDCI\Bundle\PaymentBundle\Exception\UnexpectedAtosSipsResponseCodeException;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
@@ -136,11 +137,11 @@ class SogenactifPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
         }
 
         if ('00' !== $returnParams['responseCode']) {
-            throw new \Exception('Transaction unauthorized by atos');
+            throw new UnexpectedAtosSipsResponseCodeException($returnParams['responseCode']);
         }
 
         if ('SUCCESS' !== $returnParams['holderAuthentStatus'] && '3D_SUCCESS' !== $returnParams['holderAuthentStatus']) {
-            throw new \Exception('Transaction unauthorized by bank');
+            throw new \Exception('Transaction unauthorized');
         }
 
         if ($transaction->getAmount() != $returnParams['amount']) {

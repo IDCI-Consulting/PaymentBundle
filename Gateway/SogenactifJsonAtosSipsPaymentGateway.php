@@ -165,11 +165,11 @@ class SogenactifJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
         }
 
         if ('00' !== $returnParams['responseCode']) {
-            throw new \Exception('Transaction unauthorized by atos');
+            throw new UnexpectedAtosSipsResponseCodeException($returnParams['responseCode']);
         }
 
         if ('SUCCESS' !== $returnParams['holderAuthentStatus'] && '3D_SUCCESS' !== $returnParams['holderAuthentStatus']) {
-            throw new \Exception('Transaction unauthorized by bank');
+            throw new \Exception('Transaction unauthorized');
         }
 
         if ($transaction->getAmount() != $returnParams['amount']) {
