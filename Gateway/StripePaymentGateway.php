@@ -14,11 +14,16 @@ class StripePaymentGateway extends AbstractPaymentGateway
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/stripe.html.twig', [
             'publicKey' => $paymentGatewayConfiguration->get('public_key'),
             'transaction' => $transaction,
+            'url' => $this->getCallbackURL($paymentGatewayConfiguration->getAlias()),
         ]);
     }
 
     public function retrieveTransactionUuid(Request $request): ?string
     {
+        if (!$request->request->has('transaction_id')) {
+            throw new \InvalidArgumentException("The request do not contains 'transaction_id'");
+        }
+
         return $request->get('transaction_id');
     }
 

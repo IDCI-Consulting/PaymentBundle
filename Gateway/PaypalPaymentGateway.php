@@ -25,11 +25,16 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paypal.html.twig', [
             'clientId' => $paymentGatewayConfiguration->get('client_id'),
             'transaction' => $transaction,
+            'url' => $this->getCallbackURL($paymentGatewayConfiguration->getAlias()),
         ]);
     }
 
     public function retrieveTransactionUuid(Request $request): ?string
     {
+        if (!$request->request->has('transactionID')) {
+            throw new \InvalidArgumentException("The request do not contains 'transactionID'");
+        }
+
         return $request->get('transactionID');
     }
 
