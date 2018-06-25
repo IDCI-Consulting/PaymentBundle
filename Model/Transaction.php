@@ -78,6 +78,23 @@ class Transaction
         return $this->id;
     }
 
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'gatewayConfigurationAlias' => $this->gatewayConfigurationAlias,
+            'itemId' => $this->itemId,
+            'customerId' => $this->customerId,
+            'customerEmail' => $this->customerEmail,
+            'status' => $this->status,
+            'amount' => $this->amount,
+            'currencyCode' => $this->currencyCode,
+            'description' => $this->description,
+            'createdAt' => $this->createdAt,
+            'updatedAt' => $this->updatedAt,
+        ];
+    }
+
     public function getId(): ?string
     {
         return $this->id;
