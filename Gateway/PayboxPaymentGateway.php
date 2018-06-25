@@ -2,56 +2,146 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use GuzzleHttp\Client;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Payum\ISO4217\ISO4217;
-use Phaybox\Client;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class PayboxPaymentGateway extends AbstractPaymentGateway
 {
-    private function buildClient(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): Client
+    /**
+     * @var string
+     */
+    private $serverHostName;
+
+    public function __construct(
+        \Twig_Environment $templating,
+        UrlGeneratorInterface $router,
+        string $serverHostName,
+        string $keyPath,
+        string $publicKeyUrl
+    ) {
+        parent::__construct($templating, $router);
+
+        $this->serverHostName = $serverHostName;
+        $this->keyPath = $keyPath;
+        $this->publicKeyUrl = $publicKeyUrl;
+    }
+
+    private function getServerUrl(): string
     {
-        return new Client(
-            $paymentGatewayConfiguration->get('client_id'),
-            $paymentGatewayConfiguration->get('client_secret'),
-            $paymentGatewayConfiguration->get('client_rang'),
-            $paymentGatewayConfiguration->get('client_site'),
-            []
+        return sprintf('https://%s/cgi/MYchoix_pagepaiement.cgi', $this->serverHostName);
+    }
+
+    private function getKeyPath($clientSite)
+    {
+        return sprintf('%s/%s.bin', $this->keyPath, $clientSite);
+    }
+
+    private function getPayboxReturnString()
+    {
+        $codeMap = array(
+            'M' => 'amount',
+            'R' => 'reference',
+            'A' => 'authorisation_id',
+            'P' => 'payment_type',
+            'T' => 'call',
+            'B' => 'subscription',
+            'C' => 'card_type',
+            'D' => 'card_validity',
+            /*
+            'N' => 'card_fnumber',
+            'J' => 'card_lnumber',
+            'O' => 'card_3dsecure',
+            'F' => 'card_3dsecurestate',
+            'H' => 'card_imprint',
+            'Q' => 'transaction_time',
+            'S' => 'transaction_number',
+            'W' => 'transaction_processtime',
+            'Z' => 'mixed_index',
+            */
+            'E' => 'error',
+            'I' => 'country',
+            'Y' => 'bank_country',
+            'K' => 'hash',
         );
+
+        return implode(';', array_map(
+            function ($k, $v) { return sprintf('%s:%s', $v, $k); },
+            array_keys($codeMap),
+            $codeMap
+        ));
     }
 
     private function buildOptions(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): array
     {
-        $returnUrl = $this->router->generate('idci_payment_payment_process', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
 
-        return $this
-            ->buildClient($paymentGatewayConfiguration, $transaction)
-            ->getTransaction([
-                'PBX_TOTAL' => $transaction->getAmount(),
-                'PBX_DEVISE' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
-                'PBX_CMD' => $transaction->getId(),
-                'PBX_PORTEUR' => 'me@mail.com',
-                'PBX_EFFECTUE' => $returnUrl,
-                'PBX_REFUSE' => $returnUrl,
-                'PBX_ANNULE' => $returnUrl,
-            ])
-            ->getFormattedParams()
-        ;
+        return [
+            'PBX_SITE' => $paymentGatewayConfiguration->get('client_site'),
+            'PBX_RANG' => $paymentGatewayConfiguration->get('client_rang'),
+            'PBX_IDENTIFIANT' => $paymentGatewayConfiguration->get('client_id'),
+            'PBX_TOTAL' => $transaction->getAmount(),
+            'PBX_DEVISE' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
+            'PBX_CMD' => $transaction->getId(),
+            'PBX_PORTEUR' => 'me@mail.com',
+            'PBX_EFFECTUE' => $callbackUrl,
+            'PBX_REFUSE' => $callbackUrl,
+            'PBX_ANNULE' => $callbackUrl,
+            'PBX_HASH' => 'sha512',
+            'PBX_RUF1' => 'POST',
+            'PBX_RETOUR' => $this->getPayboxReturnString(),
+            'PBX_TIME' => date('c'),
+            'PBX_TYPEPAIEMENT' => 'CARTE',
+            'PBX_TYPECARTE' => 'CB',
+        ];
+    }
+
+    private function initializeGateway(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ) {
+        $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
+
+        $builtOptions = [
+            'options' => $options,
+            'build' => implode('&', array_map(
+                function ($k, $v) { return sprintf('%s=%s', $k, $v); },
+                array_keys($options),
+                $options
+            )),
+        ];
+
+        $binKey = file_get_contents($this->getKeyPath($options['PBX_SITE']));
+
+        $builtOptions['options']['PBX_HMAC'] = strtoupper(
+            hash_hmac($builtOptions['options']['PBX_HASH'], $builtOptions['build'], $binKey)
+        );
+
+        return [
+            'url' => $this->getServerUrl(),
+            'options' => $builtOptions['options'],
+        ];
     }
 
     public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
     {
-        $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
+        $initializationData = $this->initializeGateway($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paybox.html.twig', [
-            'options' => $options,
+            'initializationData' => $initializationData,
         ]);
     }
 
     public function retrieveTransactionUuid(Request $request): string
     {
+        if (!$request->request->has('reference') && !$request->query->has('reference')) {
+            throw new \Exception("The request not contains 'reference'");
+        }
+
+        return $request->get('reference');
     }
 
     public function executeTransaction(
@@ -59,10 +149,36 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): ?bool {
-        dump($request);
-        die();
+        if ('00000' !== $request->get('error')) {
+            throw new \Exception('Transaction unauthorized');
+        }
 
-        return null;
+        if ($transaction->getAmount() != $request->get('amount')) {
+            throw new \Exception('Amount');
+        }
+
+        $publicKey = openssl_pkey_get_public(
+            (new Client())->request('GET', $this->publicKeyUrl)->getBody()
+        );
+
+        $data = $request->query->all();
+        unset($data['hash']);
+
+        $builtQuery = implode('&', array_map(
+            function ($k, $v) {
+                return sprintf('%s=%s', $k, urlencode($v));
+            },
+            array_keys($data),
+            $data
+        ));
+
+        if (!openssl_verify($builtQuery, base64_decode($request->get('hash')), $publicKey, 'sha1WithRSAEncryption')) {
+            throw new \Exception('SSL Key');
+        }
+
+        openssl_free_key($publicKey);
+
+        return true;
     }
 
     public static function getParameterNames(): ?array
