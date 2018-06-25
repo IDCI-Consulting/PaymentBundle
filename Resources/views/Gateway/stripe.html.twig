@@ -1,6 +1,4 @@
-<form action="{{ path('idci_payment_paymentgateway_callback', {
-    'paymentGatewayConfigurationAlias': transaction.gatewayConfigurationAlias
-}) }}" method="POST">
+<form action="{{ url }}" method="POST">
     <input type="hidden" name="transaction_id" value="{{ transaction.id }}">
     <script
         src="https://checkout.stripe.com/checkout.js" class="stripe-button"
