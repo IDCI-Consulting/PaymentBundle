@@ -2,19 +2,32 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Stripe;
 use Symfony\Component\HttpFoundation\Request;
 
 class StripePaymentGateway extends AbstractPaymentGateway
 {
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
-    {
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/stripe.html.twig', [
+    public function initialize(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): array {
+        return [
             'publicKey' => $paymentGatewayConfiguration->get('public_key'),
             'transaction' => $transaction,
             'url' => $this->getCallbackURL($paymentGatewayConfiguration->getAlias()),
+        ];
+    }
+
+    public function buildHTMLView(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): string {
+        $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
+
+        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/stripe.html.twig', [
+            'initializationData' => $initializationData,
         ]);
     }
 
@@ -27,21 +40,23 @@ class StripePaymentGateway extends AbstractPaymentGateway
         return $request->get('transaction_id');
     }
 
-    public function executeTransaction(
+    public function callback(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ): ?bool {
+    ): ?Transaction {
         Stripe\Stripe::setApiKey($paymentGatewayConfiguration->get('secret_key'));
 
-        $charge = Stripe\Charge::create([
+        Stripe\Charge::create([
             'amount' => $transaction->getAmount(),
             'currency' => $transaction->getCurrencyCode(),
             'description' => 'Example charge',
             'source' => $request->get('stripeToken'),
         ]);
 
-        return true;
+        $transaction->setStatus(Transaction::STATUS_VALIDATED);
+
+        return $transaction;
     }
 
     public static function getParameterNames(): ?array

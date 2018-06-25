@@ -1,14 +1,14 @@
-<form action="{{ url }}" method="POST">
-    <input type="hidden" name="transaction_id" value="{{ transaction.id }}">
+<form action="{{ initializationData.url }}" method="POST">
+    <input type="hidden" name="transaction_id" value="{{ initializationData.transaction.id }}">
     <script
         src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-        data-key="{{ publicKey }}"
-        data-amount="{{ transaction.amount }}"
+        data-key="{{ initializationData.publicKey }}"
+        data-amount="{{ initializationData.transaction.amount }}"
         data-name="Stripe.com"
-        data-description="{% if transaction.description is not null %}{{ transaction.description }}{% else %}Example charge{% endif %}"
+        data-description="{% if initializationData.transaction.description is not null %}{{ initializationData.transaction.description }}{% else %}Example charge{% endif %}"
         data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
         data-locale="auto"
         data-zip-code="true"
-        data-currency="{{ transaction.currencyCode }}">
+        data-currency="{{ initializationData.transaction.currencyCode }}">
     </script>
 </form>
