@@ -1,0 +1,6 @@
+DEBUG!NO!
+D_LOGO!/bundles/idcipayment/sips/logo/!
+F_CERTIFICATE!../vendor/idci/payment-bundle/Resources/sips/atos/bin/param/sogenactif/certif!
+F_CTYPE!php!
+F_PARAM!../vendor/idci/payment-bundle/Resources/sips/atos/bin/param/sogenactif/parmcom!
+F_DEFAULT!../vendor/idci/payment-bundle/Resources/sips/atos/bin/param/sogenactif/parmcom.sogenactif!
