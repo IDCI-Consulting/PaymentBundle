@@ -45,6 +45,8 @@ class StripePaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): ?Transaction {
+        $transaction->setStatus(Transaction::STATUS_FAILED);
+
         Stripe\Stripe::setApiKey($paymentGatewayConfiguration->get('secret_key'));
 
         Stripe\Charge::create([
@@ -54,9 +56,7 @@ class StripePaymentGateway extends AbstractPaymentGateway
             'source' => $request->get('stripeToken'),
         ]);
 
-        $transaction->setStatus(Transaction::STATUS_VALIDATED);
-
-        return $transaction;
+        return $transaction->setStatus(Transaction::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

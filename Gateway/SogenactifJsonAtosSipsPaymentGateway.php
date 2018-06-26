@@ -141,7 +141,7 @@ class SogenactifJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
             }
         }
 
-        $transaction->setStatus(Transaction::STATUS_VALIDATED);
+        $transaction->setStatus(Transaction::STATUS_APPROVED);
 
         return $transaction;
     }
@@ -151,6 +151,8 @@ class SogenactifJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): ?Transaction {
+        $transaction->setStatus(Transaction::STATUS_FAILED);
+
         if (!$request->request->has('Data')) {
             throw new \InvalidArgumentException("The request do not contains 'Data'");
         }
@@ -180,7 +182,7 @@ class SogenactifJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
             throw new \InvalidArgumentException('The amount of the transaction does not match with the initial transaction amount');
         }
 
-        return true;
+        return $transaction->setStatus(Transaction::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

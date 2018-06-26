@@ -151,6 +151,8 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): ?Transaction {
+        $transaction->setStatus(Transaction::STATUS_FAILED);
+
         if ('00000' !== $request->get('error')) {
             throw new UnauthorizedTransactionException('Transaction unauthorized');
         }
@@ -180,9 +182,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
 
         openssl_free_key($publicKey);
 
-        $transaction->setStatus(Transaction::STATUS_VALIDATED);
-
-        return $transaction;
+        return $transaction->setStatus(Transaction::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

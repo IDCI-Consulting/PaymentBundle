@@ -2,8 +2,8 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use PayPal\Api\Payment as PaypalPayment;
 use PayPal\Api\PaymentExecution;
 use PayPal\Auth\OAuthTokenCredential;
@@ -46,6 +46,8 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): ?Transaction {
+        $transaction->setStatus(Transaction::STATUS_FAILED);
+
         $apiContext = new ApiContext(new OAuthTokenCredential(
             $paymentGatewayConfiguration->get('client_id'),
             $paymentGatewayConfiguration->get('client_secret')
@@ -58,9 +60,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
 
         $result = $paypalPayment->execute($execution, $apiContext);
 
-        $transaction->setStatus(Transaction::STATUS_VALIDATED);
-
-        return $transaction;
+        return $transaction->setStatus(Transaction::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

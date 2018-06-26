@@ -196,6 +196,8 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): ?Transaction {
+        $transaction->setStatus(Transaction::STATUS_FAILED);
+
         $returnParams = $this->buildResponseParams($request);
 
         if ('0' !== $returnParams['code'] && '00' !== $returnParams['response_code']) {
@@ -206,9 +208,7 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
             throw new \InvalidArgumentException('The amount of the transaction does not match with the initial transaction amount');
         }
 
-        $transaction->setStatus(Transaction::STATUS_VALIDATED);
-
-        return $transaction;
+        return $transaction->setStatus(Transaction::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array
