@@ -2,6 +2,8 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
+use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,9 +13,10 @@ class MoneticoPaymentGateway extends AbstractAtosSipsSealPaymentGateway
 {
     public function __construct(
         \Twig_Environment $templating,
-        UrlGeneratorInterface $router
+        UrlGeneratorInterface $router,
+        TransactionManagerInterface $transactionManager
     ) {
-        parent::__construct($templating, $router);
+        parent::__construct($templating, $router, $transactionManager);
     }
 
     protected function getServerUrl(): string
@@ -100,11 +103,10 @@ class MoneticoPaymentGateway extends AbstractAtosSipsSealPaymentGateway
         return null;
     }
 
-    public function callback(
+    public function getResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
-    ): ?Transaction {
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
         return null;
     }
 

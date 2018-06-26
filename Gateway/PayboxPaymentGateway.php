@@ -3,8 +3,8 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use GuzzleHttp\Client;
-use IDCI\Bundle\PaymentBundle\Exception\UnauthorizedTransactionException;
-use IDCI\Bundle\PaymentBundle\Exception\UnverifiedPayboxResponseException;
+use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
+use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Payum\ISO4217\ISO4217;
@@ -21,11 +21,12 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
     public function __construct(
         \Twig_Environment $templating,
         UrlGeneratorInterface $router,
+        TransactionManagerInterface $transactionManager,
         string $serverHostName,
         string $keyPath,
         string $publicKeyUrl
     ) {
-        parent::__construct($templating, $router);
+        parent::__construct($templating, $router, $transactionManager);
 
         $this->serverHostName = $serverHostName;
         $this->keyPath = $keyPath;
@@ -141,30 +142,29 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    public function retrieveTransactionUuid(Request $request): string
-    {
-        if (!$request->request->has('reference') && !$request->query->has('reference')) {
-            throw new \InvalidArgumentException("The request not contains 'reference'");
+    public function getResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        if (!$request->query->has('reference') && !$request->request->has('reference')) {
+            return $gatewayResponse->setMessage('The request not contains "reference"');
         }
 
-        return $request->get('reference');
-    }
-
-    public function callback(
-        Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
-    ): ?Transaction {
-        $transaction->setStatus(Transaction::STATUS_FAILED);
+        $gatewayResponse = (new GatewayResponse())
+            ->setDate(new \DateTime())
+            ->setStatus(Transaction::STATUS_FAILED)
+            ->setTransactionUuid($request->get('reference'))
+            ->setRaw($request->query->all())
+        ;
 
         if ('00000' !== $request->get('error')) {
-            throw new UnauthorizedTransactionException('Transaction unauthorized');
+            return $gatewayResponse->setMessage('Transaction unauthorized');
         }
 
+        $transaction = $this->transactionManager->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid());
+
         if ($transaction->getAmount() != $request->get('amount')) {
-            throw new \InvalidArgumentException(
-                'The amount of the transaction does not match with the initial transaction amount'
-            );
+            return $gatewayResponse->setMessage('The amount of the transaction does not match with the initial transaction amount');
         }
 
         $publicKey = openssl_pkey_get_public(
@@ -183,12 +183,12 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ));
 
         if (!openssl_verify($builtQuery, base64_decode($request->get('hash')), $publicKey, 'sha1WithRSAEncryption')) {
-            throw new UnverifiedPayboxResponseException('Could not verify the integrity of paybox return response');
+            return $gatewayResponse->setMessage('Could not verify the integrity of paybox return response');
         }
 
         openssl_free_key($publicKey);
 
-        return $transaction->setStatus(Transaction::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(Transaction::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

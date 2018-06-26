@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Stripe;
@@ -31,23 +32,24 @@ class StripePaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    public function retrieveTransactionUuid(Request $request): ?string
-    {
+    public function getResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        $gatewayResponse = (new GatewayResponse())
+            ->setDate(new \DateTime())
+            ->setStatus(Transaction::STATUS_FAILED)
+        ;
+
         if (!$request->request->has('transaction_id')) {
-            throw new \InvalidArgumentException("The request do not contains 'transaction_id'");
+            return $gatewayResponse->setMessage('The request do not contains "transaction_id"');
         }
 
-        return $request->get('transaction_id');
-    }
-
-    public function callback(
-        Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
-    ): ?Transaction {
-        $transaction->setStatus(Transaction::STATUS_FAILED);
+        $gatewayResponse->setTransactionUuid($request->get('transaction_id'));
 
         Stripe\Stripe::setApiKey($paymentGatewayConfiguration->get('secret_key'));
+
+        $transaction = $this->transactionManager->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid());
 
         Stripe\Charge::create([
             'amount' => $transaction->getAmount(),
@@ -56,7 +58,7 @@ class StripePaymentGateway extends AbstractPaymentGateway
             'source' => $request->get('stripeToken'),
         ]);
 
-        return $transaction->setStatus(Transaction::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(Transaction::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

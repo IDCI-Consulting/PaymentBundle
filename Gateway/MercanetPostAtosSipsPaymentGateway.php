@@ -2,8 +2,9 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Exception\UnauthorizedTransactionException;
 use IDCI\Bundle\PaymentBundle\Exception\UnexpectedAtosSipsResponseCodeException;
+use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
+use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Payum\ISO4217\ISO4217;
@@ -20,9 +21,10 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
     public function __construct(
         \Twig_Environment $templating,
         UrlGeneratorInterface $router,
+        TransactionManagerInterface $transactionManager,
         string $serverHostName
     ) {
-        parent::__construct($templating, $router);
+        parent::__construct($templating, $router, $transactionManager);
 
         $this->serverHostName = $serverHostName;
     }
@@ -96,69 +98,61 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
         ]);
     }
 
-    public function retrieveTransactionUuid(Request $request): ?string
-    {
-        if (!$request->request->has('Data')) {
-            throw new \InvalidArgumentException("The request do not contains 'Data'");
-        }
-
-        $datas = explode('|', $request->get('Data'));
-
-        $formattedData = [];
-
-        foreach ($datas as $data) {
-            $param = explode('=', $data);
-
-            if ('transactionReference' === $param[0]) {
-                return $param[1];
-            }
-        }
-
-        return null;
-    }
-
-    public function callback(
+    public function getResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
-    ): ?Transaction {
-        $transaction->setStatus(Transaction::STATUS_FAILED);
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        $gatewayResponse = (new GatewayResponse())
+            ->setDate(new \DateTime())
+            ->setStatus(Transaction::STATUS_FAILED)
+        ;
 
         if (!$request->request->has('Data')) {
-            throw new \InvalidArgumentException("The request do not contains 'Data'");
+            return $gatewayResponse->setMessage('The request do not contains "Data"');
         }
 
-        $seal = hash('sha256', $request->request->get('Data').$paymentGatewayConfiguration->get('secret'));
+        $seal = hash('sha256', $request->get('Data').$paymentGatewayConfiguration->get('secret'));
 
         if ($request->request->get('Seal') != $seal) {
-            throw new \Exception('Seal check failed');
+            return $gatewayResponse->setMessage('Seal check failed');
         }
 
         $returnParams = [];
 
-        foreach (explode('|', $request->request->get('Data')) as $data) {
+        foreach (explode('|', $request->get('Data')) as $data) {
             $param = explode('=', $data);
             $returnParams[$param[0]] = $param[1];
         }
 
+        $gatewayResponse
+            ->setTransactionUuid($returnParams['transactionReference'])
+            ->setRaw($returnParams)
+        ;
+
         if ('00' !== $returnParams['responseCode']) {
-            throw new UnexpectedAtosSipsResponseCodeException($returnParams['responseCode']);
+            $gatewayResponse->setMessage($returnParams['responseCode']); // To replace with message of the current code (in UnexpectedAtosSipsResponseCodeException)
+
+            if ('17' === $returnParams['responseCode']) {
+                return $gatewayResponse->setStatus(Transaction::STATUS_CANCELED);
+            }
+
+            return $gatewayResponse;
         }
 
         if (
             'SUCCESS' !== $returnParams['holderAuthentStatus'] &&
             '3D_SUCCESS' !== $returnParams['holderAuthentStatus']
         ) {
-            throw new UnauthorizedTransactionException('Transaction unauthorized');
+            return $gatewayResponse->setMessage('Transaction unauthorized');
         }
+
+        $transaction = $this->transactionManager->retrieveTransactionByUuid($returnParams['transactionReference']);
 
         if ($transaction->getAmount() != $returnParams['amount']) {
-            throw new \InvalidArgumentException(
-                'The amount of the transaction does not match with the initial transaction amount'
-            );
+            return $gatewayResponse->setMessage('The amount of the transaction does not match with the initial transaction amount');
         }
 
-        return $transaction->setStatus(Transaction::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(Transaction::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

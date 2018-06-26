@@ -3,7 +3,8 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use IDCI\Bundle\PaymentBundle\Exception\InvalidAtosSipsInitializationException;
-use IDCI\Bundle\PaymentBundle\Exception\UnexpectedAtosSipsResponseCodeException;
+use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
+use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Payum\ISO4217\ISO4217;
@@ -31,11 +32,12 @@ class SogenactifBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGat
     public function __construct(
         \Twig_Environment $templating,
         UrlGeneratorInterface $router,
+        TransactionManagerInterface $transactionManager,
         string $pathfile,
         string $requestBinPath,
         string $responseBinPath
     ) {
-        parent::__construct($templating, $router);
+        parent::__construct($templating, $router, $transactionManager);
 
         $this->pathfile = $pathfile;
         $this->requestBinPath = $requestBinPath;
@@ -113,10 +115,6 @@ class SogenactifBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGat
 
     public function buildResponseParams(Request $request)
     {
-        if (!$request->request->has('DATA')) {
-            throw new \InvalidArgumentException("The request do not contains 'Data'");
-        }
-
         $shellOptions = array(
             'pathfile' => $this->pathfile,
             'message' => $request->request->get('DATA'),
@@ -188,29 +186,40 @@ class SogenactifBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGat
         return $params;
     }
 
-    public function retrieveTransactionUuid(Request $request): ?string
-    {
-        return $this->buildResponseParams($request)['order_id'];
-    }
-
-    public function callback(
+    public function getResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
-    ): ?Transaction {
-        $transaction->setStatus(Transaction::STATUS_FAILED);
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        $gatewayResponse = (new GatewayResponse())
+            ->setDate(new \DateTime())
+            ->setStatus(Transaction::STATUS_FAILED)
+        ;
+
+        if (!$request->request->has('DATA')) {
+            return $gatewayResponse->setMessage('The request do not contains "DATA"');
+        }
 
         $returnParams = $this->buildResponseParams($request);
 
-        if ('0' !== $returnParams['code'] && '00' !== $returnParams['response_code']) {
-            throw new UnexpectedAtosSipsResponseCodeException($returnParams['response_code']);
+        $gatewayResponse->setRaw($returnParams)->setTransactionUuid($returnParams['order_id']);
+
+        if ('00' !== $returnParams['response_code']) {
+            $gatewayResponse->setMessage($returnParams['response_code']); // To replace with message of the current code (in UnexpectedAtosSipsResponseCodeException)
+
+            if ('17' === $returnParams['response_code']) {
+                return $gatewayResponse->setStatus(Transaction::STATUS_CANCELED);
+            }
+
+            return $gatewayResponse;
         }
+
+        $transaction = $this->transactionManager->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid());
 
         if ($transaction->getAmount() != $returnParams['amount']) {
-            throw new \InvalidArgumentException('The amount of the transaction does not match with the initial transaction amount');
+            return $gatewayResponse->setMessage('The amount of the transaction does not match with the initial transaction amount');
         }
 
-        return $transaction->setStatus(Transaction::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(Transaction::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

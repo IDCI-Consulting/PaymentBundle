@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use PayPal\Api\Payment as PaypalPayment;
@@ -34,21 +35,14 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    public function retrieveTransactionUuid(Request $request): ?string
-    {
-        if (!$request->request->has('transactionID')) {
-            throw new \InvalidArgumentException("The request do not contains 'transactionID'");
-        }
-
-        return $request->get('transactionID');
-    }
-
-    public function callback(
+    public function getResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
-    ): ?Transaction {
-        $transaction->setStatus(Transaction::STATUS_FAILED);
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        $gatewayResponse = (new GatewayResponse())
+            ->setDate(new \DateTime())
+            ->setStatus(Transaction::STATUS_FAILED)
+        ;
 
         $apiContext = new ApiContext(new OAuthTokenCredential(
             $paymentGatewayConfiguration->get('client_id'),
@@ -62,7 +56,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
 
         $result = $paypalPayment->execute($execution, $apiContext);
 
-        return $transaction->setStatus(Transaction::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(Transaction::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array
