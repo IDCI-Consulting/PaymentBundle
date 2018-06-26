@@ -104,10 +104,10 @@ class MercanetJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
             throw new InvalidAtosSipsInitializationException('Empty data response');
         }
 
-        $response = json_decode($result);
+        $response = json_decode($result, true);
 
-        if ('00' != $response->redirectionStatusCode) {
-            throw new UnexpectedAtosSipsResponseCodeException($response->redirectionStatusCode);
+        if ('00' != $response['redirectionStatusCode']) {
+            throw new UnexpectedAtosSipsResponseCodeException($response['redirectionStatusCode']);
         }
 
         return $response;
