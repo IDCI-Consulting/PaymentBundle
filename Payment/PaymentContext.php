@@ -70,9 +70,6 @@ class PaymentContext implements PaymentContextInterface
             ->getResponse($request, $this->paymentGatewayConfiguration)
         ;
 
-        dump($gatewayResponse);
-        die();
-
         return $this
             ->transactionManager
             ->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid())
