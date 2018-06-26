@@ -100,8 +100,10 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
         return $form;
     }
 
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
-    {
+    public function buildHTMLView(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/scellius_bin_atos_sips.html.twig', [
@@ -205,7 +207,9 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
         }
 
         if ($transaction->getAmount() != $returnParams['amount']) {
-            throw new \InvalidArgumentException('The amount of the transaction does not match with the initial transaction amount');
+            throw new \InvalidArgumentException(
+                'The amount of the transaction does not match with the initial transaction amount'
+            );
         }
 
         return $transaction->setStatus(Transaction::STATUS_APPROVED);
@@ -214,11 +218,7 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
     public static function getParameterNames(): ?array
     {
         return [
-            'version',
-            'secret',
             'merchant_id',
-            'automatic_response_url',
-            'normal_return_url',
             'capture_mode',
             'capture_day',
         ];

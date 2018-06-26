@@ -34,7 +34,9 @@ class ListPaymentGatewayConfigurationCommand extends ContainerAwareCommand
         $paymentGatewayConfigurationList = $paymentGatewayRepository->findAll();
 
         if (count($paymentGatewayConfigurationList) < 1) {
-            throw new NoPaymentGatewayConfigurationFoundException();
+            throw new NoPaymentGatewayConfigurationFoundException(
+                'You need to have at least one payment gateway configuration'
+            );
         }
 
         $question = new ChoiceQuestion('Please select the gateway to show', $paymentGatewayConfigurationList, 0);
@@ -49,11 +51,16 @@ class ListPaymentGatewayConfigurationCommand extends ContainerAwareCommand
             sprintf('<options=bold,underscore>id</>: %s', $paymentGatewayConfiguration->getId()),
             sprintf('<options=bold,underscore>alias</>: %s', $paymentGatewayConfiguration->getAlias()),
             sprintf('<options=bold,underscore>gateway_name</>: %s', $paymentGatewayConfiguration->getGatewayName()),
-            sprintf('<options=bold,underscore>enabled</>: %s', $paymentGatewayConfiguration->isEnabled() ? 'true' : 'false'),
+            sprintf(
+                '<options=bold,underscore>enabled</>: %s',
+                $paymentGatewayConfiguration->isEnabled() ? 'true' : 'false'
+            ),
         ]);
 
         foreach ($paymentGatewayConfiguration->getParameters() as $parameterName => $parameterValue) {
-            $output->writeln(sprintf('<options=bold,underscore>parameters[%s]</>: %s', $parameterName, $parameterValue));
+            $output->writeln(
+                sprintf('<options=bold,underscore>parameters[%s]</>: %s', $parameterName, $parameterValue)
+            );
         }
 
         return 0;

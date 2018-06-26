@@ -36,7 +36,9 @@ class UpdatePaymentGatewayConfigurationCommand extends ContainerAwareCommand
         $paymentGatewayConfigurationList = $paymentGatewayRepository->findAll();
 
         if (count($paymentGatewayConfigurationList) < 1) {
-            throw new NoPaymentGatewayConfigurationFoundException();
+            throw new NoPaymentGatewayConfigurationFoundException(
+                'You need to have at least one payment gateway configuration'
+            );
         }
 
         $question = new ChoiceQuestion('Please select the gateway', $paymentGatewayConfigurationList, 0);
@@ -72,7 +74,9 @@ class UpdatePaymentGatewayConfigurationCommand extends ContainerAwareCommand
         $om->persist($paymentGatewayConfiguration);
         $om->flush();
 
-        $output->writeln(sprintf('<info>The %s configuration has been succesfully updated</info>', $paymentGatewayConfiguration));
+        $output->writeln(
+            sprintf('<info>The %s configuration has been succesfully updated</info>', $paymentGatewayConfiguration)
+        );
 
         return 0;
     }

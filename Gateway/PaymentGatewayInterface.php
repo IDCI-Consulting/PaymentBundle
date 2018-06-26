@@ -8,7 +8,10 @@ use Symfony\Component\HttpFoundation\Request;
 
 interface PaymentGatewayInterface
 {
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string;
+    public function buildHTMLView(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): string;
 
     public function callback(
         Request $request,

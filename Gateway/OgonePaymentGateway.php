@@ -2,8 +2,8 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Symfony\Component\HttpFoundation\Request;
 
 class OgonePaymentGateway extends AbstractPaymentGateway
@@ -13,8 +13,10 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         return 'https://secure.ogone.com/ncol/test/orderstandard.asp'; // raw (for test)
     }
 
-    private function buildOptions(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): array
-    {
+    private function buildOptions(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): array {
         $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
 
         return [
@@ -37,8 +39,10 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    private function initialize(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction)
-    {
+    private function initialize(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ) {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
         $shasign = '';
@@ -56,8 +60,10 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         return $options;
     }
 
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
-    {
+    public function buildHTMLView(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/ogone.html.twig', [

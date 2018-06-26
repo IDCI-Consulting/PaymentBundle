@@ -23,8 +23,10 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
-    {
+    public function buildHTMLView(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paypal.html.twig', [

@@ -100,8 +100,10 @@ class SogenactifBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGat
         return $form;
     }
 
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
-    {
+    public function buildHTMLView(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/sogenactif_bin_atos_sips.html.twig', [
@@ -214,11 +216,7 @@ class SogenactifBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGat
     public static function getParameterNames(): ?array
     {
         return [
-            'version',
-            'secret',
             'merchant_id',
-            'automatic_response_url',
-            'normal_return_url',
             'capture_mode',
             'capture_day',
         ];

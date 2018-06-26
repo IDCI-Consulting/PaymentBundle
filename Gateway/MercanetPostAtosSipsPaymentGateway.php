@@ -85,8 +85,10 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
         return hash('sha256', mb_convert_encoding($options['build'].$options['secret'], 'UTF-8'));
     }
 
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
-    {
+    public function buildHTMLView(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/mercanet_post_atos_sips.html.twig', [
@@ -143,12 +145,17 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
             throw new UnexpectedAtosSipsResponseCodeException($returnParams['responseCode']);
         }
 
-        if ('SUCCESS' !== $returnParams['holderAuthentStatus'] && '3D_SUCCESS' !== $returnParams['holderAuthentStatus']) {
+        if (
+            'SUCCESS' !== $returnParams['holderAuthentStatus'] &&
+            '3D_SUCCESS' !== $returnParams['holderAuthentStatus']
+        ) {
             throw new UnauthorizedTransactionException('Transaction unauthorized');
         }
 
         if ($transaction->getAmount() != $returnParams['amount']) {
-            throw new \InvalidArgumentException('The amount of the transaction does not match with the initial transaction amount');
+            throw new \InvalidArgumentException(
+                'The amount of the transaction does not match with the initial transaction amount'
+            );
         }
 
         return $transaction->setStatus(Transaction::STATUS_APPROVED);
@@ -160,8 +167,6 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
             'version',
             'secret',
             'merchant_id',
-            'automatic_response_url',
-            'normal_return_url',
             'capture_mode',
             'capture_day',
             'interface_version',

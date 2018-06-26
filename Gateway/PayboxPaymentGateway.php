@@ -77,8 +77,10 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ));
     }
 
-    private function buildOptions(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): array
-    {
+    private function buildOptions(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): array {
         $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
 
         return [
@@ -128,8 +130,10 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
-    {
+    public function buildHTMLView(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paybox.html.twig', [
@@ -158,7 +162,9 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         }
 
         if ($transaction->getAmount() != $request->get('amount')) {
-            throw new \InvalidArgumentException('The amount of the transaction does not match with the initial transaction amount');
+            throw new \InvalidArgumentException(
+                'The amount of the transaction does not match with the initial transaction amount'
+            );
         }
 
         $publicKey = openssl_pkey_get_public(
@@ -189,7 +195,6 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
     {
         return [
             'client_id',
-            'client_secret',
             'client_rang',
             'client_site',
         ];

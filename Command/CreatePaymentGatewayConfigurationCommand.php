@@ -38,7 +38,11 @@ class CreatePaymentGatewayConfigurationCommand extends ContainerAwareCommand
 
         $paymentGatewayList = $this->paymentGatewayRegistry->getAll();
 
-        $question = new ChoiceQuestion('Please select the gateway', array_keys($this->paymentGatewayRegistry->getAll()), 0);
+        $question = new ChoiceQuestion(
+            'Please select the gateway',
+            array_keys($this->paymentGatewayRegistry->getAll()),
+            0
+        );
         $question->setErrorMessage('%s is an invalid choice.');
         $gatewayName = $helper->ask($input, $output, $question);
 
@@ -53,7 +57,7 @@ class CreatePaymentGatewayConfigurationCommand extends ContainerAwareCommand
         $parameters = [];
 
         foreach ($paymentGatewayFQCN::getParameterNames() as $parameterName) {
-            $question = new Question(sprintf('%s:', $parameterName));
+            $question = new Question(sprintf('%s: ', $parameterName));
 
             $parameters[$parameterName] = $helper->ask($input, $output, $question);
         }
@@ -68,7 +72,9 @@ class CreatePaymentGatewayConfigurationCommand extends ContainerAwareCommand
         $om->persist($paymentGatewayConfiguration);
         $om->flush();
 
-        $output->writeln(sprintf('<info>The %s configuration has been succesfully created</info>', $paymentGatewayConfiguration));
+        $output->writeln(
+            sprintf('<info>The %s configuration has been succesfully created</info>', $paymentGatewayConfiguration)
+        );
 
         return 0;
     }

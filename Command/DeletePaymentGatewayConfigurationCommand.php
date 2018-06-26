@@ -35,7 +35,9 @@ class DeletePaymentGatewayConfigurationCommand extends ContainerAwareCommand
         $paymentGatewayConfigurationList = $paymentGatewayRepository->findAll();
 
         if (count($paymentGatewayConfigurationList) < 1) {
-            throw new NoPaymentGatewayConfigurationFoundException();
+            throw new NoPaymentGatewayConfigurationFoundException(
+                'You need to have at least one payment gateway configuration'
+            );
         }
 
         $question = new ChoiceQuestion(
@@ -53,7 +55,9 @@ class DeletePaymentGatewayConfigurationCommand extends ContainerAwareCommand
             $om->remove($paymentGatewayConfiguration);
             $om->flush();
 
-            $output->writeln(sprintf('<info>The %s configuration has been succesfully deleted</info>', $paymentGatewayConfiguration));
+            $output->writeln(
+                sprintf('<info>The %s configuration has been succesfully deleted</info>', $paymentGatewayConfiguration)
+            );
         }
 
         return 0;

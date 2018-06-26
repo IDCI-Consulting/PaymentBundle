@@ -70,7 +70,10 @@ class PaymentContext implements PaymentContextInterface
             throw new UndefinedTransactionException(sprintf('No payment found with the uuid : %s', $transactionUuid));
         }
 
-        return $this->getPaymentGateway()->callback($request, $this->getPaymentGatewayConfiguration(), $this->getTransaction());
+        return $this
+            ->getPaymentGateway()
+            ->callback($request, $this->getPaymentGatewayConfiguration(), $this->getTransaction())
+        ;
     }
 
     public function hasTransaction(): bool
@@ -85,7 +88,10 @@ class PaymentContext implements PaymentContextInterface
 
     public function buildHTMLView(): string
     {
-        return $this->getPaymentGateway()->buildHTMLView($this->getPaymentGatewayConfiguration(), $this->getTransaction());
+        return $this
+            ->getPaymentGateway()
+            ->buildHTMLView($this->getPaymentGatewayConfiguration(), $this->getTransaction())
+        ;
     }
 
     public function getPaymentGatewayConfiguration(): PaymentGatewayConfigurationInterface
@@ -101,7 +107,9 @@ class PaymentContext implements PaymentContextInterface
     public function setTransaction(Transaction $transaction): PaymentContextInterface
     {
         if ($this->hasPayment()) {
-            throw new AlreadyDefinedTransactionException(sprintf('The payment context has already a transaction defined.'));
+            throw new AlreadyDefinedTransactionException(
+                sprintf('The payment context has already a transaction defined.')
+            );
         }
 
         $this->transaction = $transaction;
