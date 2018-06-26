@@ -4,9 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Manager;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
-use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Exception\NoPaymentGatewayConfigurationFoundException;
-use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistryInterface;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContext;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContextInterface;
@@ -23,10 +21,19 @@ class PaymentManager
      */
     private $paymentGatewayRegistry;
 
-    public function __construct(ObjectManager $om, PaymentGatewayRegistryInterface $paymentGatewayRegistry)
-    {
+    /**
+     * @var TransactionManagerInterface
+     */
+    private $transactionManager;
+
+    public function __construct(
+        ObjectManager $om,
+        PaymentGatewayRegistryInterface $paymentGatewayRegistry,
+        TransactionManagerInterface $transactionManager
+    ) {
         $this->om = $om;
         $this->paymentGatewayRegistry = $paymentGatewayRegistry;
+        $this->transactionManager = $transactionManager;
     }
 
     public function getAllPaymentGatewayConfiguration(): array
@@ -53,25 +60,8 @@ class PaymentManager
         return new PaymentContext(
             $this->om,
             $paymentGatewayConfiguration,
-            $this->paymentGatewayRegistry->get($paymentGatewayConfiguration->getGatewayName())
+            $this->paymentGatewayRegistry->get($paymentGatewayConfiguration->getGatewayName()),
+            $this->transactionManager
         );
-    }
-
-    public function createPaymentContextByPaymentUuid(string $uuid): PaymentContextInterface
-    {
-        $transaction = $this
-            ->om
-            ->getRepository(Transaction::class)
-            ->findOneBy(['id' => $uuid])
-        ;
-
-        if (null === $transaction) {
-            throw new UndefinedTransactionException(sprintf('No transaction found with the uuid : %s', $uuid));
-        }
-
-        return $this
-            ->createPaymentContextByAlias($payment->getGatewayConfigurationAlias())
-            ->setTransaction($transaction)
-        ;
     }
 }

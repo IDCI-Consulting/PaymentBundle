@@ -5,8 +5,8 @@ namespace IDCI\Bundle\PaymentBundle\Payment;
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedTransactionException;
-use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
+use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -28,6 +28,11 @@ class PaymentContext implements PaymentContextInterface
     private $paymentGateway;
 
     /**
+     * @var TransactionManagerInterface
+     */
+    private $transactionManager;
+
+    /**
      * @var Transaction
      */
     private $transaction;
@@ -36,11 +41,13 @@ class PaymentContext implements PaymentContextInterface
         ObjectManager $om,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         PaymentGatewayInterface $paymentGateway,
+        TransactionManagerInterface $transactionManager,
         ?Transaction $transaction = null
     ) {
         $this->om = $om;
         $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
         $this->paymentGateway = $paymentGateway;
+        $this->transactionManager = $transactionManager;
         $this->transaction = $transaction;
     }
 
@@ -56,23 +63,20 @@ class PaymentContext implements PaymentContextInterface
         return $this->transaction;
     }
 
-    public function handleGatewayCallback(Request $request): ?Transaction
+    public function handleGatewayCallback(Request $request): Transaction
     {
-        $transactionUuid = $this->paymentGateway->retrieveTransactionUuid($request);
-
-        $this->transaction = $this
-            ->om
-            ->getRepository(Transaction::class)
-            ->findOneBy(['id' => $transactionUuid])
+        $gatewayResponse = $this
+            ->paymentGateway
+            ->getResponse($request, $this->paymentGatewayConfiguration)
         ;
 
-        if (null === $this->transaction) {
-            throw new UndefinedTransactionException(sprintf('No payment found with the uuid : %s', $transactionUuid));
-        }
+        dump($gatewayResponse);
+        die();
 
         return $this
-            ->getPaymentGateway()
-            ->callback($request, $this->getPaymentGatewayConfiguration(), $this->getTransaction())
+            ->transactionManager
+            ->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid())
+            ->setStatus($gatewayResponse->getStatus())
         ;
     }
 
