@@ -101,7 +101,7 @@ class MercanetJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
         curl_close($ch);
 
         if (0 == strlen($result)) {
-            throw new InvalidAtosSipsInitializationException(sprintf('Empty data response'));
+            throw new InvalidAtosSipsInitializationException('Empty data response');
         }
 
         $response = json_decode($result);
