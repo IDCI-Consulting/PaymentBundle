@@ -3,8 +3,10 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use GuzzleHttp\Client;
-use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\Exception\UnauthorizedTransactionException;
+use IDCI\Bundle\PaymentBundle\Exception\UnverifiedPayboxResponseException;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -138,7 +140,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
     public function retrieveTransactionUuid(Request $request): string
     {
         if (!$request->request->has('reference') && !$request->query->has('reference')) {
-            throw new \Exception("The request not contains 'reference'");
+            throw new \InvalidArgumentException("The request not contains 'reference'");
         }
 
         return $request->get('reference');
@@ -150,11 +152,11 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         Transaction $transaction
     ): ?Transaction {
         if ('00000' !== $request->get('error')) {
-            throw new \Exception('Transaction unauthorized');
+            throw new UnauthorizedTransactionException('Transaction unauthorized');
         }
 
         if ($transaction->getAmount() != $request->get('amount')) {
-            throw new \Exception('Amount');
+            throw new \InvalidArgumentException('The amount of the transaction does not match with the initial transaction amount');
         }
 
         $publicKey = openssl_pkey_get_public(
@@ -173,7 +175,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ));
 
         if (!openssl_verify($builtQuery, base64_decode($request->get('hash')), $publicKey, 'sha1WithRSAEncryption')) {
-            throw new \Exception('SSL Key');
+            throw new UnverifiedPayboxResponseException('Could not verify the integrity of paybox return response');
         }
 
         openssl_free_key($publicKey);

@@ -3,6 +3,8 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use IDCI\Bundle\PaymentBundle\Exception\InvalidAtosSipsInitializationException;
+use IDCI\Bundle\PaymentBundle\Exception\InvalidAtosSipsSealException;
+use IDCI\Bundle\PaymentBundle\Exception\UnauthorizedTransactionException;
 use IDCI\Bundle\PaymentBundle\Exception\UnexpectedAtosSipsResponseCodeException;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -156,7 +158,7 @@ class SogenactifJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
         $seal = hash('sha256', $request->request->get('Data').$paymentGatewayConfiguration->get('secret'));
 
         if ($request->request->get('Seal') != $seal) {
-            throw new \Exception('Seal check failed');
+            throw new InvalidAtosSipsSealException('Seal check failed');
         }
 
         $returnParams = [];
@@ -171,11 +173,11 @@ class SogenactifJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
         }
 
         if ('SUCCESS' !== $returnParams['holderAuthentStatus'] && '3D_SUCCESS' !== $returnParams['holderAuthentStatus']) {
-            throw new \Exception('Transaction unauthorized');
+            throw new UnauthorizedTransactionException('Transaction unauthorized');
         }
 
         if ($transaction->getAmount() != $returnParams['amount']) {
-            throw new \Exception('Amount');
+            throw new \InvalidArgumentException('The amount of the transaction does not match with the initial transaction amount');
         }
 
         return true;

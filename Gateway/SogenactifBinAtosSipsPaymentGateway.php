@@ -203,7 +203,7 @@ class SogenactifBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGat
         }
 
         if ($transaction->getAmount() != $returnParams['amount']) {
-            throw new \Exception('Amount');
+            throw new \InvalidArgumentException('The amount of the transaction does not match with the initial transaction amount');
         }
 
         $transaction->setStatus(Transaction::STATUS_VALIDATED);
