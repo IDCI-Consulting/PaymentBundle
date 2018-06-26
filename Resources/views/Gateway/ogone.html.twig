@@ -2,44 +2,9 @@
 <!-- URL de TEST = https://ogone.test.v-psp.com/ncol/test/orderstandard_utf8.asp -->
 <!-- URL de PROD = https://secure.ogone.com/ncol/prod/orderstandard_utf8.asp -->
 
-<!-- paramètres généraux : voir Paramètres de formulaire -->
-
-<input type="hidden" name="PSPID" value="{{ initializationData.PSPID }}"> <!-- Nom d'affiliation -->
-<input type="hidden" name="ORDERID" value="{{ initializationData.ORDERID }}">
-<input type="hidden" name="AMOUNT" value="{{ initializationData.AMOUNT }}">
-<input type="hidden" name="CURRENCY" value="{{ initializationData.CURRENCY }}">
-<input type="hidden" name="LANGUAGE" value="{{ initializationData.LANGUAGE }}"> <!-- Langue du client -->
-<input type="hidden" name="CN" value="">
-<input type="hidden" name="EMAIL" value="{{ initializationData.EMAIL }}">
-<input type="hidden" name="OWNERADDRESS" value=""> <!-- Adresse du client -->
-<input type="hidden" name="OWNERZIP" value=""> <!-- Code postal du client -->
-<input type="hidden" name="OWNERTOWN" value=""> <!-- Ville du client -->
-<input type="hidden" name="OWNERCTY" value=""> <!-- Pays du client -->
-<input type="hidden" name="OWNERTELNO" value=""> <!-- Téléphone du client -->
-
-<!-- vérification avant le paiement : voir Sécurité : vérification avant le paiement -->
-
-<input type="hidden" name="SHASIGN" value="{{ initializationData.SHASIGN }}"> <!-- Chaine de hashage -->
-
-<!-- redirection après la transaction : voir Feedback au client sur la transaction -->
-
-<input type="hidden" name="ACCEPTURL" value="{{ initializationData.ACCEPTURL }}"> <!-- Redirection lorsque le paiement est autorisé -->
-<input type="hidden" name="DECLINEURL" value="{{ initializationData.DECLINEURL }}"> <!-- Redirection lorsque l'acquéreur refuse le paiement -->
-<input type="hidden" name="EXCEPTIONURL" value="{{ initializationData.EXCEPTIONURL }}"> <!-- Redirection lorsque le paiement est incertaint -->
-<input type="hidden" name="CANCELURL" value="{{ initializationData.CANCELURL }}"> <!-- Redirection lorsque le client annule le paiement -->
-
-<!-- apparence et impression: voir Apparence de la page de paiement -->
-
-<input type="hidden" name="TITLE" value=""> <!-- Titre -->
-<input type="hidden" name="BGCOLOR" value=""> <!-- Couleur de fond -->
-<input type="hidden" name="TXTCOLOR" value=""> <!-- Couleur du text -->
-<input type="hidden" name="TBLBGCOLOR" value=""> <!-- Couleur d'arrière-plan des colonnes de droite -->
-<input type="hidden" name="TBLTXTCOLOR" value=""> <!-- Couleur du texte des colonnes de droite -->
-<input type="hidden" name="BUTTONBGCOLOR" value=""> <!-- Couleur de fond des boutons -->
-<input type="hidden" name="BUTTONTXTCOLOR" value=""> <!-- Couleur du texte des boutons -->
-<input type="hidden" name="LOGO" value=""> <!-- URL/nom de fichier du logo que vous souhaitez afficher sur la page de paiement -->
-<input type="hidden" name="FONTTYPE" value=""> <!-- Famille de la police -->
-
-<input type="submit" value="" id="submit2" name="submit2">
+{% for name,value in initializationData %}
+    <input type="hidden" name="{{ name }}" value="{{ value }}" />
+{% endfor %}
+<input type="submit" value="Payer">
 
 </form>

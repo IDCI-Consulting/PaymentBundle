@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Entity\Transaction;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -37,24 +37,28 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    private function initializeGateway(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction)
+    private function initialize(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction)
     {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
-        $options['SHASIGN'] = '';
+        $shasign = '';
 
         foreach ($options as $key => $value) {
-            $options['SHASIGN'] .= sprintf('%s=%s%s', $key, $value, $paymentGatewayConfiguration->get('client_secret'));
+            if (!empty($value)) {
+                $shasign .= sprintf('%s=%s%s', $key, $value, $paymentGatewayConfiguration->get('client_secret'));
+            } else {
+                unset($options[$key]);
+            }
         }
 
-        $options['SHASIGN'] = sha1($options['SHASIGN']);
+        $options['SHASIGN'] = mb_strtoupper(sha1($shasign));
 
         return $options;
     }
 
     public function buildHTMLView(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration, Transaction $transaction): string
     {
-        $initializationData = $this->initializeGateway($paymentGatewayConfiguration, $transaction);
+        $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/ogone.html.twig', [
             'initializationData' => $initializationData,
@@ -66,11 +70,11 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         return null;
     }
 
-    public function executeTransaction(
+    public function callback(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ): ?bool {
+    ): ?Transaction {
         return null;
     }
 
