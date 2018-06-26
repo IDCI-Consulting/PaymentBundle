@@ -70,3 +70,7 @@ services:
     IDCI\Bundle\PaymentBundle\Gateway\OgonePaymentGateway:
         tags:
             - { name: idci_payment.gateways, alias: ogone }
+
+    IDCI\Bundle\PaymentBundle\Gateway\MoneticoPaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: monetico }
