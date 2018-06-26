@@ -39,6 +39,6 @@ Banque populaire
 -- Stripe           YES
 -- Paypal           YES
 -- Paybox           YES
-
+-- Ogone
 
 https://www.web18.net/differentes-passerelles-de-paiement-banques-francaises-woocommerce/
