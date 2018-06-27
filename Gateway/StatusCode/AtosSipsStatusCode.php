@@ -19,6 +19,6 @@ class AtosSipsStatusCode
         '90' => 'Service temporarily unavailable',
         '94' => 'Duplicate transaction: the transactionReference of the transaction is already used',
         '97' => 'Time expired, transaction refused',
-        '99' => 'Temporary problem with the payment server.',
+        '99' => 'Temporary problem with the payment server',
     ];
 }
