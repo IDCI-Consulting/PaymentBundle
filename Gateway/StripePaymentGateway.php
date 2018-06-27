@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\PaymentStatusCode;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -39,7 +39,7 @@ class StripePaymentGateway extends AbstractPaymentGateway
     ): GatewayResponse {
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
-            ->setStatus(PaymentStatusCode::STATUS_FAILED)
+            ->setStatus(PaymentStatus::STATUS_FAILED)
         ;
 
         if (!$request->request->has('transactionId')) {
@@ -61,7 +61,7 @@ class StripePaymentGateway extends AbstractPaymentGateway
             'source' => $request->get('stripeToken'),
         ]);
 
-        return $gatewayResponse->setStatus(PaymentStatusCode::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

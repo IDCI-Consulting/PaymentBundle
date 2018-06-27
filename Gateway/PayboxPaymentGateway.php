@@ -3,7 +3,7 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use GuzzleHttp\Client;
-use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\PaymentStatusCode;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -151,7 +151,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
 
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
-            ->setStatus(PaymentStatusCode::STATUS_FAILED)
+            ->setStatus(PaymentStatus::STATUS_FAILED)
             ->setAmount($request->get('amount'))
             ->setTransactionUuid($request->get('reference'))
             ->setRaw($request->query->all())
@@ -182,7 +182,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
 
         openssl_free_key($publicKey);
 
-        return $gatewayResponse->setStatus(PaymentStatusCode::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

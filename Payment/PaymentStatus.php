@@ -1,8 +1,8 @@
 <?php
 
-namespace IDCI\Bundle\PaymentBundle\Gateway\StatusCode;
+namespace IDCI\Bundle\PaymentBundle\Payment;
 
-class PaymentStatusCode
+class PaymentStatus
 {
     const STATUS_CREATED = 'created';
 

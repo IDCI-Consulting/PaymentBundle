@@ -4,10 +4,10 @@ namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use IDCI\Bundle\PaymentBundle\Exception\InvalidAtosSipsInitializationException;
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AtosSipsStatusCode;
-use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\PaymentStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Process\Process;
@@ -194,7 +194,7 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
     ): GatewayResponse {
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
-            ->setStatus(PaymentStatusCode::STATUS_FAILED)
+            ->setStatus(PaymentStatus::STATUS_FAILED)
         ;
 
         if (!$request->request->has('DATA')) {
@@ -214,13 +214,13 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
             $gatewayResponse->setMessage(AtosSipsStatusCode::STATUS[$returnParams['response_code']]);
 
             if ('17' === $returnParams['response_code']) {
-                $gatewayResponse->setStatus(PaymentStatusCode::STATUS_CANCELED);
+                $gatewayResponse->setStatus(PaymentStatus::STATUS_CANCELED);
             }
 
             return $gatewayResponse;
         }
 
-        return $gatewayResponse->setStatus(PaymentStatusCode::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

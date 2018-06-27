@@ -3,10 +3,10 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AtosSipsStatusCode;
-use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\PaymentStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -103,7 +103,7 @@ class SogenactifPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
     ): GatewayResponse {
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
-            ->setStatus(PaymentStatusCode::STATUS_FAILED)
+            ->setStatus(PaymentStatus::STATUS_FAILED)
         ;
 
         if (!$request->request->has('Data')) {
@@ -134,7 +134,7 @@ class SogenactifPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
             $gatewayResponse->setMessage(AtosSipsStatusCode::STATUS[$returnParams['responseCode']]);
 
             if ('17' === $returnParams['responseCode']) {
-                $gatewayResponse->setStatus(PaymentStatusCode::STATUS_CANCELED);
+                $gatewayResponse->setStatus(PaymentStatus::STATUS_CANCELED);
             }
 
             return $gatewayResponse;
@@ -147,7 +147,7 @@ class SogenactifPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
             return $gatewayResponse->setMessage('Transaction unauthorized');
         }
 
-        return $gatewayResponse->setStatus(PaymentStatusCode::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

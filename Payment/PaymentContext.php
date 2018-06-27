@@ -7,7 +7,6 @@ use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedTransactionException;
 use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
-use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\PaymentStatusCode;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -84,12 +83,12 @@ class PaymentContext implements PaymentContextInterface
         $status = $gatewayResponse->getStatus();
 
         if ($transaction->getAmount() != $gatewayResponse->getAmount()) {
-            $status = PaymentStatusCode::STATUS_FAILED;
+            $status = PaymentStatus::STATUS_FAILED;
         } elseif (
             null != $gatewayResponse->getCurrencyCode() &&
             $transaction->getCurrencyCode() != $gatewayResponse->getCurrencyCode()
         ) {
-            $status = PaymentStatusCode::STATUS_FAILED;
+            $status = PaymentStatus::STATUS_FAILED;
         }
 
         return $transaction->setStatus($status);
