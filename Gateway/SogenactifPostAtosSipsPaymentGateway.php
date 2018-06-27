@@ -34,7 +34,7 @@ class SogenactifPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
         return sprintf('https://%s/paymentInit', $this->serverHostName);
     }
 
-    private function buildOptions(
+    protected function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
@@ -59,10 +59,10 @@ class SogenactifPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
         return hash('sha256', mb_convert_encoding($options['build'].$options['secret'], 'UTF-8'));
     }
 
-    private function initialize(
+    public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ) {
+    ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
         $builtOptions = [

@@ -24,7 +24,7 @@ class MoneticoPaymentGateway extends AbstractAtosSipsSealPaymentGateway
         return 'https://p.monetico-services.com/test/paiement.cgi'; //raw
     }
 
-    private function buildOptions(
+    protected function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
@@ -74,10 +74,10 @@ class MoneticoPaymentGateway extends AbstractAtosSipsSealPaymentGateway
         return strtolower(hash_hmac('sha1', $sData, $usableKey));
     }
 
-    private function initialize(
+    public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ) {
+    ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
         $options['MAC'] = $this->buildMAC($options, $paymentGatewayConfiguration->get('secret'));
 

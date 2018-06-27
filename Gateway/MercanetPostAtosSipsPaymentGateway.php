@@ -34,7 +34,7 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
         return sprintf('https://%s/paymentInit', $this->serverHostName);
     }
 
-    private function buildOptions(
+    protected function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
@@ -54,10 +54,10 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
         ];
     }
 
-    private function initialize(
+    public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ) {
+    ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
         $builtOptions = [

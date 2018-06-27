@@ -78,7 +78,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ));
     }
 
-    private function buildOptions(
+    protected function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
@@ -104,10 +104,10 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    private function initialize(
+    public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ) {
+    ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
         $builtOptions = [

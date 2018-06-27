@@ -49,7 +49,7 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
         return null;
     }
 
-    private function buildOptions(
+    protected function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
@@ -69,10 +69,10 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
         ];
     }
 
-    private function initialize(
+    public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ) {
+    ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
         ksort($options);
@@ -99,7 +99,9 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
             throw new InvalidAtosSipsInitializationException($error);
         }
 
-        return $form;
+        return [
+            'form' => $form,
+        ];
     }
 
     public function buildHTMLView(

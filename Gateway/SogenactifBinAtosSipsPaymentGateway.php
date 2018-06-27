@@ -49,7 +49,7 @@ class SogenactifBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGat
         return null;
     }
 
-    private function buildOptions(
+    protected function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
@@ -69,10 +69,10 @@ class SogenactifBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGat
         ];
     }
 
-    private function initialize(
+    public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ) {
+    ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
         ksort($options);
@@ -99,7 +99,9 @@ class SogenactifBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGat
             throw new InvalidAtosSipsInitializationException($error);
         }
 
-        return $form;
+        return [
+            'form' => $form,
+        ];
     }
 
     public function buildHTMLView(

@@ -14,7 +14,7 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         return 'https://secure.ogone.com/ncol/test/orderstandard.asp'; // raw (for test)
     }
 
-    private function buildOptions(
+    protected function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
@@ -40,10 +40,10 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    private function initialize(
+    public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ) {
+    ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
         $shasign = '';
