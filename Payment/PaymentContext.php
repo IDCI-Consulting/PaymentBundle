@@ -92,7 +92,7 @@ class PaymentContext implements PaymentContextInterface
             $status = PaymentStatusCode::STATUS_FAILED;
         }
 
-        return $transaction->setStatus($gatewayResponse->getStatus());
+        return $transaction->setStatus($status);
     }
 
     public function hasTransaction(): bool
