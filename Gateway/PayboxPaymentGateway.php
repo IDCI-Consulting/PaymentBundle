@@ -161,12 +161,6 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
             return $gatewayResponse->setMessage('Transaction unauthorized');
         }
 
-        $transaction = $this->transactionManager->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid());
-
-        if ($transaction->getAmount() != $request->get('amount')) {
-            return $gatewayResponse->setMessage('The amount of the transaction does not match with the initial transaction amount');
-        }
-
         $publicKey = openssl_pkey_get_public(
             (new Client())->request('GET', $this->publicKeyUrl)->getBody()
         );

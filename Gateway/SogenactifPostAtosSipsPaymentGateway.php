@@ -126,6 +126,7 @@ class SogenactifPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
         $gatewayResponse
             ->setTransactionUuid($returnParams['transactionReference'])
             ->setAmount($returnParams['amount'])
+            ->setCurrencyCode((new ISO4217())->findByNumeric($returnParams['currencyCode'])->getAlpha3())
             ->setRaw($returnParams)
         ;
 

@@ -17,6 +17,11 @@ class GatewayResponse
     /**
      * @var string
      */
+    private $currencyCode;
+
+    /**
+     * @var string
+     */
     private $status;
 
     /**
@@ -65,6 +70,18 @@ class GatewayResponse
     public function setAmount(int $amount): self
     {
         $this->amount = $amount;
+
+        return $this;
+    }
+
+    public function getCurrencyCode(): ?string
+    {
+        return $this->currencyCode;
+    }
+
+    public function setCurrencyCode(string $currencyCode): self
+    {
+        $this->currencyCode = $currencyCode;
 
         return $this;
     }

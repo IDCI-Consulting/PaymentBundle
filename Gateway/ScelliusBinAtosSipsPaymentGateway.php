@@ -207,6 +207,7 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
             ->setRaw($returnParams)
             ->setTransactionUuid($returnParams['order_id'])
             ->setAmount($returnParams['amount'])
+            ->setCurrencyCode((new ISO4217())->findByNumeric($returnParams['currency_code'])->getAlpha3())
         ;
 
         if ('00' !== $returnParams['response_code']) {

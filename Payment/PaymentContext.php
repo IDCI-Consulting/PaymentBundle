@@ -5,6 +5,7 @@ namespace IDCI\Bundle\PaymentBundle\Payment;
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedTransactionException;
+use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\PaymentStatusCode;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
@@ -71,14 +72,23 @@ class PaymentContext implements PaymentContextInterface
             ->getResponse($request, $this->paymentGatewayConfiguration)
         ;
 
-        $status = $gatewayResponse->getStatus();
+        if (null === $gatewayResponse->getTransactionUuid()) {
+            throw new UndefinedTransactionException('No transaction uuid found for this callback');
+        }
 
         $transaction = $this
             ->transactionManager
             ->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid())
         ;
 
+        $status = $gatewayResponse->getStatus();
+
         if ($transaction->getAmount() != $gatewayResponse->getAmount()) {
+            $status = PaymentStatusCode::STATUS_FAILED;
+        } elseif (
+            null != $gatewayResponse->getCurrencyCode() &&
+            $transaction->getCurrencyCode() != $gatewayResponse->getCurrencyCode()
+        ) {
             $status = PaymentStatusCode::STATUS_FAILED;
         }
 

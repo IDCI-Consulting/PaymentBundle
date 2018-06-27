@@ -49,6 +49,7 @@ class StripePaymentGateway extends AbstractPaymentGateway
         $gatewayResponse
             ->setTransactionUuid($request->get('transactionId'))
             ->setAmount($request->get('amount'))
+            ->setCurrencyCode($request->get('currencyCode'))
         ;
 
         Stripe\Stripe::setApiKey($paymentGatewayConfiguration->get('secret_key'));

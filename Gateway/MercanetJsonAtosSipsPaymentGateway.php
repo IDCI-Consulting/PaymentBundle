@@ -156,6 +156,7 @@ class MercanetJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
         $gatewayResponse
             ->setTransactionUuid($returnParams['transactionReference'])
             ->setAmount($returnParams['amount'])
+            ->setCurrencyCode((new ISO4217())->findByNumeric(new $returnParams['currencyCode']())->getAlpha3())
             ->setRaw($returnParams)
         ;
 

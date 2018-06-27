@@ -52,9 +52,12 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
 
         $paypalPayment = PaypalPayment::get($request->get('paymentID'), $apiContext);
 
+        $amount = $paypalPayment->getTransactions()[0]->getAmount();
+
         $gatewayResponse
             ->setTransactionUuid($request->get('transactionID'))
-            ->setAmount($paypalPayment->getTransactions()[0]->getAmount()->total * 100)
+            ->setAmount($amount->total * 100)
+            ->setCurrencyCode($amount->currency)
         ;
 
         $execution = new PaymentExecution();
