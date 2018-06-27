@@ -2,7 +2,6 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -13,10 +12,9 @@ class MoneticoPaymentGateway extends AbstractAtosSipsSealPaymentGateway
 {
     public function __construct(
         \Twig_Environment $templating,
-        UrlGeneratorInterface $router,
-        TransactionManagerInterface $transactionManager
+        UrlGeneratorInterface $router
     ) {
-        parent::__construct($templating, $router, $transactionManager);
+        parent::__construct($templating, $router);
     }
 
     protected function getServerUrl(): string

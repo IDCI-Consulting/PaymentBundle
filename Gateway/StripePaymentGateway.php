@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\PaymentStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -38,27 +39,28 @@ class StripePaymentGateway extends AbstractPaymentGateway
     ): GatewayResponse {
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
-            ->setStatus(Transaction::STATUS_FAILED)
+            ->setStatus(PaymentStatusCode::STATUS_FAILED)
         ;
 
-        if (!$request->request->has('transaction_id')) {
-            return $gatewayResponse->setMessage('The request do not contains "transaction_id"');
+        if (!$request->request->has('transactionId')) {
+            return $gatewayResponse->setMessage('The request do not contains "transactionId"');
         }
 
-        $gatewayResponse->setTransactionUuid($request->get('transaction_id'));
+        $gatewayResponse
+            ->setTransactionUuid($request->get('transactionId'))
+            ->setAmount($request->get('amount'))
+        ;
 
         Stripe\Stripe::setApiKey($paymentGatewayConfiguration->get('secret_key'));
 
-        $transaction = $this->transactionManager->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid());
-
         Stripe\Charge::create([
-            'amount' => $transaction->getAmount(),
-            'currency' => $transaction->getCurrencyCode(),
+            'amount' => $request->get('amount'),
+            'currency' => $request->get('currencyCode'),
             'description' => 'Example charge',
             'source' => $request->get('stripeToken'),
         ]);
 
-        return $gatewayResponse->setStatus(Transaction::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(PaymentStatusCode::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

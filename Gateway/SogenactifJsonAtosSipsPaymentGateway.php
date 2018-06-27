@@ -4,7 +4,8 @@ namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use IDCI\Bundle\PaymentBundle\Exception\InvalidAtosSipsInitializationException;
 use IDCI\Bundle\PaymentBundle\Exception\UnexpectedAtosSipsResponseCodeException;
-use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
+use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AtosSipsStatusCode;
+use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\PaymentStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -22,10 +23,9 @@ class SogenactifJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
     public function __construct(
         \Twig_Environment $templating,
         UrlGeneratorInterface $router,
-        TransactionManagerInterface $transactionManager,
         string $serverHostName
     ) {
-        parent::__construct($templating, $router, $transactionManager);
+        parent::__construct($templating, $router);
 
         $this->serverHostName = $serverHostName;
     }
@@ -132,7 +132,7 @@ class SogenactifJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
     ): GatewayResponse {
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
-            ->setStatus(Transaction::STATUS_FAILED)
+            ->setStatus(PaymentStatusCode::STATUS_FAILED)
         ;
 
         if (!$request->request->has('Data')) {
@@ -156,14 +156,15 @@ class SogenactifJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
 
         $gatewayResponse
             ->setTransactionUuid($returnParams['transactionReference'])
+            ->setAmount($returnParams['amount'])
             ->setRaw($returnParams)
         ;
 
         if ('00' !== $returnParams['responseCode']) {
-            $gatewayResponse->setMessage($returnParams['responseCode']); // To replace with message of the current code (in UnexpectedAtosSipsResponseCodeException)
+            $gatewayResponse->setMessage(AtosSipsStatusCode::STATUS[$returnParams['responseCode']]);
 
             if ('17' === $returnParams['responseCode']) {
-                return $gatewayResponse->setStatus(Transaction::STATUS_CANCELED);
+                return $gatewayResponse->setStatus(PaymentStatusCode::STATUS_CANCELED);
             }
 
             return $gatewayResponse;
@@ -176,13 +177,7 @@ class SogenactifJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
             return $gatewayResponse->setMessage('Transaction unauthorized');
         }
 
-        $transaction = $this->transactionManager->retrieveTransactionByUuid($returnParams['transactionReference']);
-
-        if ($transaction->getAmount() != $returnParams['amount']) {
-            return $gatewayResponse->setMessage('The amount of the transaction does not match with the initial transaction amount');
-        }
-
-        return $gatewayResponse->setStatus(Transaction::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(PaymentStatusCode::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

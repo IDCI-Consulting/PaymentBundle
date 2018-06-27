@@ -3,7 +3,8 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use IDCI\Bundle\PaymentBundle\Exception\InvalidAtosSipsInitializationException;
-use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
+use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AtosSipsStatusCode;
+use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\PaymentStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -32,12 +33,11 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
     public function __construct(
         \Twig_Environment $templating,
         UrlGeneratorInterface $router,
-        TransactionManagerInterface $transactionManager,
         string $pathfile,
         string $requestBinPath,
         string $responseBinPath
     ) {
-        parent::__construct($templating, $router, $transactionManager);
+        parent::__construct($templating, $router);
 
         $this->pathfile = $pathfile;
         $this->requestBinPath = $requestBinPath;
@@ -194,7 +194,7 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
     ): GatewayResponse {
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
-            ->setStatus(Transaction::STATUS_FAILED)
+            ->setStatus(PaymentStatusCode::STATUS_FAILED)
         ;
 
         if (!$request->request->has('DATA')) {
@@ -203,25 +203,23 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
 
         $returnParams = $this->buildResponseParams($request);
 
-        $gatewayResponse->setRaw($returnParams)->setTransactionUuid($returnParams['order_id']);
+        $gatewayResponse
+            ->setRaw($returnParams)
+            ->setTransactionUuid($returnParams['order_id'])
+            ->setAmount($returnParams['amount'])
+        ;
 
         if ('00' !== $returnParams['response_code']) {
-            $gatewayResponse->setMessage($returnParams['response_code']); // To replace with message of the current code (in UnexpectedAtosSipsResponseCodeException)
+            $gatewayResponse->setMessage(AtosSipsStatusCode::STATUS[$returnParams['response_code']]);
 
             if ('17' === $returnParams['response_code']) {
-                return $gatewayResponse->setStatus(Transaction::STATUS_CANCELED);
+                return $gatewayResponse->setStatus(PaymentStatusCode::STATUS_CANCELED);
             }
 
             return $gatewayResponse;
         }
 
-        $transaction = $this->transactionManager->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid());
-
-        if ($transaction->getAmount() != $returnParams['amount']) {
-            return $gatewayResponse->setMessage('The amount of the transaction does not match with the initial transaction amount');
-        }
-
-        return $gatewayResponse->setStatus(Transaction::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(PaymentStatusCode::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

@@ -2,7 +2,6 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -21,19 +20,12 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
      */
     protected $router;
 
-    /**
-     * @var TransactionManagerInterface
-     */
-    protected $transactionManager;
-
     public function __construct(
         \Twig_Environment $templating,
-        UrlGeneratorInterface $router,
-        TransactionManagerInterface $transactionManager
+        UrlGeneratorInterface $router
     ) {
         $this->templating = $templating;
         $this->router = $router;
-        $this->transactionManager = $transactionManager;
     }
 
     protected function getCallbackURL(string $alias): string

@@ -6,6 +6,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedTransactionException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
+use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\PaymentStatusCode;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -70,11 +71,18 @@ class PaymentContext implements PaymentContextInterface
             ->getResponse($request, $this->paymentGatewayConfiguration)
         ;
 
-        return $this
+        $status = $gatewayResponse->getStatus();
+
+        $transaction = $this
             ->transactionManager
             ->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid())
-            ->setStatus($gatewayResponse->getStatus())
         ;
+
+        if ($transaction->getAmount() != $gatewayResponse->getAmount()) {
+            $status = PaymentStatusCode::STATUS_FAILED;
+        }
+
+        return $transaction->setStatus($gatewayResponse->getStatus());
     }
 
     public function hasTransaction(): bool

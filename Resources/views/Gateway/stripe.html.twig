@@ -1,5 +1,7 @@
 <form action="{{ initializationData.url }}" method="POST">
-    <input type="hidden" name="transaction_id" value="{{ initializationData.transaction.id }}">
+    <input type="hidden" name="amount" value="{{ initializationData.transaction.amount }}">
+    <input type="hidden" name="currencyCode" value="{{ initializationData.transaction.currencyCode }}">
+    <input type="hidden" name="transactionId" value="{{ initializationData.transaction.id }}">
     <script
         src="https://checkout.stripe.com/checkout.js" class="stripe-button"
         data-key="{{ initializationData.publicKey }}"

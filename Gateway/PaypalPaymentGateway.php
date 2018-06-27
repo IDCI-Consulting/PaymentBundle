@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\PaymentStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -41,7 +42,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
     ): GatewayResponse {
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
-            ->setStatus(Transaction::STATUS_FAILED)
+            ->setStatus(PaymentStatusCode::STATUS_FAILED)
         ;
 
         $apiContext = new ApiContext(new OAuthTokenCredential(
@@ -51,12 +52,21 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
 
         $paypalPayment = PaypalPayment::get($request->get('paymentID'), $apiContext);
 
+        $gatewayResponse
+            ->setTransactionUuid($request->get('transactionID'))
+            ->setAmount($paypalPayment->getTransactions()[0]->getAmount()->total * 100)
+        ;
+
         $execution = new PaymentExecution();
         $execution->setPayerId($request->get('payerID'));
 
         $result = $paypalPayment->execute($execution, $apiContext);
 
-        return $gatewayResponse->setStatus(Transaction::STATUS_APPROVED);
+        if ('approved' !== $result->getState()) {
+            return $gatewayResponse->setMessage('Transaction unauthorized');
+        }
+
+        return $gatewayResponse->setStatus(PaymentStatusCode::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

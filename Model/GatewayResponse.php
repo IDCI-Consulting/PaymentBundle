@@ -10,6 +10,11 @@ class GatewayResponse
     private $transactionUuid;
 
     /**
+     * @var int
+     */
+    private $amount;
+
+    /**
      * @var string
      */
     private $status;
@@ -33,6 +38,7 @@ class GatewayResponse
     {
         return [
             'transaction_uuid' => $this->transactionUuid,
+            'amount' => $amount,
             'status' => $status,
             'message' => $message,
             'raw' => $raw,
@@ -47,6 +53,18 @@ class GatewayResponse
     public function setTransactionUuid(string $transactionUuid): self
     {
         $this->transactionUuid = $transactionUuid;
+
+        return $this;
+    }
+
+    public function getAmount(): ?int
+    {
+        return $this->amount;
+    }
+
+    public function setAmount(int $amount): self
+    {
+        $this->amount = $amount;
 
         return $this;
     }

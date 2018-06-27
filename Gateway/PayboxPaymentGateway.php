@@ -3,7 +3,7 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use GuzzleHttp\Client;
-use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
+use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\PaymentStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -21,12 +21,11 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
     public function __construct(
         \Twig_Environment $templating,
         UrlGeneratorInterface $router,
-        TransactionManagerInterface $transactionManager,
         string $serverHostName,
         string $keyPath,
         string $publicKeyUrl
     ) {
-        parent::__construct($templating, $router, $transactionManager);
+        parent::__construct($templating, $router);
 
         $this->serverHostName = $serverHostName;
         $this->keyPath = $keyPath;
@@ -152,7 +151,8 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
 
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
-            ->setStatus(Transaction::STATUS_FAILED)
+            ->setStatus(PaymentStatusCode::STATUS_FAILED)
+            ->setAmount($request->get('amount'))
             ->setTransactionUuid($request->get('reference'))
             ->setRaw($request->query->all())
         ;
@@ -188,7 +188,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
 
         openssl_free_key($publicKey);
 
-        return $gatewayResponse->setStatus(Transaction::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(PaymentStatusCode::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array

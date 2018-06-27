@@ -3,6 +3,7 @@
 namespace IDCI\Bundle\PaymentBundle\Payment;
 
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
+use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\PaymentStatusCode;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -34,7 +35,7 @@ class TransactionFactory
             ->setGatewayConfigurationAlias($resolvedParameters['gateway_configuration_alias'])
             ->setCustomerId($resolvedParameters['customer_id'])
             ->setCustomerEmail($resolvedParameters['customer_email'])
-            ->setStatus(Transaction::STATUS_CREATED)
+            ->setStatus(PaymentStatusCode::STATUS_CREATED)
             ->setAmount($resolvedParameters['amount'])
             ->setCurrencyCode($resolvedParameters['currency_code'])
             ->setDescription($resolvedParameters['description'])
