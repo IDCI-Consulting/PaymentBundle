@@ -214,7 +214,7 @@ class SogenactifBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGat
             $gatewayResponse->setMessage(AtosSipsStatusCode::STATUS[$returnParams['response_code']]);
 
             if ('17' === $returnParams['response_code']) {
-                return $gatewayResponse->setStatus(PaymentStatusCode::STATUS_CANCELED);
+                $gatewayResponse->setStatus(PaymentStatusCode::STATUS_CANCELED);
             }
 
             return $gatewayResponse;

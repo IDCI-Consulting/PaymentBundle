@@ -115,7 +115,7 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
         ]);
     }
 
-    public function buildResponseParams(Request $request)
+    private function buildResponseParams(Request $request)
     {
         $shellOptions = array(
             'pathfile' => $this->pathfile,
@@ -214,7 +214,7 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
             $gatewayResponse->setMessage(AtosSipsStatusCode::STATUS[$returnParams['response_code']]);
 
             if ('17' === $returnParams['response_code']) {
-                return $gatewayResponse->setStatus(PaymentStatusCode::STATUS_CANCELED);
+                $gatewayResponse->setStatus(PaymentStatusCode::STATUS_CANCELED);
             }
 
             return $gatewayResponse;
