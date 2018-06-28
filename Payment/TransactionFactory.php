@@ -3,7 +3,6 @@
 namespace IDCI\Bundle\PaymentBundle\Payment;
 
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
-use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -39,6 +38,7 @@ class TransactionFactory
             ->setAmount($resolvedParameters['amount'])
             ->setCurrencyCode($resolvedParameters['currency_code'])
             ->setDescription($resolvedParameters['description'])
+            ->setMetadatas($resolvedParameters['metadatas'])
         ;
     }
 
@@ -61,6 +61,7 @@ class TransactionFactory
                 'customer_id' => null,
                 'customer_email' => null,
                 'description' => null,
+                'metadatas' => [],
             ])
             ->setAllowedTypes('item_id', ['int', 'string'])
             ->setAllowedTypes('gateway_configuration_alias', ['null', 'string'])
@@ -69,6 +70,7 @@ class TransactionFactory
             ->setAllowedTypes('customer_id', ['null', 'int', 'string'])
             ->setAllowedTypes('customer_email', ['null', 'string'])
             ->setAllowedTypes('description', ['null', 'string'])
+            ->setAllowedTypes('metadatas', ['null', 'array'])
             ->setAllowedValues('currency_code', $alpha3CurrencyCodes)
             ->setNormalizer('amount', function (Options $options, $value) {
                 return (float) $value;

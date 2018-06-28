@@ -52,6 +52,11 @@ class Transaction
     protected $description;
 
     /**
+     * @var array
+     */
+    protected $metadatas;
+
+    /**
      * @var \DateTime
      */
     protected $createdAt;
@@ -185,6 +190,37 @@ class Transaction
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function hasMetadata(string $key)
+    {
+        return isset($this->metadatas[$key]);
+    }
+
+    public function getMetadata(string $key)
+    {
+        return $this->metadatas[$key];
+    }
+
+    public function addMetadata(string $key, $value)
+    {
+        $this->metadatas[$key] = $value;
+    }
+
+    public function getMetadatas(): ?array
+    {
+        return $this->metadatas;
+    }
+
+    public function setMetadatas(array $metadatas): self
+    {
+        $this->metadatas = [];
+
+        foreach ($metadatas as $key => $value) {
+            $this->addMetadata($key, $value);
+        }
 
         return $this;
     }

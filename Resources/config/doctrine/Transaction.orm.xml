@@ -13,6 +13,7 @@
         <field name="amount" type="integer" column="amount"/>
         <field name="currencyCode" type="string" column="currency_code"/>
         <field name="description" type="text" column="description" nullable="true"/>
+        <field name="metadatas" type="json_array" column="metadatas"/>
         <field name="createdAt" type="datetime" column="created_at"/>
         <field name="updatedAt" type="datetime" column="updated_at"/>
         <lifecycle-callbacks>
