@@ -28,11 +28,13 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
         $this->router = $router;
     }
 
-    protected function getCallbackURL(string $alias): string
+    protected function getCallbackURL(string $alias, ?array $parameters = []): string
     {
+        $parameters['paymentGatewayConfigurationAlias'] = $alias;
+
         return $this->router->generate(
             'idci_payment_paymentgateway_callback',
-            ['paymentGatewayConfigurationAlias' => $alias],
+            $parameters,
             UrlGeneratorInterface::ABSOLUTE_URL
         );
     }
