@@ -88,6 +88,7 @@ class Transaction
             'amount' => $this->amount,
             'currencyCode' => $this->currencyCode,
             'description' => $this->description,
+            'metadatas' => $this->metadatas,
             'createdAt' => $this->createdAt,
             'updatedAt' => $this->updatedAt,
         ];
