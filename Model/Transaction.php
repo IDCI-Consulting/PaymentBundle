@@ -2,8 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Model;
 
-use PascalDeVink\ShortUuid\ShortUuid;
-use Ramsey\Uuid\Uuid;
+use Flaky\Flaky;
 
 class Transaction
 {
@@ -64,7 +63,7 @@ class Transaction
 
     public function __construct()
     {
-        $this->id = (new ShortUuid())->encode(Uuid::fromString(Uuid::getFactory()->uuid4()));
+        $this->id = Flaky::id;
     }
 
     public function __toString(): string

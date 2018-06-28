@@ -21,7 +21,7 @@
         "doctrine/common": "~2.0",
         "payum/iso4217": "~1.0",
         "stripe/stripe-php": "^6.7",
-        "pascaldevink/shortuuid": "~2.0"
+        "jwarkentin/flaky": "~0.0.9"
     },
     "require-dev": {
         "phpunit/phpunit": "~5.7"
