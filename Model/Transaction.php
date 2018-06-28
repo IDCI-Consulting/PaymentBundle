@@ -63,7 +63,7 @@ class Transaction
 
     public function __construct()
     {
-        $this->id = Flaky::id;
+        $this->id = Flaky::id(62);
     }
 
     public function __toString(): string
