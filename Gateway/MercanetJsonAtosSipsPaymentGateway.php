@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use GuzzleHttp\Client;
 use IDCI\Bundle\PaymentBundle\Exception\InvalidAtosSipsInitializationException;
 use IDCI\Bundle\PaymentBundle\Exception\UnexpectedAtosSipsResponseCodeException;
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AtosSipsStatusCode;
@@ -78,40 +79,23 @@ class MercanetJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
         $options['seal'] = $this->buildSeal($options, $paymentGatewayConfiguration->get('secret'));
 
-        $paymentRequestData = json_encode($options);
+        $client = new Client(['defaults' => ['verify' => false]]);
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->getServerUrl());
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $paymentRequestData);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Accept:application/json'));
-        curl_setopt($ch, CURLOPT_PORT, 443);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        $result = curl_exec($ch);
-        $info = curl_getinfo($ch);
+        $response = $client->request('POST', $this->getServerUrl(), ['json' => $options]);
 
-        if (!$result) {
-            throw new InvalidAtosSipsInitializationException('No result found');
-        }
+        $returnParams = json_decode($response->getBody(), true);
 
-        if (200 !== $info['http_code']) {
-            throw new InvalidAtosSipsInitializationException(sprintf('Got error code : %s', $info['http_code']));
-        }
-
-        curl_close($ch);
-
-        if (0 == strlen($result)) {
+        if (0 == count($returnParams)) {
             throw new InvalidAtosSipsInitializationException('Empty data response');
         }
 
-        $response = json_decode($result, true);
-
-        if ('00' != $response['redirectionStatusCode']) {
-            throw new UnexpectedAtosSipsResponseCodeException(AtosSipsStatusCode::STATUS[$response['redirectionStatusCode']]);
+        if ('00' != $returnParams['redirectionStatusCode']) {
+            throw new UnexpectedAtosSipsResponseCodeException(
+                AtosSipsStatusCode::STATUS[$returnParams['redirectionStatusCode']]
+            );
         }
 
-        return $response;
+        return $returnParams;
     }
 
     public function buildHTMLView(
