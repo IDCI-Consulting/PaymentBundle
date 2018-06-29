@@ -56,12 +56,16 @@ class StripePaymentGateway extends AbstractPaymentGateway
 
         Stripe\Stripe::setApiKey($paymentGatewayConfiguration->get('secret_key'));
 
-        Stripe\Charge::create([
-            'amount' => $request->get('amount'),
-            'currency' => $request->get('currencyCode'),
-            'description' => 'Example charge',
-            'source' => $request->get('stripeToken'),
-        ]);
+        try {
+            Stripe\Charge::create([
+                'amount' => $request->get('amount'),
+                'currency' => $request->get('currencyCode'),
+                'description' => 'Example charge',
+                'source' => $request->get('stripeToken'),
+            ]);
+        } catch (\Exception $e) {
+            return $gatewayResponse->setMessage('Unauthorized transaction');
+        }
 
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
