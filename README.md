@@ -56,9 +56,21 @@ public function registerBundles()
 Supported Gateways
 ------------------
 
-* [Stripe](./Gateway/StripePaymentGateway.php) (for testing purpose)
-* [Paypal](./Gateway/PaypalPaymentGateway.php) (for testing purpose)
-* [Atos Sips Seal](./Gateway/AtosSipsSealPaymentGateway.php) (for testing purpose)
+* [Stripe](./Gateway/StripePaymentGateway.php)
+* [Paypal](./Gateway/PaypalPaymentGateway.php)
+* [Paybox](./Gateway/PayboxPaymentGateway.php)
+* [Monetico](./Gateway/MoneticoPaymentGateway.php) (unfinished)
+* [Ogone](./Gateway/MoneticoPaymentGateway.php) (unfinished)
+* [PayPlug](./Gateway/PayPlugPaymentGateway.php)
+* [Atos Sips Bin](./Gateway/AtosSipsBinPaymentGateway.php)
+    * Scellius
+    * Sogenactif
+* [Atos Sips POST](./Gateway/AtosSipsPostPaymentGateway.php)
+    * Mercanet
+    * Sogenactif
+* [Atos Sips JSON](./Gateway/AtosSipsJsonPaymentGateway.php)
+    * Mercanet
+    * Sogenactif
 
 Command
 -------
