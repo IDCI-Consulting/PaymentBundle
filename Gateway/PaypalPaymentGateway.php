@@ -2,10 +2,10 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use PayPal\Api\Payment as PaypalPayment;
 use PayPal\Api\PaymentExecution;
 use PayPal\Auth\OAuthTokenCredential;

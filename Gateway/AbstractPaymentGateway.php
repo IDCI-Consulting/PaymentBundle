@@ -39,7 +39,7 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
         );
     }
 
-    public function getReturnURL(string $alias, ?array $parameters = [])
+    protected function getReturnURL(string $alias, ?array $parameters = [])
     {
         $parameters['configuration_alias'] = $alias;
 

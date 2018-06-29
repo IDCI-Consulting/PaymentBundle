@@ -31,12 +31,27 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
         $this->serverHostName = $serverHostName;
     }
 
+    private function buildSeal(array $options, string $secretKey)
+    {
+        $dataForSeal = '';
+
+        foreach ($options as $key => $value) {
+            if ('keyVersion' !== $key && 'sealAlgorithm' !== $key) {
+                $dataForSeal .= $value;
+            }
+        }
+
+        $dataToSend = utf8_encode($dataForSeal);
+
+        return hash_hmac('sha256', $dataToSend, $secretKey);
+    }
+
     protected function getServerUrl(): string
     {
         return sprintf('https://%s/rs-services/v2/paymentInit', $this->serverHostName);
     }
 
-    protected function buildOptions(
+    private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
@@ -58,21 +73,6 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
             'transactionReference' => $transaction->getId(),
             'keyVersion' => $paymentGatewayConfiguration->get('version'),
         ];
-    }
-
-    private function buildSeal(array $options, string $secretKey)
-    {
-        $dataForSeal = '';
-
-        foreach ($options as $key => $value) {
-            if ('keyVersion' !== $key && 'sealAlgorithm' !== $key) {
-                $dataForSeal .= $value;
-            }
-        }
-
-        $dataToSend = utf8_encode($dataForSeal);
-
-        return hash_hmac('sha256', $dataToSend, $secretKey);
     }
 
     public function initialize(

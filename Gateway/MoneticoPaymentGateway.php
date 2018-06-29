@@ -17,12 +17,12 @@ class MoneticoPaymentGateway extends AbstractPaymentGateway
         parent::__construct($templating, $router);
     }
 
-    protected function getServerUrl(): string
+    private function getServerUrl(): string
     {
         return 'https://p.monetico-services.com/test/paiement.cgi'; //raw
     }
 
-    protected function buildOptions(
+    private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
@@ -94,11 +94,6 @@ class MoneticoPaymentGateway extends AbstractPaymentGateway
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/monetico.html.twig', [
             'initializationData' => $initializationData,
         ]);
-    }
-
-    public function retrieveTransactionUuid(Request $request): ?string
-    {
-        return null;
     }
 
     public function getResponse(

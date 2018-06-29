@@ -44,76 +44,7 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
         $this->responseBinPath = $responseBinPath;
     }
 
-    protected function buildOptions(
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
-    ): array {
-        $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
-        $returnUrl = $this->getReturnURL($paymentGatewayConfiguration->getAlias(), [
-            'transaction_id' => $transaction->getId(),
-        ]);
-
-        return [
-            'amount' => $transaction->getAmount(),
-            'automatic_response_url' => $returnUrl,
-            'cancel_return_url' => $callbackUrl,
-            'capture_day' => $paymentGatewayConfiguration->get('capture_day'),
-            'capture_mode' => $paymentGatewayConfiguration->get('capture_mode'),
-            'currency_code' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
-            'merchant_id' => $paymentGatewayConfiguration->get('merchant_id'),
-            'normal_return_url' => $callbackUrl,
-            'order_id' => $transaction->getId(),
-            'pathfile' => $this->pathfile,
-        ];
-    }
-
-    public function initialize(
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
-    ): array {
-        $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
-
-        ksort($options);
-
-        $builtOptions = implode(' ', array_map(
-            function ($k, $v) {
-                if (null !== $v) {
-                    return sprintf('%s="%s"', $k, $v);
-                }
-            },
-            array_keys($options),
-            $options
-        ));
-
-        $process = new Process(sprintf('%s %s', $this->requestBinPath, $builtOptions));
-        $process->run();
-
-        if (empty($process->getOutput())) {
-            throw new InvalidAtosSipsInitializationException('Empty data response');
-        }
-
-        list($_, $code, $error, $form) = explode('!', $process->getOutput());
-        if ('0' !== $code) {
-            throw new InvalidAtosSipsInitializationException($error);
-        }
-
-        return [
-            'form' => $form,
-        ];
-    }
-
-    public function buildHTMLView(
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
-    ): string {
-        $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
-
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/atos_sips_bin.html.twig', [
-            'initializationData' => $initializationData,
-        ]);
-    }
-
-    public function buildResponseParams(Request $request)
+    private function buildResponseParams(Request $request)
     {
         $shellOptions = array(
             'pathfile' => $this->pathfile,
@@ -184,6 +115,64 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
         unset($params['_']);
 
         return $params;
+    }
+
+    private function buildOptions(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): array {
+        $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
+        $returnUrl = $this->getReturnURL($paymentGatewayConfiguration->getAlias(), [
+            'transaction_id' => $transaction->getId(),
+        ]);
+
+        return [
+            'amount' => $transaction->getAmount(),
+            'automatic_response_url' => $returnUrl,
+            'cancel_return_url' => $callbackUrl,
+            'capture_day' => $paymentGatewayConfiguration->get('capture_day'),
+            'capture_mode' => $paymentGatewayConfiguration->get('capture_mode'),
+            'currency_code' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
+            'merchant_id' => $paymentGatewayConfiguration->get('merchant_id'),
+            'normal_return_url' => $callbackUrl,
+            'order_id' => $transaction->getId(),
+            'pathfile' => $this->pathfile,
+        ];
+    }
+
+    public function initialize(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): array {
+        $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
+
+        ksort($options);
+
+        $builtOptions = implode(' ', array_map(
+            function ($k, $v) {
+                if (null !== $v) {
+                    return sprintf('%s="%s"', $k, $v);
+                }
+            },
+            array_keys($options),
+            $options
+        ));
+
+        $process = new Process(sprintf('%s %s', $this->requestBinPath, $builtOptions));
+        $process->run();
+
+        if (empty($process->getOutput())) {
+            throw new InvalidAtosSipsInitializationException('Empty data response');
+        }
+
+        list($_, $code, $error, $form) = explode('!', $process->getOutput());
+        if ('0' !== $code) {
+            throw new InvalidAtosSipsInitializationException($error);
+        }
+
+        return [
+            'form' => $form,
+        ];
     }
 
     public function getResponse(

@@ -14,7 +14,7 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         return 'https://secure.ogone.com/ncol/test/orderstandard.asp'; // raw (for test)
     }
 
-    protected function buildOptions(
+    private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
@@ -70,11 +70,6 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/ogone.html.twig', [
             'initializationData' => $initializationData,
         ]);
-    }
-
-    public function retrieveTransactionUuid(Request $request): ?string
-    {
-        return null;
     }
 
     public function getResponse(

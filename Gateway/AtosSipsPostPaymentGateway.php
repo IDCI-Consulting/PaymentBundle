@@ -28,12 +28,12 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
         $this->serverHostName = $serverHostName;
     }
 
-    protected function getServerUrl(): string
+    private function getServerUrl(): string
     {
         return sprintf('https://%s/paymentInit', $this->serverHostName);
     }
 
-    protected function buildOptions(
+    private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
@@ -54,6 +54,11 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
             'transactionReference' => $transaction->getId(),
             'keyVersion' => $paymentGatewayConfiguration->get('version'),
         ];
+    }
+
+    private function buildSeal(array $options): string
+    {
+        return hash('sha256', mb_convert_encoding($options['build'].$options['secret'], 'UTF-8'));
     }
 
     public function initialize(
@@ -82,11 +87,6 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
             'build' => $builtOptions['build'],
             'seal' => $this->buildSeal($builtOptions),
         ];
-    }
-
-    private function buildSeal(array $options): string
-    {
-        return hash('sha256', mb_convert_encoding($options['build'].$options['secret'], 'UTF-8'));
     }
 
     public function buildHTMLView(

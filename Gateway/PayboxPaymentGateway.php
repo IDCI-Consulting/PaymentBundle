@@ -77,7 +77,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ));
     }
 
-    protected function buildOptions(
+    private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
