@@ -66,17 +66,17 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
             ->setStatus(PaymentStatus::STATUS_FAILED)
         ;
 
-        if (!$request->query->has('transaction_id')) {
-            return $gatewayResponse->setMessage('The request do not contains "transaction_id"');
+        try {
+            $resource = \Payplug\Notification::treat($request->request->all());
+        } catch (\Payplug\Exception\PayplugException $exception) {
+            return $gatewayResponse->setMessage('The request do not contains required post data');
         }
 
-        $resource = \Payplug\Notification::treat(null); // given by request
-
         $gatewayResponse
-            ->setTransactionUuid(null)
-            ->setAmount($payment->amount)
-            ->setCurrencyCode($payment->currency)
-        ; // given by payment/ressource
+            ->setTransactionUuid($resource->metadata->transaction_id)
+            ->setAmount($resource->amount)
+            ->setCurrencyCode($resource->currency)
+        ;
 
         if ($resource instanceof Payment && $resource->is_paid) {
             return $gatewayResponse->setMessage('Transaction unauthorized');
