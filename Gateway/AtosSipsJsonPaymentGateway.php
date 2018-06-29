@@ -2,6 +2,9 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use GuzzleHttp\Client;
+use IDCI\Bundle\PaymentBundle\Exception\InvalidAtosSipsInitializationException;
+use IDCI\Bundle\PaymentBundle\Exception\UnexpectedAtosSipsResponseCodeException;
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AtosSipsStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
@@ -11,7 +14,7 @@ use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGateway
+class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
 {
     /**
      * @var string
@@ -30,7 +33,7 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
 
     protected function getServerUrl(): string
     {
-        return sprintf('https://%s/paymentInit', $this->serverHostName);
+        return sprintf('https://%s/rs-services/v2/paymentInit', $this->serverHostName);
     }
 
     protected function buildOptions(
@@ -48,12 +51,28 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
             'captureDay' => $paymentGatewayConfiguration->get('capture_day'),
             'captureMode' => $paymentGatewayConfiguration->get('capture_mode'),
             'currencyCode' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
+            'interfaceVersion' => $paymentGatewayConfiguration->get('interface_version'),
             'merchantId' => $paymentGatewayConfiguration->get('merchant_id'),
             'normalReturnUrl' => $returnUrl,
-            'orderId' => $transaction->getItemId(),
+            'orderChannel' => $paymentGatewayConfiguration->get('order_channel'),
             'transactionReference' => $transaction->getId(),
             'keyVersion' => $paymentGatewayConfiguration->get('version'),
         ];
+    }
+
+    private function buildSeal(array $options, string $secretKey)
+    {
+        $dataForSeal = '';
+
+        foreach ($options as $key => $value) {
+            if ('keyVersion' !== $key && 'sealAlgorithm' !== $key) {
+                $dataForSeal .= $value;
+            }
+        }
+
+        $dataToSend = utf8_encode($dataForSeal);
+
+        return hash_hmac('sha256', $dataToSend, $secretKey);
     }
 
     public function initialize(
@@ -61,32 +80,25 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
         Transaction $transaction
     ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
+        $options['seal'] = $this->buildSeal($options, $paymentGatewayConfiguration->get('secret'));
 
-        $builtOptions = [
-            'options' => $options,
-            'build' => implode('|', array_map(
-                function ($k, $v) {
-                    if (null !== $v) {
-                        return sprintf('%s=%s', $k, $v);
-                    }
-                },
-                array_keys($options),
-                $options
-            )),
-            'secret' => $paymentGatewayConfiguration->get('secret'),
-        ];
+        $client = new Client(['defaults' => ['verify' => false]]);
 
-        return [
-            'url' => $this->getServerUrl(),
-            'interfaceVersion' => $paymentGatewayConfiguration->get('interface_version'),
-            'build' => $builtOptions['build'],
-            'seal' => $this->buildSeal($builtOptions),
-        ];
-    }
+        $response = $client->request('POST', $this->getServerUrl(), ['json' => $options]);
 
-    private function buildSeal(array $options): string
-    {
-        return hash('sha256', mb_convert_encoding($options['build'].$options['secret'], 'UTF-8'));
+        $returnParams = json_decode($response->getBody(), true);
+
+        if (0 == count($returnParams)) {
+            throw new InvalidAtosSipsInitializationException('Empty data response');
+        }
+
+        if ('00' != $returnParams['redirectionStatusCode']) {
+            throw new UnexpectedAtosSipsResponseCodeException(
+                AtosSipsStatusCode::STATUS[$returnParams['redirectionStatusCode']]
+            );
+        }
+
+        return $returnParams;
     }
 
     public function buildHTMLView(
@@ -95,7 +107,7 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/mercanet_post_atos_sips.html.twig', [
+        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/atos_sips_json.html.twig', [
             'initializationData' => $initializationData,
         ]);
     }
@@ -112,6 +124,8 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
         if (!$request->request->has('Data')) {
             return $gatewayResponse->setMessage('The request do not contains "Data"');
         }
+
+        $gatewayResponse->setRaw($request->get('Data'));
 
         $seal = hash('sha256', $request->get('Data').$paymentGatewayConfiguration->get('secret'));
 
@@ -150,12 +164,6 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
             return $gatewayResponse->setMessage('Transaction unauthorized');
         }
 
-        $transaction = $this->transactionManager->retrieveTransactionByUuid($returnParams['transactionReference']);
-
-        if ($transaction->getAmount() != $returnParams['amount']) {
-            return $gatewayResponse->setMessage('The amount of the transaction does not match with the initial transaction amount');
-        }
-
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
@@ -167,6 +175,7 @@ class MercanetPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
             'merchant_id',
             'capture_mode',
             'capture_day',
+            'order_channel',
             'interface_version',
         ];
     }

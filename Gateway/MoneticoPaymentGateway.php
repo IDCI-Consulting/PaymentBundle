@@ -8,7 +8,7 @@ use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class MoneticoPaymentGateway extends AbstractAtosSipsSealPaymentGateway
+class MoneticoPaymentGateway extends AbstractPaymentGateway
 {
     public function __construct(
         \Twig_Environment $templating,

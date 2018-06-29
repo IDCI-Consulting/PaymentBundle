@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGateway
+class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
 {
     /**
      * @var string
@@ -42,11 +42,6 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
         $this->pathfile = $pathfile;
         $this->requestBinPath = $requestBinPath;
         $this->responseBinPath = $responseBinPath;
-    }
-
-    public function getServerUrl(): string
-    {
-        return null;
     }
 
     protected function buildOptions(
@@ -113,12 +108,12 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/scellius_bin_atos_sips.html.twig', [
+        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/atos_sips_bin.html.twig', [
             'initializationData' => $initializationData,
         ]);
     }
 
-    private function buildResponseParams(Request $request)
+    public function buildResponseParams(Request $request)
     {
         $shellOptions = array(
             'pathfile' => $this->pathfile,
