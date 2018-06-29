@@ -37,16 +37,19 @@ class SogenactifPostAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGa
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
-        $callbackRoute = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
+        $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
+        $returnUrl = $this->getReturnURL($paymentGatewayConfiguration->getAlias(), [
+            'transaction_id' => $transaction->getId(),
+        ]);
 
         return [
             'amount' => $transaction->getAmount(),
-            'automaticResponseUrl' => $callbackRoute,
+            'automaticResponseUrl' => $returnUrl,
             'captureDay' => $paymentGatewayConfiguration->get('capture_day'),
             'captureMode' => $paymentGatewayConfiguration->get('capture_mode'),
             'currencyCode' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
             'merchantId' => $paymentGatewayConfiguration->get('merchant_id'),
-            'normalReturnUrl' => $callbackRoute,
+            'normalReturnUrl' => $callbackUrl,
             'orderId' => $transaction->getItemId(),
             'transactionReference' => $transaction->getId(),
             'keyVersion' => $paymentGatewayConfiguration->get('version'),

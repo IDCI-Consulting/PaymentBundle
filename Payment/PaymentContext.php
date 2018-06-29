@@ -71,6 +71,9 @@ class PaymentContext implements PaymentContextInterface
             ->getResponse($request, $this->paymentGatewayConfiguration)
         ;
 
+        dump($gatewayResponse);
+        die();
+
         if (null === $gatewayResponse->getTransactionUuid()) {
             throw new UndefinedTransactionException('No transaction uuid found for this callback');
         }

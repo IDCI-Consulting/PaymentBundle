@@ -3,10 +3,10 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use GuzzleHttp\Client;
-use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -82,6 +82,9 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         Transaction $transaction
     ): array {
         $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
+        $returnUrl = $this->getReturnURL($paymentGatewayConfiguration->getAlias(), [
+            'transaction_id' => $transaction->getId(),
+        ]);
 
         return [
             'PBX_SITE' => $paymentGatewayConfiguration->get('client_site'),
@@ -91,11 +94,12 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
             'PBX_DEVISE' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
             'PBX_CMD' => $transaction->getId(),
             'PBX_PORTEUR' => 'me@mail.com',
-            'PBX_EFFECTUE' => $callbackUrl,
-            'PBX_REFUSE' => $callbackUrl,
-            'PBX_ANNULE' => $callbackUrl,
+            'PBX_EFFECTUE' => $returnUrl,
+            'PBX_REFUSE' => $returnUrl,
+            'PBX_ANNULE' => $returnUrl,
             'PBX_HASH' => 'sha512',
             'PBX_RUF1' => 'POST',
+            'PBX_REPONDRE_A' => $callbackUrl,
             'PBX_RETOUR' => $this->getPayboxReturnString(),
             'PBX_TIME' => date('c'),
             'PBX_TYPEPAIEMENT' => 'CARTE',

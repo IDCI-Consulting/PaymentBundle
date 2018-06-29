@@ -111,4 +111,13 @@ class PaymentGatewayFrontTestController extends Controller
             'transaction' => $transaction,
         ]);
     }
+
+    /**
+     * @Route("/{configuration_alias}/transaction/done")
+     * @Method({"GET", "POST"})
+     */
+    public function doneAction(Request $request, $configuration_alias)
+    {
+        return $this->render('@IDCIPaymentBundle/Resources/views/done.html.twig');
+    }
 }

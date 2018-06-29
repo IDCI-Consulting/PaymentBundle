@@ -53,17 +53,20 @@ class ScelliusBinAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGatew
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
-        $callbackRoute = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
+        $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
+        $returnUrl = $this->getReturnURL($paymentGatewayConfiguration->getAlias(), [
+            'transaction_id' => $transaction->getId(),
+        ]);
 
         return [
             'amount' => $transaction->getAmount(),
-            'automatic_response_url' => $callbackRoute,
-            'cancel_return_url' => $callbackRoute,
+            'automatic_response_url' => $returnUrl,
+            'cancel_return_url' => $callbackUrl,
             'capture_day' => $paymentGatewayConfiguration->get('capture_day'),
             'capture_mode' => $paymentGatewayConfiguration->get('capture_mode'),
             'currency_code' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
             'merchant_id' => $paymentGatewayConfiguration->get('merchant_id'),
-            'normal_return_url' => $callbackRoute,
+            'normal_return_url' => $callbackUrl,
             'order_id' => $transaction->getId(),
             'pathfile' => $this->pathfile,
         ];

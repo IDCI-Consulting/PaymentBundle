@@ -2,10 +2,10 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Stripe;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -18,7 +18,9 @@ class StripePaymentGateway extends AbstractPaymentGateway
         return [
             'publicKey' => $paymentGatewayConfiguration->get('public_key'),
             'transaction' => $transaction,
-            'url' => $this->getCallbackURL($paymentGatewayConfiguration->getAlias()),
+            'url' => $this->getReturnURL($paymentGatewayConfiguration->getAlias(), [
+                'transaction_id' => $transaction->getId(),
+            ]),
         ];
     }
 

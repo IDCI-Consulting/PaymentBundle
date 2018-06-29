@@ -39,6 +39,17 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
         );
     }
 
+    public function getReturnURL(string $alias, ?array $parameters = [])
+    {
+        $parameters['configuration_alias'] = $alias;
+
+        return $this->router->generate(
+            'idci_payment_test_paymentgatewayfronttest_done',
+            $parameters,
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+    }
+
     abstract public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction

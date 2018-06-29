@@ -40,17 +40,20 @@ class MercanetJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
-        $callbackRoute = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
+        $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
+        $returnUrl = $this->getReturnURL($paymentGatewayConfiguration->getAlias(), [
+            'transaction_id' => $transaction->getId(),
+        ]);
 
         return [
             'amount' => $transaction->getAmount(),
-            'automaticResponseUrl' => $callbackRoute,
+            'automaticResponseUrl' => $callbackUrl,
             'captureDay' => $paymentGatewayConfiguration->get('capture_day'),
             'captureMode' => $paymentGatewayConfiguration->get('capture_mode'),
             'currencyCode' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
             'interfaceVersion' => $paymentGatewayConfiguration->get('interface_version'),
             'merchantId' => $paymentGatewayConfiguration->get('merchant_id'),
-            'normalReturnUrl' => $callbackRoute,
+            'normalReturnUrl' => $returnUrl,
             'orderChannel' => $paymentGatewayConfiguration->get('order_channel'),
             'transactionReference' => $transaction->getId(),
             'keyVersion' => $paymentGatewayConfiguration->get('version'),
@@ -140,7 +143,7 @@ class MercanetJsonAtosSipsPaymentGateway extends AbstractAtosSipsSealPaymentGate
         $gatewayResponse
             ->setTransactionUuid($returnParams['transactionReference'])
             ->setAmount($returnParams['amount'])
-            ->setCurrencyCode((new ISO4217())->findByNumeric(new $returnParams['currencyCode']())->getAlpha3())
+            ->setCurrencyCode((new ISO4217())->findByNumeric($returnParams['currencyCode'])->getAlpha3())
             ->setRaw($returnParams)
         ;
 
