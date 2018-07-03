@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -21,7 +22,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         return [
             'clientId' => $paymentGatewayConfiguration->get('client_id'),
             'transaction' => $transaction,
-            'url' => $this->getCallbackURL($paymentGatewayConfiguration->getAlias()),
+            'url' => $paymentGatewayConfiguration->get('callback_url'),
         ];
     }
 
@@ -40,6 +41,10 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
+        if (!$request->isMethod('POST')) {
+            throw new InvalidPaymentCallbackMethodException('Request method should be POST');
+        }
+
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
@@ -74,9 +79,12 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
 
     public static function getParameterNames(): ?array
     {
-        return [
-            'client_id',
-            'client_secret',
-        ];
+        return array_merge(
+            parent::getParameterNames(),
+            [
+                'client_id',
+                'client_secret',
+            ]
+        );
     }
 }

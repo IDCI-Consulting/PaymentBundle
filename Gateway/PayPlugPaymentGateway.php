@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -16,11 +17,6 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
-        $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
-        $returnUrl = $this->getReturnURL($paymentGatewayConfiguration->getAlias(), [
-            'transaction_id' => $transaction->getId(),
-        ]);
-
         Payplug\Payplug::setSecretKey($paymentGatewayConfiguration->get('secret_key'));
 
         $payment = Payplug\Payment::create([
@@ -32,10 +28,10 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
                 'last_name' => null,
             ],
             'hosted_payment' => [
-                'return_url' => $returnUrl,
-                'cancel_url' => $returnUrl,
+                'return_url' => $paymentGatewayConfiguration->get('return_url'),
+                'cancel_url' => $paymentGatewayConfiguration->get('return_url'),
             ],
-            'notification_url' => $callbackUrl,
+            'notification_url' => $paymentGatewayConfiguration->get('callback_url'),
             'metadata' => [
                 'transaction_id' => $transaction->getId(),
             ],
@@ -61,6 +57,10 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
+        if (!$request->isMethod('POST')) {
+            throw new InvalidPaymentCallbackMethodException('Request method should be POST');
+        }
+
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
@@ -95,8 +95,11 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
 
     public static function getParameterNames(): ?array
     {
-        return [
-            'secret_key',
-        ];
+        return array_merge(
+            parent::getParameterNames(),
+            [
+                'secret_key',
+            ]
+        );
     }
 }

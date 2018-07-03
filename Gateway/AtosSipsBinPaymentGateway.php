@@ -3,6 +3,7 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use IDCI\Bundle\PaymentBundle\Exception\InvalidAtosSipsInitializationException;
+use IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException;
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AtosSipsStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
@@ -11,7 +12,6 @@ use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
 {
@@ -32,12 +32,11 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
 
     public function __construct(
         \Twig_Environment $templating,
-        UrlGeneratorInterface $router,
         string $pathfile,
         string $requestBinPath,
         string $responseBinPath
     ) {
-        parent::__construct($templating, $router);
+        parent::__construct($templating);
 
         $this->pathfile = $pathfile;
         $this->requestBinPath = $requestBinPath;
@@ -121,20 +120,15 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
-        $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
-        $returnUrl = $this->getReturnURL($paymentGatewayConfiguration->getAlias(), [
-            'transaction_id' => $transaction->getId(),
-        ]);
-
         return [
             'amount' => $transaction->getAmount(),
-            'automatic_response_url' => $returnUrl,
-            'cancel_return_url' => $callbackUrl,
+            'automatic_response_url' => $paymentGatewayConfiguration->get('callback_url'),
+            'cancel_return_url' => $paymentGatewayConfiguration->get('return_url'),
             'capture_day' => $paymentGatewayConfiguration->get('capture_day'),
             'capture_mode' => $paymentGatewayConfiguration->get('capture_mode'),
             'currency_code' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
             'merchant_id' => $paymentGatewayConfiguration->get('merchant_id'),
-            'normal_return_url' => $callbackUrl,
+            'normal_return_url' => $paymentGatewayConfiguration->get('return_url'),
             'order_id' => $transaction->getId(),
             'pathfile' => $this->pathfile,
         ];
@@ -190,6 +184,10 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
+        if (!$request->isMethod('POST')) {
+            throw new InvalidPaymentCallbackMethodException('Request method should be POST');
+        }
+
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
@@ -209,7 +207,7 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
         ;
 
         if ('00' !== $returnParams['response_code']) {
-            $gatewayResponse->setMessage(AtosSipsStatusCode::STATUS[$returnParams['response_code']]);
+            $gatewayResponse->setMessage(AtosSipsStatusCode::getStatusMessage($returnParams['response_code']));
 
             if ('17' === $returnParams['response_code']) {
                 $gatewayResponse->setStatus(PaymentStatus::STATUS_CANCELED);
@@ -223,10 +221,13 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
 
     public static function getParameterNames(): ?array
     {
-        return [
-            'merchant_id',
-            'capture_mode',
-            'capture_day',
-        ];
+        return array_merge(
+            parent::getParameterNames(),
+            [
+                'merchant_id',
+                'capture_mode',
+                'capture_day',
+            ]
+        );
     }
 }

@@ -18,17 +18,15 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
-        $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
-
         return [
-            'ACCEPTURL' => $callbackUrl,
+            'ACCEPTURL' => $paymentGatewayConfiguration->get('return_url'),
             'AMOUNT' => $transaction->getAmount(),
-            'CANCELURL' => $callbackUrl,
+            'CANCELURL' => $paymentGatewayConfiguration->get('return_url'),
             //'CN' => '',
             'CURRENCY' => $transaction->getCurrencyCode(),
-            'DECLINEURL' => $callbackUrl,
+            'DECLINEURL' => $paymentGatewayConfiguration->get('return_url'),
             'EMAIL' => $transaction->getCustomerEmail(),
-            'EXCEPTIONURL' => $callbackUrl,
+            'EXCEPTIONURL' => $paymentGatewayConfiguration->get('return_url'),
             'LANGUAGE' => 'fr_FR',
             'ORDERID' => $transaction->getId(),
             //'OWNERADDRESS' => '',
@@ -81,9 +79,12 @@ class OgonePaymentGateway extends AbstractPaymentGateway
 
     public static function getParameterNames(): ?array
     {
-        return [
-            'client_id',
-            'client_secret',
-        ];
+        return array_merge(
+            parent::getParameterNames(),
+            [
+                'client_id',
+                'client_secret',
+            ]
+        );
     }
 }

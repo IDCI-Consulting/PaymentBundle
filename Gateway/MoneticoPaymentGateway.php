@@ -6,17 +6,9 @@ use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class MoneticoPaymentGateway extends AbstractPaymentGateway
 {
-    public function __construct(
-        \Twig_Environment $templating,
-        UrlGeneratorInterface $router
-    ) {
-        parent::__construct($templating, $router);
-    }
-
     private function getServerUrl(): string
     {
         return 'https://p.monetico-services.com/test/paiement.cgi'; //raw
@@ -26,21 +18,19 @@ class MoneticoPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
-        $callbackRoute = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
-
         return [
             'TPE' => $paymentGatewayConfiguration->get('TPE'),
             'date' => (new \DateTime())->format('d/m/Y:H:i:s'),
             'montant' => sprintf('%s%s', $transaction->getAmount() / 100, $transaction->getCurrencyCode()),
-            'reference' => substr($transaction->getId(), 0, 12), // PROBLEM : <= 12
+            'reference' => $transaction->getId(),
             'text-libre' => 'test',
             'version' => $paymentGatewayConfiguration->get('version'),
             'lgue' => 'FR',
             'societe' => $paymentGatewayConfiguration->get('societe'),
             'mail' => 'john.doe@example.com',
-            'url_retour' => $callbackRoute,
-            'url_retour_ok' => $callbackRoute,
-            'url_retour_err' => $callbackRoute,
+            'url_retour' => $paymentGatewayConfiguration->get('callback_url'),
+            'url_retour_ok' => $paymentGatewayConfiguration->get('return_url'),
+            'url_retour_err' => $paymentGatewayConfiguration->get('return_url'),
         ];
     }
 
@@ -105,11 +95,14 @@ class MoneticoPaymentGateway extends AbstractPaymentGateway
 
     public static function getParameterNames(): ?array
     {
-        return [
-            'version', // 3.0
-            'secret', // 12345678901234567890123456789012345678P0
-            'TPE', // 0000001
-            'societe', // 0123456789azertyuiop
-        ];
+        return array_merge(
+            parent::getParameterNames(),
+            [
+                'version',
+                'secret',
+                'TPE',
+                'societe',
+            ]
+        );
     }
 }

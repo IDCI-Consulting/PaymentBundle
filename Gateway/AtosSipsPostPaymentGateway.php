@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException;
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AtosSipsStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
@@ -9,7 +10,6 @@ use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
 {
@@ -20,10 +20,9 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
 
     public function __construct(
         \Twig_Environment $templating,
-        UrlGeneratorInterface $router,
         string $serverHostName
     ) {
-        parent::__construct($templating, $router);
+        parent::__construct($templating);
 
         $this->serverHostName = $serverHostName;
     }
@@ -37,19 +36,14 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
-        $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
-        $returnUrl = $this->getReturnURL($paymentGatewayConfiguration->getAlias(), [
-            'transaction_id' => $transaction->getId(),
-        ]);
-
         return [
             'amount' => $transaction->getAmount(),
-            'automaticResponseUrl' => $callbackUrl,
+            'automaticResponseUrl' => $paymentGatewayConfiguration->get('callback_url'),
             'captureDay' => $paymentGatewayConfiguration->get('capture_day'),
             'captureMode' => $paymentGatewayConfiguration->get('capture_mode'),
             'currencyCode' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
             'merchantId' => $paymentGatewayConfiguration->get('merchant_id'),
-            'normalReturnUrl' => $returnUrl,
+            'normalReturnUrl' => $paymentGatewayConfiguration->get('return_url'),
             'orderId' => $transaction->getItemId(),
             'transactionReference' => $transaction->getId(),
             'keyVersion' => $paymentGatewayConfiguration->get('version'),
@@ -104,6 +98,10 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
+        if (!$request->isMethod('POST')) {
+            throw new InvalidPaymentCallbackMethodException('Request method should be POST');
+        }
+
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
@@ -134,7 +132,7 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
         ;
 
         if ('00' !== $returnParams['responseCode']) {
-            $gatewayResponse->setMessage(AtosSipsStatusCode::STATUS[$returnParams['responseCode']]);
+            $gatewayResponse->setMessage(AtosSipsStatusCode::getStatusMessage($returnParams['responseCode']));
 
             if ('17' === $returnParams['responseCode']) {
                 $gatewayResponse->setStatus(PaymentStatus::STATUS_CANCELED);
@@ -161,13 +159,16 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
 
     public static function getParameterNames(): ?array
     {
-        return [
-            'version',
-            'secret',
-            'merchant_id',
-            'capture_mode',
-            'capture_day',
-            'interface_version',
-        ];
+        return array_merge(
+            parent::getParameterNames(),
+            [
+                'version',
+                'secret',
+                'merchant_id',
+                'capture_mode',
+                'capture_day',
+                'interface_version',
+            ]
+        );
     }
 }

@@ -4,6 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use GuzzleHttp\Client;
 use IDCI\Bundle\PaymentBundle\Exception\InvalidAtosSipsInitializationException;
+use IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException;
 use IDCI\Bundle\PaymentBundle\Exception\UnexpectedAtosSipsResponseCodeException;
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AtosSipsStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
@@ -12,7 +13,6 @@ use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
 {
@@ -23,10 +23,9 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
 
     public function __construct(
         \Twig_Environment $templating,
-        UrlGeneratorInterface $router,
         string $serverHostName
     ) {
-        parent::__construct($templating, $router);
+        parent::__construct($templating);
 
         $this->serverHostName = $serverHostName;
     }
@@ -55,20 +54,15 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
-        $callbackUrl = $this->getCallbackURL($paymentGatewayConfiguration->getAlias());
-        $returnUrl = $this->getReturnURL($paymentGatewayConfiguration->getAlias(), [
-            'transaction_id' => $transaction->getId(),
-        ]);
-
         return [
             'amount' => $transaction->getAmount(),
-            'automaticResponseUrl' => $callbackUrl,
+            'automaticResponseUrl' => $paymentGatewayConfiguration->get('callback_url'),
             'captureDay' => $paymentGatewayConfiguration->get('capture_day'),
             'captureMode' => $paymentGatewayConfiguration->get('capture_mode'),
             'currencyCode' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
             'interfaceVersion' => $paymentGatewayConfiguration->get('interface_version'),
             'merchantId' => $paymentGatewayConfiguration->get('merchant_id'),
-            'normalReturnUrl' => $returnUrl,
+            'normalReturnUrl' => $paymentGatewayConfiguration->get('return_url'),
             'orderChannel' => $paymentGatewayConfiguration->get('order_channel'),
             'transactionReference' => $transaction->getId(),
             'keyVersion' => $paymentGatewayConfiguration->get('version'),
@@ -94,7 +88,7 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
 
         if ('00' != $returnParams['redirectionStatusCode']) {
             throw new UnexpectedAtosSipsResponseCodeException(
-                AtosSipsStatusCode::STATUS[$returnParams['redirectionStatusCode']]
+                AtosSipsStatusCode::getStatusMessage($returnParams['redirectionStatusCode'])
             );
         }
 
@@ -116,6 +110,10 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
+        if (!$request->isMethod('POST')) {
+            throw new InvalidPaymentCallbackMethodException('Request method should be POST');
+        }
+
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
@@ -129,7 +127,7 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
 
         $seal = hash('sha256', $request->get('Data').$paymentGatewayConfiguration->get('secret'));
 
-        if ($request->request->get('Seal') != $seal) {
+        if ($request->request->get('Seal') !== $seal) {
             return $gatewayResponse->setMessage('Seal check failed');
         }
 
@@ -148,7 +146,7 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
         ;
 
         if ('00' !== $returnParams['responseCode']) {
-            $gatewayResponse->setMessage(AtosSipsStatusCode::STATUS[$returnParams['responseCode']]);
+            $gatewayResponse->setMessage(AtosSipsStatusCode::getStatusMessage($returnParams['responseCode']));
 
             if ('17' === $returnParams['responseCode']) {
                 $gatewayResponse->setStatus(PaymentStatus::STATUS_CANCELED);
@@ -169,14 +167,17 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
 
     public static function getParameterNames(): ?array
     {
-        return [
-            'version',
-            'secret',
-            'merchant_id',
-            'capture_mode',
-            'capture_day',
-            'order_channel',
-            'interface_version',
-        ];
+        return array_merge(
+            parent::getParameterNames(),
+            [
+                'version',
+                'secret',
+                'merchant_id',
+                'capture_mode',
+                'capture_day',
+                'order_channel',
+                'interface_version',
+            ]
+        );
     }
 }
