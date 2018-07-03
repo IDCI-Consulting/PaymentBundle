@@ -120,4 +120,9 @@ class PaymentGatewayFrontTestController extends Controller
     {
         return $this->render('@IDCIPaymentBundle/Resources/views/done.html.twig');
     }
+
+    public function cancelAction(Request $request, $configuration_alias)
+    {
+        return $this->render('@IDCIPaymentBundle/Resources/views/cancel.html.twig');
+    }
 }
