@@ -3,11 +3,15 @@
 namespace IDCI\Bundle\PaymentBundle\Step\Type;
 
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\StepBundle\Navigation\NavigatorInterface;
 use IDCI\Bundle\StepBundle\Step\Type\AbstractStepType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class PaymentStepType extends AbstractStepType
 {
@@ -16,9 +20,24 @@ class PaymentStepType extends AbstractStepType
      */
     protected $paymentManager;
 
-    public function __construct(PaymentManager $paymentManager)
-    {
+    /**
+     * @var RequestStack
+     */
+    protected $requestStack;
+
+    /**
+     * @var UrlGeneratorInterface
+     */
+    protected $router;
+
+    public function __construct(
+        PaymentManager $paymentManager,
+        RequestStack $requestStack,
+        UrlGeneratorInterface $router
+    ) {
         $this->paymentManager = $paymentManager;
+        $this->router = $router;
+        $this->requestStack = $requestStack;
     }
 
     public function configureOptions(OptionsResolver $resolver)
@@ -59,18 +78,50 @@ class PaymentStepType extends AbstractStepType
         return;
     }
 
+    private function getReturnUrl(Request $request, Transaction $transaction)
+    {
+        $currentUrl = $this->router->generate(
+            $request->attributes->get('_route'),
+            $request->attributes->get('_route_params'),
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        $parsedUrl = parse_url($currentUrl);
+
+        return sprintf('%s://%s%s?%s',
+            $parsedUrl['scheme'],
+            $parsedUrl['host'],
+            $parsedUrl['path'],
+            http_build_query([
+                'transaction_id' => $transaction->getId(),
+            ])
+        );
+    }
+
     public function prepareNavigation(NavigatorInterface $navigator, array $options)
     {
+        $request = $this->requestStack->getCurrentRequest();
+
         $paymentContext = $this->paymentManager->createPaymentContextByAlias($options['payment_gateway_configuration_alias']);
 
-        $transaction = $paymentContext->createTransaction([
-            'item_id' => $options['item_id'],
-            'amount' => $options['amount'],
-            'currency_code' => $options['currency_code'],
-            'customer_id' => $options['customer_id'],
-            'customer_email' => $options['customer_email'],
-            'description' => $options['description'],
-        ]);
+        if (!$request->query->has('transaction_id')) {
+            $transaction = $paymentContext->createTransaction([
+                'item_id' => $options['item_id'],
+                'amount' => $options['amount'],
+                'currency_code' => $options['currency_code'],
+                'customer_id' => $options['customer_id'],
+                'customer_email' => $options['customer_email'],
+                'description' => $options['description'],
+            ]);
+        } else {
+            // transaction manager pour récupérer la transaction ? retrieveTransactionByUuid()
+            die('done');
+        }
+
+        $paymentContext
+            ->getPaymentGatewayConfiguration()
+            ->set('return_url', $this->getReturnUrl($request, $transaction))
+        ;
 
         $options['pre_step_content'] = $paymentContext->buildHTMLView();
 
