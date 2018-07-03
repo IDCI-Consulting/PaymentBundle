@@ -9,6 +9,13 @@ services:
         resource: '../../*'
         exclude: '../../{Entity,Repository,Tests}'
 
+    # Step
+
+    IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType:
+        tags:
+            - { name: idci_step.step_type, alias: payment }
+    IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepTypeInterface: '@IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType'
+
     # Payment Gateways
 
     IDCI\Bundle\PaymentBundle\Gateway\StripePaymentGateway:
