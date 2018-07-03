@@ -6,7 +6,6 @@ use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 abstract class AbstractPaymentGateway implements PaymentGatewayInterface
 {
@@ -15,39 +14,9 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
      */
     protected $templating;
 
-    /**
-     * @var UrlGeneratorInterface
-     */
-    protected $router;
-
-    public function __construct(
-        \Twig_Environment $templating,
-        UrlGeneratorInterface $router
-    ) {
+    public function __construct(\Twig_Environment $templating)
+    {
         $this->templating = $templating;
-        $this->router = $router;
-    }
-
-    protected function getCallbackURL(string $alias, ?array $parameters = []): string
-    {
-        $parameters['paymentGatewayConfigurationAlias'] = $alias;
-
-        return $this->router->generate(
-            'idci_payment_paymentgateway_callback',
-            $parameters,
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
-    }
-
-    protected function getReturnURL(string $alias, ?array $parameters = [])
-    {
-        $parameters['configuration_alias'] = $alias;
-
-        return $this->router->generate(
-            'idci_payment_test_paymentgatewayfronttest_done',
-            $parameters,
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
     }
 
     abstract public function initialize(
@@ -65,5 +34,11 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse;
 
-    abstract public static function getParameterNames(): ?array;
+    public static function getParameterNames(): ?array
+    {
+        return [
+            'callback_url',
+            'return_url',
+        ];
+    }
 }
