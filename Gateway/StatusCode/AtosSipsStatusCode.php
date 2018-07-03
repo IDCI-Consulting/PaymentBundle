@@ -21,4 +21,9 @@ class AtosSipsStatusCode
         '97' => 'Time expired, transaction refused',
         '99' => 'Temporary problem with the payment server',
     ];
+
+    public static function getStatusMessage(string $code)
+    {
+        return self::STATUS[$code];
+    }
 }
