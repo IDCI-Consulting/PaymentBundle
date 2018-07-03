@@ -1,7 +1,10 @@
-<form action="{{ initializationData.url }}" method="POST">
+<form action="{{ initializationData.proxyUrl }}" method="POST">
     <input type="hidden" name="amount" value="{{ initializationData.transaction.amount }}">
     <input type="hidden" name="currencyCode" value="{{ initializationData.transaction.currencyCode }}">
     <input type="hidden" name="transactionId" value="{{ initializationData.transaction.id }}">
+    <input type="hidden" name="callbackUrl" value="{{ initializationData.callbackUrl }}">
+    <input type="hidden" name="returnUrl" value="{{ initializationData.returnUrl }}">
+    <input type="hidden" name="cancelUrl" value="{{ initializationData.cancelUrl }}">
     <script
         src="https://checkout.stripe.com/checkout.js" class="stripe-button"
         data-key="{{ initializationData.publicKey }}"
