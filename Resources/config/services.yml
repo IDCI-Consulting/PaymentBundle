@@ -40,31 +40,36 @@ services:
         tags:
             - { name: idci_payment.gateways, alias: paypal }
 
-    IDCI\Bundle\PaymentBundle\Gateway\AtosSipsJsonPaymentGateway:
+    idci_payment.gateways.mercanet_json:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsJsonPaymentGateway
         arguments:
             $serverHostName: '%idci_payment.mercanet.server_host_name%'
         tags:
             - { name: idci_payment.gateways, alias: mercanet_json_atos_sips }
 
-    IDCI\Bundle\PaymentBundle\Gateway\AtosSipsJsonPaymentGateway:
+    idci_payment.gateways.sogenactif_json:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsJsonPaymentGateway
         arguments:
             $serverHostName: '%idci_payment.sogenactif.server_host_name%'
         tags:
             - { name: idci_payment.gateways, alias: sogenactif_json_atos_sips }
 
-    IDCI\Bundle\PaymentBundle\Gateway\AtosSipsPostPaymentGateway:
+    idci_payment.gateways.mercanet_post:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsPostPaymentGateway
         arguments:
             $serverHostName: '%idci_payment.mercanet.server_host_name%'
         tags:
             - { name: idci_payment.gateways, alias: mercanet_post_atos_sips }
 
-    IDCI\Bundle\PaymentBundle\Gateway\AtosSipsPostPaymentGateway:
+    idci_payment.gateways.sogenactif_post:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsPostPaymentGateway
         arguments:
             $serverHostName: '%idci_payment.sogenactif.server_host_name%'
         tags:
             - { name: idci_payment.gateways, alias: sogenactif_post_atos_sips }
 
-    IDCI\Bundle\PaymentBundle\Gateway\AtosSipsBinPaymentGateway:
+    idci_payment.gateways.sogenactif_bin:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsBinPaymentGateway
         arguments:
             $pathfile: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/param/sogenactif/pathfile.sogenactif')"
             $requestBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/request')"
@@ -72,7 +77,8 @@ services:
         tags:
             - { name: idci_payment.gateways, alias: sogenactif_bin_atos_sips }
 
-    IDCI\Bundle\PaymentBundle\Gateway\AtosSipsBinPaymentGateway:
+    idci_payment.gateways.scellius_bin:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsBinPaymentGateway
         arguments:
             $pathfile: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/param/scellius/pathfile.scellius')"
             $requestBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/request')"
