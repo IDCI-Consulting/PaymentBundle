@@ -7,11 +7,11 @@
 
     paypal.Button.render({
 
-        env: 'sandbox', // Or 'sandbox'
+        env: '{{ initializationData.environment }}',
 
         client: {
             sandbox:    '{{ initializationData.clientId }}',
-            production: 'xxxxxxxxx'
+            production: '{{ initializationData.clientId }}'
         },
 
         commit: true, // Show a 'Pay Now' button
