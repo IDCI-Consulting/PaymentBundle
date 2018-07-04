@@ -23,7 +23,6 @@
             <th>Description</th>
             <td>{% if transaction.description is not null %}{{ transaction.description }}{% else %}N/A{% endif %}</td>
         </tr>
-        </tbody>
     </table>
     {{ view | raw }}
 {% endblock %}
