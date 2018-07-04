@@ -1,4 +1,3 @@
----
 idci_payment_paymentgateway:
     resource: IDCI\Bundle\PaymentBundle\Controller\PaymentGatewayController
 
