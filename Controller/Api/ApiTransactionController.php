@@ -29,6 +29,15 @@ class ApiTransactionController extends Controller
      */
     public function show($id)
     {
-        return new JsonResponse($this->transactionManager->retrieveTransactionByUuid($id)->toArray());
+        $transaction = $this->transactionManager->retrieveTransactionByUuid($id);
+
+        return new JsonResponse([
+            'id' => $transaction->getId(),
+            'amount' => $transaction->getAmount(),
+            'currencyCode' => $transaction->getCurrencyCode(),
+            'status' => $transaction->getStatus(),
+            'createdAt' => $transaction->getCreatedAt(),
+            'updatedAt' => $transaction->getUpdatedAt(),
+        ]);
     }
 }
