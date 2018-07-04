@@ -8,6 +8,7 @@ use IDCI\Bundle\PaymentBundle\Exception\NoPaymentGatewayConfigurationFoundExcept
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistryInterface;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContext;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContextInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class PaymentManager
 {
@@ -26,12 +27,19 @@ class PaymentManager
      */
     private $transactionManager;
 
+    /**
+     * @var EventDispatcher
+     */
+    private $dispatcher;
+
     public function __construct(
         ObjectManager $om,
         PaymentGatewayRegistryInterface $paymentGatewayRegistry,
-        TransactionManagerInterface $transactionManager
+        TransactionManagerInterface $transactionManager,
+        EventDispatcher $dispatcher
     ) {
         $this->om = $om;
+        $this->dispatcher = $dispatcher;
         $this->paymentGatewayRegistry = $paymentGatewayRegistry;
         $this->transactionManager = $transactionManager;
     }
@@ -58,7 +66,7 @@ class PaymentManager
         }
 
         return new PaymentContext(
-            $this->om,
+            $this->dispatcher,
             $paymentGatewayConfiguration,
             $this->paymentGatewayRegistry->get($paymentGatewayConfiguration->getGatewayName()),
             $this->transactionManager

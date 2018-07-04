@@ -3,10 +3,13 @@
 namespace IDCI\Bundle\PaymentBundle\Controller;
 
 use Doctrine\Common\Persistence\ObjectManager;
+use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -37,7 +40,7 @@ class PaymentGatewayController extends Controller
      * @Route("/{paymentGatewayConfigurationAlias}/callback")
      * @Method({"GET", "POST"})
      */
-    public function callbackAction(Request $request, $paymentGatewayConfigurationAlias)
+    public function callbackAction(Request $request, EventDispatcher $dispatcher, $paymentGatewayConfigurationAlias)
     {
         $logger = $this->container->get('monolog.logger.payment');
 
@@ -52,6 +55,14 @@ class PaymentGatewayController extends Controller
         ;
 
         $transaction = $paymentContext->handleGatewayCallback($request);
+
+        $event = [
+            PaymentStatus::STATUS_APPROVED => TransactionEvent::APPROVED,
+            PaymentStatus::STATUS_CANCELED => TransactionEvent::CANCELED,
+            PaymentStatus::STATUS_FAILED => TransactionEvent::FAILED,
+        ];
+
+        $this->dispatcher->dispatch($event[$transaction->getStatus()], new TransactionEvent($this->transaction));
 
         return new JsonResponse($transaction->toArray());
     }

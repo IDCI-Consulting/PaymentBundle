@@ -4,11 +4,13 @@ namespace IDCI\Bundle\PaymentBundle\Payment;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
+use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedTransactionException;
 use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Request;
 
 class PaymentContext implements PaymentContextInterface
@@ -39,13 +41,13 @@ class PaymentContext implements PaymentContextInterface
     private $transaction;
 
     public function __construct(
-        ObjectManager $om,
+        EventDispatcher $dispatcher,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         PaymentGatewayInterface $paymentGateway,
         TransactionManagerInterface $transactionManager,
         ?Transaction $transaction = null
     ) {
-        $this->om = $om;
+        $this->dispatcher = $dispatcher;
         $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
         $this->paymentGateway = $paymentGateway;
         $this->transactionManager = $transactionManager;
@@ -58,8 +60,7 @@ class PaymentContext implements PaymentContextInterface
 
         $this->transaction = TransactionFactory::getInstance()->create($parameters);
 
-        $this->om->persist($this->transaction);
-        $this->om->flush();
+        $this->dispatcher->dispatch(TransactionEvent::CREATED, new TransactionEvent($this->transaction));
 
         return $this->transaction;
     }
