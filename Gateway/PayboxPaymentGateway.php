@@ -143,12 +143,8 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
-        if (!$request->isMethod('GET')) {
-            throw new InvalidPaymentCallbackMethodException('Request method should be GET');
-        }
-
-        if (!$request->query->has('reference')) {
-            return $gatewayResponse->setMessage('The request not contains "reference"');
+        if (!$request->isMethod('POST')) {
+            throw new InvalidPaymentCallbackMethodException('Request method should be POST');
         }
 
         $gatewayResponse = (new GatewayResponse())
@@ -156,7 +152,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
             ->setStatus(PaymentStatus::STATUS_FAILED)
             ->setAmount($request->get('amount'))
             ->setTransactionUuid($request->get('reference'))
-            ->setRaw($request->query->all())
+            ->setRaw($request->request->all())
         ;
 
         if ('00000' !== $request->get('error')) {
@@ -167,7 +163,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
             (new Client())->request('GET', $this->publicKeyUrl)->getBody()
         );
 
-        $data = $request->query->all();
+        $data = $request->request->all();
         unset($data['hash']);
 
         $builtQuery = implode('&', array_map(
