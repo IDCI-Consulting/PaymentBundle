@@ -148,12 +148,6 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
             return $gatewayResponse->setMessage('Transaction unauthorized');
         }
 
-        $transaction = $this->transactionManager->retrieveTransactionByUuid($returnParams['transactionReference']);
-
-        if ($transaction->getAmount() != $returnParams['amount']) {
-            return $gatewayResponse->setMessage('The amount of the transaction does not match with the initial transaction amount');
-        }
-
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
