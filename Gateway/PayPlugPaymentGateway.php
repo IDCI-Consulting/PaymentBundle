@@ -66,19 +66,10 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
             ->setStatus(PaymentStatus::STATUS_FAILED)
         ;
 
-        if (null !== $request->getContent()) {
+        if (empty($request->request->all())) {
             return $gatewayResponse->setMessage('The request do not contains required post data');
         }
-
-        $requestContent = $request->getContent();
-
-        try {
-            $resource = \Payplug\Notification::treat($requestContent);
-        } catch (\Payplug\Exception\PayplugException $exception) {
-            return $gatewayResponse->setMessage('Treat transaction is impossible');
-        }
-
-        $params = json_decode($requestContent);
+        $params = $request->request->all();
 
         $gatewayResponse
             ->setTransactionUuid($params['metadata']['transaction_id'])
@@ -86,7 +77,7 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
             ->setCurrencyCode($params['currency'])
         ;
 
-        if ($resource instanceof Payment && $resource->is_paid) {
+        if (!$params['is_paid']) {
             return $gatewayResponse->setMessage('Transaction unauthorized');
         }
 
