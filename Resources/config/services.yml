@@ -9,6 +9,9 @@ services:
         resource: '../../*'
         exclude: '../../{Entity,Repository,Tests}'
 
+    # Manager
+    IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface: '@IDCI\Bundle\PaymentBundle\Manager\DoctrineTransactionManager'
+
     # Step
 
     IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType:
