@@ -22,6 +22,11 @@ services:
         arguments:
             $enabled: '%idci_payment.enabled_doctrine_subscriber%'
 
+    IDCI\Bundle\PaymentBundle\Event\Subscriber\LoggerTransactionEventSubscriber:
+        arguments:
+            $logger: '@monolog.logger.payment'
+            $enabled: '%idci_payment.enabled_logger_subscriber%'
+
     # Payment Gateways
 
     IDCI\Bundle\PaymentBundle\Gateway\StripePaymentGateway:
