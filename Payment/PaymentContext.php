@@ -125,7 +125,7 @@ class PaymentContext implements PaymentContextInterface
 
     public function setTransaction(Transaction $transaction): PaymentContextInterface
     {
-        if ($this->hasPayment()) {
+        if ($this->hasTransaction()) {
             throw new AlreadyDefinedTransactionException(
                 sprintf('The payment context has already a transaction defined.')
             );
