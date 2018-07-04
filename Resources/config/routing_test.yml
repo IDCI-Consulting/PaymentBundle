@@ -1,3 +1,2 @@
----
 idci_payment_test_paymentgatewayfront:
     resource: IDCI\Bundle\PaymentBundle\Controller\Test\PaymentGatewayFrontTestController
