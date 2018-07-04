@@ -2,10 +2,14 @@
 
 namespace IDCI\Bundle\PaymentBundle\Step\Type;
 
+use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
+use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use IDCI\Bundle\StepBundle\Navigation\NavigatorInterface;
 use IDCI\Bundle\StepBundle\Step\Type\AbstractStepType;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -21,6 +25,11 @@ class PaymentStepType extends AbstractStepType
     protected $paymentManager;
 
     /**
+     * @var TransactionManagerInterface
+     */
+    protected $transactionManager;
+
+    /**
      * @var RequestStack
      */
     protected $requestStack;
@@ -30,14 +39,25 @@ class PaymentStepType extends AbstractStepType
      */
     protected $router;
 
+    /**
+     * @var \Twig_Environment
+     */
+    protected $templating;
+
     public function __construct(
         PaymentManager $paymentManager,
+        TransactionManagerInterface $transactionManager,
+        EventDispatcher $dispatcher,
         RequestStack $requestStack,
-        UrlGeneratorInterface $router
+        UrlGeneratorInterface $router,
+        \Twig_Environment $templating
     ) {
         $this->paymentManager = $paymentManager;
+        $this->transactionManager = $transactionManager;
+        $this->dispatcher = $dispatcher;
         $this->router = $router;
         $this->requestStack = $requestStack;
+        $this->templating = $templating;
     }
 
     public function configureOptions(OptionsResolver $resolver)
@@ -98,33 +118,69 @@ class PaymentStepType extends AbstractStepType
         );
     }
 
-    public function prepareNavigation(NavigatorInterface $navigator, array $options)
+    private function prepareInitializeTransaction(NavigatorInterface $navigator, array $options)
     {
         $request = $this->requestStack->getCurrentRequest();
+        $paymentContext = $this->paymentManager->createPaymentContextByAlias(
+            $options['payment_gateway_configuration_alias']
+        );
 
-        $paymentContext = $this->paymentManager->createPaymentContextByAlias($options['payment_gateway_configuration_alias']);
-
-        if (!$request->query->has('transaction_id')) {
-            $transaction = $paymentContext->createTransaction([
-                'item_id' => $options['item_id'],
-                'amount' => $options['amount'],
-                'currency_code' => $options['currency_code'],
-                'customer_id' => $options['customer_id'],
-                'customer_email' => $options['customer_email'],
-                'description' => $options['description'],
-            ]);
-        } else {
-            // transaction manager pour récupérer la transaction ? retrieveTransactionByUuid()
-            die('done');
-        }
+        $transaction = $paymentContext->createTransaction([
+            'item_id' => $options['item_id'],
+            'amount' => $options['amount'],
+            'currency_code' => $options['currency_code'],
+            'customer_id' => $options['customer_id'],
+            'customer_email' => $options['customer_email'],
+            'description' => $options['description'],
+        ]);
 
         $paymentContext
             ->getPaymentGatewayConfiguration()
             ->set('return_url', $this->getReturnUrl($request, $transaction))
         ;
 
-        $options['pre_step_content'] = $paymentContext->buildHTMLView();
+        $options['pre_step_content'] = $this->templating->render(
+            '@IDCIPaymentBundle/Resources/views/PaymentStep/initialize.html.twig',
+            [
+                'view' => $paymentContext->buildHTMLView(),
+                'transaction' => $transaction,
+            ]
+        );
 
         return $options;
+    }
+
+    private function prepareReturnTransaction(NavigatorInterface $navigator, array $options)
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        $paymentContext = $this->paymentManager->createPaymentContextByAlias(
+            $options['payment_gateway_configuration_alias']
+        );
+
+        $transaction = $this->transactionManager->retrieveTransactionByUuid($request->query->get('transaction_id'));
+        $paymentContext->setTransaction($transaction);
+
+        if (PaymentStatus::STATUS_CREATED === $transaction->getStatus()) {
+            $transaction->setStatus(PaymentStatus::STATUS_PENDING);
+            $this->dispatcher->dispatch(TransactionEvent::PENDING, new TransactionEvent($transaction));
+        }
+
+        $options['pre_step_content'] = $this->templating->render(
+            '@IDCIPaymentBundle/Resources/views/PaymentStep/return.html.twig',
+            ['transaction' => $transaction]
+        );
+
+        return $options;
+    }
+
+    public function prepareNavigation(NavigatorInterface $navigator, array $options)
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        if (!$request->query->has('transaction_id')) {
+            return $this->prepareInitializeTransaction($navigator, $options);
+        }
+
+        return $this->prepareReturnTransaction($navigator, $options);
     }
 }
