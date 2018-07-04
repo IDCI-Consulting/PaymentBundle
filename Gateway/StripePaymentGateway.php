@@ -35,7 +35,7 @@ class StripePaymentGateway extends AbstractPaymentGateway
             'publicKey' => $paymentGatewayConfiguration->get('public_key'),
             'proxyUrl' => $this->router->generate(
                 'idci_payment_stripepaymentgateway_proxy',
-                ['paymentGatewayConfigurationAlias' => $paymentGatewayConfiguration->getAlias()],
+                ['configuration_alias' => $paymentGatewayConfiguration->getAlias()],
                 UrlGeneratorInterface::ABSOLUTE_URL
             ),
             'returnUrl' => $paymentGatewayConfiguration->get('return_url'),
