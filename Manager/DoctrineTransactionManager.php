@@ -6,7 +6,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
 
-class TransactionManager implements TransactionManagerInterface
+class DoctrineTransactionManager implements TransactionManagerInterface
 {
     /**
      * @var ObjectManager
