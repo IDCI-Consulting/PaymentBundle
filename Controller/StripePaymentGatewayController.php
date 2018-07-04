@@ -26,14 +26,14 @@ class StripePaymentGatewayController extends Controller
     }
 
     /**
-     * @Route("/proxy/{paymentGatewayConfigurationAlias}")
+     * @Route("/proxy/{configuration_alias}")
      * @Method({"POST"})
      */
-    public function proxyAction(Request $request, $paymentGatewayConfigurationAlias)
+    public function proxyAction(Request $request, $configuration_alias)
     {
         $paymentContext = $this
             ->paymentManager
-            ->createPaymentContextByAlias($paymentGatewayConfigurationAlias)
+            ->createPaymentContextByAlias($configuration_alias)
         ;
 
         $paymentGatewayConfiguration = $paymentContext->getPaymentGatewayConfiguration();

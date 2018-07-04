@@ -37,21 +37,21 @@ class PaymentGatewayController extends Controller
     }
 
     /**
-     * @Route("/{paymentGatewayConfigurationAlias}/callback")
+     * @Route("/{configuration_alias}/callback")
      * @Method({"GET", "POST"})
      */
-    public function callbackAction(Request $request, EventDispatcher $dispatcher, $paymentGatewayConfigurationAlias)
+    public function callbackAction(Request $request, EventDispatcher $dispatcher, $configuration_alias)
     {
         $logger = $this->container->get('monolog.logger.payment');
 
-        $logger->info('Gateway configuration alias : '.$paymentGatewayConfigurationAlias);
+        $logger->info('Gateway configuration alias : '.$configuration_alias);
         $logger->info('GET data: '.json_encode($request->query->all(), JSON_PRETTY_PRINT));
         $logger->info('POST data: '.json_encode($request->request->all(), JSON_PRETTY_PRINT));
         $logger->info('IP SOURCE : '.$request->getClientIp());
 
         $paymentContext = $this
             ->paymentManager
-            ->createPaymentContextByAlias($paymentGatewayConfigurationAlias)
+            ->createPaymentContextByAlias($configuration_alias)
         ;
 
         $transaction = $paymentContext->handleGatewayCallback($request);
