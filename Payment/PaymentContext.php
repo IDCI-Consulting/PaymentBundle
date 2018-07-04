@@ -86,8 +86,8 @@ class PaymentContext implements PaymentContextInterface
         if ($transaction->getAmount() != $gatewayResponse->getAmount()) {
             $status = PaymentStatus::STATUS_FAILED;
         } elseif (
-            null != $gatewayResponse->getCurrencyCode() &&
-            $transaction->getCurrencyCode() != $gatewayResponse->getCurrencyCode()
+            null !== $gatewayResponse->getCurrencyCode() &&
+            $transaction->getCurrencyCode() !== $gatewayResponse->getCurrencyCode()
         ) {
             $status = PaymentStatus::STATUS_FAILED;
         }
