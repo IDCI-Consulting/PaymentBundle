@@ -1,0 +1,24 @@
+<h1>Transaction</h1>
+<table>
+    <tr>
+        <th>Item n°</th>
+        <td>{{ transaction.itemId }}</td>
+    </tr>
+    <tr>
+        <th>Price</th>
+        <td>{{ transaction.amount / 100 }} {{ transaction.currencyCode }}</td>
+    </tr>
+    <tr>
+        <th>Customer n°</th>
+        <td>{% if transaction.customerId is not null %}{{ transaction.customerId }}{% else %}N/A{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Customer Email</th>
+        <td>{% if transaction.customerEmail is not null %}{{ transaction.customerEmail }}{% else %}N/A{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Description</th>
+        <td>{% if transaction.description is not null %}{{ transaction.description }}{% else %}N/A{% endif %}</td>
+    </tr>
+</table>
+{{ view | raw }}
