@@ -8,9 +8,7 @@ class PaymentStatus
 
     const STATUS_FAILED = 'failed';
 
-    const STATUS_APPROVED = 'validated';
+    const STATUS_APPROVED = 'approved';
 
     const STATUS_CANCELED = 'canceled';
-
-    const STATUS_PENDING = 'pending';
 }
