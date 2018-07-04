@@ -34,6 +34,9 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
             TransactionEvent::FAILED => [
                 ['fail', 0],
             ],
+            TransactionEvent::PENDING => [
+                ['pend', 0],
+            ],
         ];
     }
 
@@ -71,5 +74,14 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
         }
 
         $this->logger->info('Transaction failed: '.$transactionEvent->getTransaction()->getId());
+    }
+
+    public function pend(TransactionEvent $transactionEvent)
+    {
+        if (!$this->enabled) {
+            return;
+        }
+
+        $this->logger->info('Transaction pending: '.$transactionEvent->getTransaction()->getId());
     }
 }

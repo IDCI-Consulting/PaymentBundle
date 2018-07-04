@@ -11,6 +11,7 @@ class TransactionEvent extends Event
     const CANCELED = 'idci_payment.transaction.canceled';
     const CREATED = 'idci_payment.transaction.created';
     const FAILED = 'idci_payment.transaction.failed';
+    const PENDING = 'idci_payment.transaction.pending';
 
     protected $transaction;
 
