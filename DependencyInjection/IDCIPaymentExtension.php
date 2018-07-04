@@ -14,9 +14,10 @@ class IDCIPaymentExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $container->setParameter('idci_payment.gateways', $config['gateways']);
-
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
+
+        $container->setParameter('idci_payment.enabled_doctrine_subscriber', $config['enabled_doctrine_subscriber']);
+        $container->setParameter('idci_payment.enabled_logger_subscriber', $config['enabled_logger_subscriber']);
     }
 }

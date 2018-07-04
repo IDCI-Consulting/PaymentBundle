@@ -1,0 +1,26 @@
+<?php
+
+namespace IDCI\Bundle\PaymentBundle\Event;
+
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use Symfony\Component\EventDispatcher\Event;
+
+class TransactionEvent extends Event
+{
+    const APPROVED = 'idci_payment.transaction.approved';
+    const CANCELED = 'idci_payment.transaction.canceled';
+    const CREATED = 'idci_payment.transaction.created';
+    const FAILED = 'idci_payment.transaction.failed';
+
+    protected $transaction;
+
+    public function __construct(Transaction $transaction)
+    {
+        $this->transaction = $transaction;
+    }
+
+    public function getTransaction()
+    {
+        return $this->transaction;
+    }
+}

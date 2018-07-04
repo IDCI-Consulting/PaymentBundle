@@ -14,9 +14,8 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
-                ->arrayNode('gateways')
-                    ->scalarPrototype()->end()
-                ->end()
+                ->booleanNode('enabled_doctrine_subscriber')->end()
+                ->booleanNode('enabled_logger_subscriber')->end()
             ->end()
         ;
 

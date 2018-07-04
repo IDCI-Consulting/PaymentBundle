@@ -16,6 +16,12 @@ services:
             - { name: idci_step.step_type, alias: payment }
     IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepTypeInterface: '@IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType'
 
+    # Subscriber
+
+    IDCI\Bundle\PaymentBundle\Event\Subscriber\DoctrineTransactionEventSubscriber:
+        arguments:
+            $enabled: '%idci_payment.enabled_doctrine_subscriber%'
+
     # Payment Gateways
 
     IDCI\Bundle\PaymentBundle\Gateway\StripePaymentGateway:
