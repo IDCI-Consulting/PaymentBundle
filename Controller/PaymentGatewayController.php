@@ -44,10 +44,16 @@ class PaymentGatewayController extends Controller
     {
         $logger = $this->container->get('monolog.logger.payment');
 
-        $logger->info('Gateway configuration alias : '.$configuration_alias);
-        $logger->info('GET data: '.json_encode($request->query->all(), JSON_PRETTY_PRINT));
-        $logger->info('POST data: '.json_encode($request->request->all(), JSON_PRETTY_PRINT));
-        $logger->info('IP SOURCE : '.$request->getClientIp());
+        $data = $request->isMethod(Request::METHOD_POST) ? $request->request->all() : $request->query->all();
+
+        $logger->info(
+            sprintf(
+                '[gateway configuration alias: %s, data: %s, ip: %s]',
+                $configuration_alias,
+                json_encode($data),
+                $request->getClientIp()
+            )
+        );
 
         $paymentContext = $this
             ->paymentManager
@@ -62,7 +68,7 @@ class PaymentGatewayController extends Controller
             PaymentStatus::STATUS_FAILED => TransactionEvent::FAILED,
         ];
 
-        $this->dispatcher->dispatch($event[$transaction->getStatus()], new TransactionEvent($this->transaction));
+        $dispatcher->dispatch($event[$transaction->getStatus()], new TransactionEvent($transaction));
 
         return new JsonResponse($transaction->toArray());
     }
