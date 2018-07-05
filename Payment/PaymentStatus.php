@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Payment;
 
-class PaymentStatus
+final class PaymentStatus
 {
     const STATUS_CREATED = 'created';
 
