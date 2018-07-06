@@ -1,0 +1,43 @@
+<div id="paypal-button"></div>
+
+<script src="https://www.paypalobjects.com/api/checkout.js"></script>
+
+<script>
+    var EXECUTE_PAYMENT_URL = '{{ initializationData.url }}';
+
+    paypal.Button.render({
+
+        env: '{{ initializationData.environment }}',
+
+        client: {
+            sandbox:    '{{ initializationData.clientId }}',
+            production: '{{ initializationData.clientId }}'
+        },
+
+        commit: true, // Show a 'Pay Now' button
+
+        payment: function(data, actions) {
+            return actions.payment.create({
+                payment: {
+                    transactions: [
+                        {
+                            amount: { total: '{{ initializationData.transaction.amount / 100 }}', currency: '{{ initializationData.transaction.currencyCode }}' }
+                        }
+                    ]
+                }
+            });
+        },
+
+        onAuthorize: function(data) {
+            return paypal.request.post(EXECUTE_PAYMENT_URL, {
+                paymentID: data.paymentID,
+                payerID: data.payerID,
+                transactionID: "{{ initializationData.transaction.id }}"
+            }).then(function() {
+                // The payment is complete!
+                // You can now show a confirmation message to the customer
+            });
+        }
+
+    }, '#paypal-button');
+</script>

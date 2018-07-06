@@ -1,0 +1,6 @@
+<form method="post" action="{{ initializationData.url }}">
+    {% for name,value in initializationData.options %}
+        <input type="hidden" name="{{ name }}" value="{{ value }}" />
+    {% endfor %}
+    <input type="submit" value="Payer">
+</form>

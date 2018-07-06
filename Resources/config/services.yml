@@ -9,6 +9,99 @@ services:
         resource: '../../*'
         exclude: '../../{Entity,Repository,Tests}'
 
-    IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayFactory:
+    # Manager
+    IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface: '@IDCI\Bundle\PaymentBundle\Manager\DoctrineTransactionManager'
+
+    # Step
+
+    IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType:
+        tags:
+            - { name: idci_step.step_type, alias: payment }
+    IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepTypeInterface: '@IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType'
+
+    # Subscriber
+
+    IDCI\Bundle\PaymentBundle\Event\Subscriber\DoctrineTransactionEventSubscriber:
         arguments:
-            $paymentGatewayList: '%idci_payment.gateways%'
+            $enabled: '%idci_payment.enabled_doctrine_subscriber%'
+
+    IDCI\Bundle\PaymentBundle\Event\Subscriber\LoggerTransactionEventSubscriber:
+        arguments:
+            $logger: '@monolog.logger.payment'
+            $enabled: '%idci_payment.enabled_logger_subscriber%'
+
+    # Payment Gateways
+
+    IDCI\Bundle\PaymentBundle\Gateway\StripePaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: stripe }
+
+    IDCI\Bundle\PaymentBundle\Gateway\PaypalPaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: paypal }
+
+    idci_payment.gateways.mercanet_json:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsJsonPaymentGateway
+        arguments:
+            $serverHostName: '%idci_payment.mercanet.server_host_name%'
+        tags:
+            - { name: idci_payment.gateways, alias: mercanet_json_atos_sips }
+
+    idci_payment.gateways.sogenactif_json:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsJsonPaymentGateway
+        arguments:
+            $serverHostName: '%idci_payment.sogenactif.server_host_name%'
+        tags:
+            - { name: idci_payment.gateways, alias: sogenactif_json_atos_sips }
+
+    idci_payment.gateways.mercanet_post:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsPostPaymentGateway
+        arguments:
+            $serverHostName: '%idci_payment.mercanet.server_host_name%'
+        tags:
+            - { name: idci_payment.gateways, alias: mercanet_post_atos_sips }
+
+    idci_payment.gateways.sogenactif_post:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsPostPaymentGateway
+        arguments:
+            $serverHostName: '%idci_payment.sogenactif.server_host_name%'
+        tags:
+            - { name: idci_payment.gateways, alias: sogenactif_post_atos_sips }
+
+    idci_payment.gateways.sogenactif_bin:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsBinPaymentGateway
+        arguments:
+            $pathfile: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/param/sogenactif/pathfile.sogenactif')"
+            $requestBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/request')"
+            $responseBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/response')"
+        tags:
+            - { name: idci_payment.gateways, alias: sogenactif_bin_atos_sips }
+
+    idci_payment.gateways.scellius_bin:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsBinPaymentGateway
+        arguments:
+            $pathfile: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/param/scellius/pathfile.scellius')"
+            $requestBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/request')"
+            $responseBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/response')"
+        tags:
+            - { name: idci_payment.gateways, alias: scellius_bin_atos_sips }
+
+    IDCI\Bundle\PaymentBundle\Gateway\PayboxPaymentGateway:
+        arguments:
+            $serverHostName: '%idci_payment.paybox.server_host_name%'
+            $keyPath: '%idci_payment.paybox.key_path%'
+            $publicKeyUrl: '%idci_payment.paybox.public_key_url%'
+        tags:
+            - { name: idci_payment.gateways, alias: paybox }
+
+    IDCI\Bundle\PaymentBundle\Gateway\OgonePaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: ogone }
+
+    IDCI\Bundle\PaymentBundle\Gateway\MoneticoPaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: monetico }
+
+    IDCI\Bundle\PaymentBundle\Gateway\PayPlugPaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: payplug }

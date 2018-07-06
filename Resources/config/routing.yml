@@ -1,4 +1,5 @@
----
-# Accomodation
-idci_payment_payment:
-    resource: IDCI\Bundle\PaymentBundle\Controller\PaymentController
+idci_payment_paymentgateway:
+    resource: IDCI\Bundle\PaymentBundle\Controller\PaymentGatewayController
+
+idci_payment_stripepaymentgateway:
+    resource: IDCI\Bundle\PaymentBundle\Controller\StripePaymentGatewayController

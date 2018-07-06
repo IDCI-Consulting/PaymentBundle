@@ -1,0 +1,14 @@
+<button id="idci_step_payplug" type="submit" class="btn btn-default">Buy now</button>
+
+<script type="text/javascript" src="https://api.payplug.com/js/1.0/form.js"></script>
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        [].forEach.call(document.querySelectorAll("#idci_step_payplug"), function(el) {
+            el.addEventListener('click', function(event) {
+                event.preventDefault();
+
+                Payplug.showPayment('{{ initializationData.payment.hosted_payment.payment_url }}');
+            })
+        })
+    })
+</script>

@@ -2,57 +2,43 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use Doctrine\Common\Persistence\ObjectManager;
-use IDCI\Bundle\PaymentBundle\Entity\Payment;
-use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
-use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedPaymentException;
-use IDCI\Bundle\PaymentBundle\Payment\PaymentFactory;
+use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
+use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use Symfony\Component\HttpFoundation\Request;
 
 abstract class AbstractPaymentGateway implements PaymentGatewayInterface
 {
     /**
-     * @var PaymentGatewayConfiguration
+     * @var \Twig_Environment
      */
-    protected $paymentGatewayConfiguration;
+    protected $templating;
 
-    /**
-     * @var Payment
-     */
-    protected $payment;
-
-    public function __construct(
-        ObjectManager $om,
-        PaymentGatewayConfiguration $paymentGatewayConfiguration
-    ) {
-        $this->om = $om;
-        $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
-    }
-
-    public function setPayment(Payment $payment): self
+    public function __construct(\Twig_Environment $templating)
     {
-        $this->payment = $payment;
-
-        return $this;
+        $this->templating = $templating;
     }
 
-    public function createPayment(?array $parameters): Payment
+    abstract public function initialize(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): array;
+
+    abstract public function buildHTMLView(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): string;
+
+    abstract public function getResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse;
+
+    public static function getParameterNames(): ?array
     {
-        if (null !== $this->payment) {
-            throw new AlreadyDefinedPaymentException('You can\'t define a payment twice');
-        }
-
-        $this->payment = PaymentFactory::getInstance()
-            ->create($parameters)
-            ->setGatewayConfigurationAlias($this->paymentGatewayConfiguration->getAlias())
-        ;
-
-        $this->om->persist($this->payment);
-        $this->om->flush();
-
-        return $this->payment;
+        return [
+            'callback_url',
+            'return_url',
+        ];
     }
-
-    abstract public function buildHTMLView(): string;
-
-    abstract public static function getParameterNames(): ?array;
 }

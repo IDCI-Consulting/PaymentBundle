@@ -1,0 +1,19 @@
+<form action="{{ initializationData.proxyUrl }}" method="POST">
+    <input type="hidden" name="amount" value="{{ initializationData.transaction.amount }}">
+    <input type="hidden" name="currencyCode" value="{{ initializationData.transaction.currencyCode }}">
+    <input type="hidden" name="transactionId" value="{{ initializationData.transaction.id }}">
+    <input type="hidden" name="callbackUrl" value="{{ initializationData.callbackUrl }}">
+    <input type="hidden" name="returnUrl" value="{{ initializationData.returnUrl }}">
+    <input type="hidden" name="cancelUrl" value="{{ initializationData.cancelUrl }}">
+    <script
+        src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+        data-key="{{ initializationData.publicKey }}"
+        data-amount="{{ initializationData.transaction.amount }}"
+        data-name="Stripe.com"
+        data-description="{% if initializationData.transaction.description is not null %}{{ initializationData.transaction.description }}{% else %}Example charge{% endif %}"
+        data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
+        data-locale="auto"
+        data-zip-code="true"
+        data-currency="{{ initializationData.transaction.currencyCode }}">
+    </script>
+</form>

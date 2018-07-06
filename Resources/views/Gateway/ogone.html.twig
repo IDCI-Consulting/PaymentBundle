@@ -1,0 +1,10 @@
+<form method="post" action="https://ogone.test.v-psp.com/ncol/test/orderstandard_utf8.asp" id="form1" name="form1">
+<!-- URL de TEST = https://ogone.test.v-psp.com/ncol/test/orderstandard_utf8.asp -->
+<!-- URL de PROD = https://secure.ogone.com/ncol/prod/orderstandard_utf8.asp -->
+
+{% for name,value in initializationData %}
+    <input type="hidden" name="{{ name }}" value="{{ value }}" />
+{% endfor %}
+<input type="submit" value="Payer">
+
+</form>

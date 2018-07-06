@@ -1,0 +1,6 @@
+DEBUG!NO!
+D_LOGO!/bundles/idcipayment/sips/logo/!
+F_CERTIFICATE!../vendor/idci/payment-bundle/Resources/sips/atos/bin/param/scellius/certif!
+F_CTYPE!php!
+F_PARAM!../vendor/idci/payment-bundle/Resources/sips/atos/bin/param/scellius/parmcom!
+F_DEFAULT!../vendor/idci/payment-bundle/Resources/sips/atos/bin/param/scellius/parmcom.scellius!

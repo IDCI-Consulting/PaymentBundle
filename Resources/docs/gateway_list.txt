@@ -1,0 +1,44 @@
+-- Atos Sips POST
+
+E-transaction
+Sogenactif          YES
+Webaffaires
+Sherlocks
+Mercanet            YES
+Citélis
+Scellius
+Elysnet
+
+-- Atos Sips JSON
+
+Sogenactif          YES
+Mercanet            YES
+
+-- Atos Sips BIN
+
+E-transaction
+Sogenactif          YES
+Webaffaires
+Sherlocks
+Mercanet
+Citélis
+Scellius            YES
+Elysnet
+
+-- Monético
+
+Crédit Mutuel
+CIC
+Desjardins
+OBC
+
+-- Systempay
+
+Banque populaire
+
+-- Stripe           YES
+-- Paypal           YES
+-- Paybox           YES
+-- Ogone
+
+https://www.web18.net/differentes-passerelles-de-paiement-banques-francaises-woocommerce/
