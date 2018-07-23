@@ -42,7 +42,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
-        if (!$request->isMethod('POST')) {
+        if (!$request->isMethod(Request::METHOD_POST)) {
             throw new InvalidPaymentCallbackMethodException('Request method should be POST');
         }
 
