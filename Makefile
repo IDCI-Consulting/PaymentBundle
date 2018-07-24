@@ -5,6 +5,9 @@ php_sources ?= .
 
 # Utils
 
+vendor: composer.json composer.lock
+	make -C $$PWD composer-install
+
 .PHONY: composer-add-github-token
 composer-add-github-token:
 	docker-compose run --rm $(target_container) composer config --global github-oauth.github.com $(token)
@@ -40,9 +43,9 @@ phpcs-fix:
 # PHPUnit commands
 
 .PHONY: phpunit
-phpunit: ./vendor/bin/phpunit ./phpunit.xml.dist
+phpunit: vendor ./vendor/bin/phpunit ./phpunit.xml.dist
 	docker-compose run --rm $(target_container) ./vendor/bin/phpunit --coverage-text $(options)
 
 .PHONY: phpunit-functional
-phpunit-functional: ./vendor/bin/phpunit ./phpunit_functional.xml.dist
+phpunit-functional: vendor ./vendor/bin/phpunit ./phpunit_functional.xml.dist
 	docker-compose run --rm $(target_container) ./vendor/bin/phpunit -c phpunit_functional.xml.dist --coverage-text $(options)
