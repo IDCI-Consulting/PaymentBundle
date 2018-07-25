@@ -14,7 +14,7 @@ use IDCI\Bundle\PaymentBundle\Payment\PaymentContextInterface;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
-class PaymentContextTest extends TestCase
+class PaymentManagerTest extends TestCase
 {
     /**
      * @var PaymentManager
@@ -68,6 +68,14 @@ class PaymentContextTest extends TestCase
             ->getMock()
         ;
 
+        $this->paymentGatewayConfigurationRepository
+            ->method('findOneBy')
+            ->will($this->returnValueMap([
+                [['alias' => 'wrong_payment_gateway_configuration_alias'], null, null],
+                [['alias' => 'dummy_gateway_alias'], null, $this->paymentGatewayConfiguration]
+            ]))
+        ;
+
         $this->paymentGatewayRegistry = $this->getMockBuilder(PaymentGatewayRegistryInterface::class)
             ->getMock()
         ;
@@ -94,24 +102,16 @@ class PaymentContextTest extends TestCase
     /**
      * @expectedException \Exception
      */
-    public function testNotCreatePaymentContextByAlias()
+    public function testNotCreatedPaymentContextByAlias()
     {
-        $this->paymentGatewayConfigurationRepository
-            ->method('findOneBy')
-        ;
         //Wrong alias is passed to the method to throw an exception
         $this->paymentManager->createPaymentContextByAlias('wrong_payment_gateway_configuration_alias');
     }
 
-    public function testCreatePaymentContextByAlias()
+    public function testCreatedPaymentContextByAlias()
     {
-        $this->paymentGatewayConfigurationRepository
-            ->method('findOneBy')
-            ->with(['alias' => 'dummy_gateway_alias'])
-            ->willReturn($this->paymentGatewayConfiguration)
-        ;
-
         $paymentContext = $this->paymentManager->createPaymentContextByAlias('dummy_gateway_alias');
+
         $this->assertInstanceOf(PaymentContext::class, $paymentContext);
         $this->assertEquals($this->dispatcher, $paymentContext->dispatcher);
         $this->assertEquals($this->paymentGatewayConfiguration, $paymentContext->getPaymentGatewayConfiguration());
