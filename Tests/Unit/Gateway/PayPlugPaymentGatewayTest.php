@@ -5,6 +5,7 @@ namespace IDCI\Bundle\PaymentBundle\Tests\Unit\Gateway;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use IDCI\Bundle\PaymentBundle\Gateway\PayPlugPaymentGateway;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 
 class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
 {
@@ -35,11 +36,52 @@ class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
         $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
     }
 
-    public function getResponse()
+    public function testgetResponseEmptyPostDataRequest()
     {
-        $request = Request::create('dumy_uri', Request::METHOD_POST);
+        $request = Request::create(
+            'dummy_uri',
+            Request::METHOD_POST
+        );
 
-        $data = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
-        var_dump($data);die;
+        $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $this->assertEquals('The request do not contains required post data', $gatewayResponse->getMessage());
+    }
+
+    public function testUnauthorizedTransactionResponse()
+    {
+        $request = Request::create(
+            'dummy_uri',
+            Request::METHOD_POST,
+            [
+                'metadata' => [
+                    'transaction_id' => 'dummy_transaction_id'
+                ],
+                'amount' => 20,
+                'currency' => 'EUR',
+                'is_paid' => false
+            ]
+        );
+
+        $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $this->assertEquals('Transaction unauthorized', $gatewayResponse->getMessage());
+    }
+
+    public function testgetResponseApproved()
+    {
+        $request = Request::create(
+            'dummy_uri',
+            Request::METHOD_POST,
+            [
+                'metadata' => [
+                    'transaction_id' => 'dummy_transaction_id'
+                ],
+                'amount' => 20,
+                'currency' => 'EUR',
+                'is_paid' => true
+            ]
+        );
+
+        $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $this->assertEquals(PaymentStatus::STATUS_APPROVED, $gatewayResponse->getStatus());
     }
 }
