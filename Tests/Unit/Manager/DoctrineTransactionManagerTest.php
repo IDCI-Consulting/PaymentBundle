@@ -42,7 +42,7 @@ class DoctrineTransactionTest extends TestCase
             ->method('findOneBy')
             ->will($this->returnValueMap([
                 [['id' => 'wrong_transaction_id'], null, null],
-                [['id' => 'dummy_transaction_id'], null, $this->transaction]
+                [['id' => 'dummy_transaction_id'], null, $this->transaction],
             ]))
         ;
 

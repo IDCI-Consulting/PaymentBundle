@@ -42,7 +42,7 @@ class AtosSipsPostPaymentGatewayTest extends PaymentGatewayTestCase
     }
 
     /**
-     * @expectedException IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
+     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
      */
     public function testInvalidMethod()
     {
@@ -65,7 +65,7 @@ class AtosSipsPostPaymentGatewayTest extends PaymentGatewayTestCase
             'dummy_uri',
             Request::METHOD_POST,
             [
-                'Data' => 'dummy_data'
+                'Data' => 'dummy_data',
             ]
         );
 
@@ -82,26 +82,24 @@ class AtosSipsPostPaymentGatewayTest extends PaymentGatewayTestCase
                 'dummy_uri',
                 Request::METHOD_POST,
                 [
-                    'Data' => $data
+                    'Data' => $data,
                 ]
             );
             $request->request->set('Seal', hash('sha256', $data));
 
             $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
             $this->assertEquals(AtosSipsStatusCode::getStatusMessage($testedStatusCode), $gatewayResponse->getMessage());
-
         }
     }
 
     public function testCancelRequestResponseCode()
     {
-
         $data = 'dummy_data=data|responseCode=17|transactionReference=dummy_transaction_reference|amount=20|currencyCode=978';
         $request = Request::create(
             'dummy_uri',
             Request::METHOD_POST,
             [
-                'Data' => $data
+                'Data' => $data,
             ]
         );
         $request->request->set('Seal', hash('sha256', $data));
@@ -112,13 +110,12 @@ class AtosSipsPostPaymentGatewayTest extends PaymentGatewayTestCase
 
     public function testUnauthorizedTransactionRequestResponse()
     {
-
         $data = 'dummy_data=data|responseCode=00|transactionReference=dummy_transaction_reference|amount=20|currencyCode=978|holderAuthentStatus=wrong_holder_authent_status';
         $request = Request::create(
             'dummy_uri',
             Request::METHOD_POST,
             [
-                'Data' => $data
+                'Data' => $data,
             ]
         );
         $request->request->set('Seal', hash('sha256', $data));
@@ -129,13 +126,12 @@ class AtosSipsPostPaymentGatewayTest extends PaymentGatewayTestCase
 
     public function testSuccessRequestResponse()
     {
-
         $data = 'dummy_data=data|responseCode=00|transactionReference=dummy_transaction_reference|amount=20|currencyCode=978|holderAuthentStatus=SUCCESS';
         $request = Request::create(
             'dummy_uri',
             Request::METHOD_POST,
             [
-                'Data' => $data
+                'Data' => $data,
             ]
         );
         $request->request->set('Seal', hash('sha256', $data));

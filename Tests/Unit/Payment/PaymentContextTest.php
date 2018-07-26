@@ -8,7 +8,6 @@ use Twig\Loader\ArrayLoader;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Request;
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
-use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
 use IDCI\Bundle\PaymentBundle\Gateway\AbstractPaymentGateway;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
@@ -234,7 +233,7 @@ class PaymentContextTest extends TestCase
 
     /**
      * @dataProvider getHandleGatewayCallbackDataProvider
-     * @expectedException IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException
+     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException
      */
     public function testHandleGatewayCallbackWithNoTransactionUuid(
         array $parameters,
@@ -270,7 +269,7 @@ class PaymentContextTest extends TestCase
 
     /**
      * @dataProvider getTransactionDataProvider
-     * @expectedException IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedTransactionException
+     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedTransactionException
      */
     public function testTransactionAlreadyDefined(Transaction $transaction)
     {
@@ -306,7 +305,7 @@ class PaymentContextTest extends TestCase
                 'gatewayResponse' => $gatewayResponse,
                 'request' => Request::create('dumy_uri', Request::METHOD_GET),
                 'transaction' => TransactionFactory::getInstance()->create($parameters),
-            ]
+            ],
         ];
     }
 
@@ -326,7 +325,7 @@ class PaymentContextTest extends TestCase
         return [
             [
                 'transaction' => TransactionFactory::getInstance()->create($parameters),
-            ]
+            ],
         ];
     }
 }

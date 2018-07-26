@@ -31,7 +31,7 @@ class PaypalPaymentGatewayTest extends PaymentGatewayTestCase
     }
 
     /**
-     * @expectedException IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
+     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
      */
     public function testInvalidMethod()
     {

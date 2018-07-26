@@ -10,7 +10,7 @@ use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 class StripePaymentGatewayTest extends PaymentGatewayTestCase
 {
     /**
-     * UrlGeneratorInterface
+     * UrlGeneratorInterface.
      */
     private $router;
 
@@ -26,7 +26,8 @@ class StripePaymentGatewayTest extends PaymentGatewayTestCase
         $this->gateway = new StripePaymentGateway($this->twig, $this->router);
     }
 
-    public function testInitialize(){
+    public function testInitialize()
+    {
         $this->paymentGatewayConfiguration
             ->set('callback_url', 'dummy_callback_url')
             ->set('return_url', 'dummy_return_url')
@@ -49,7 +50,7 @@ class StripePaymentGatewayTest extends PaymentGatewayTestCase
     }
 
     /**
-     * @expectedException IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
+     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
      */
     public function testInvalidMethod()
     {
@@ -66,10 +67,10 @@ class StripePaymentGatewayTest extends PaymentGatewayTestCase
             [
                 'transactionId' => 'dummy_transaction_id',
                 'amount' => 20,
-                'currencyCode'=> 'EUR',
+                'currencyCode' => 'EUR',
                 'error' => [
-                    'message' => 'dummy_error_message'
-                ]
+                    'message' => 'dummy_error_message',
+                ],
             ]
         );
 
@@ -86,7 +87,7 @@ class StripePaymentGatewayTest extends PaymentGatewayTestCase
                 'transactionId' => 'dummy_transaction_id',
                 'amount' => 20,
                 'currencyCode' => 'EUR',
-                'raw' => 'dummy_raw'
+                'raw' => 'dummy_raw',
             ]
         );
 

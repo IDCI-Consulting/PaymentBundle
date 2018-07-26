@@ -6,11 +6,9 @@ use PHPUnit\Framework\TestCase;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
-use IDCI\Bundle\PaymentBundle\Exception\NoPaymentGatewayConfigurationFoundException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistryInterface;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContext;
-use IDCI\Bundle\PaymentBundle\Payment\PaymentContextInterface;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
@@ -72,7 +70,7 @@ class PaymentManagerTest extends TestCase
             ->method('findOneBy')
             ->will($this->returnValueMap([
                 [['alias' => 'wrong_payment_gateway_configuration_alias'], null, null],
-                [['alias' => 'dummy_gateway_alias'], null, $this->paymentGatewayConfiguration]
+                [['alias' => 'dummy_gateway_alias'], null, $this->paymentGatewayConfiguration],
             ]))
         ;
 

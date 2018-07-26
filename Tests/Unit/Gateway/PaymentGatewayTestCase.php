@@ -34,7 +34,7 @@ class PaymentGatewayTestCase extends TestCase
     public function setUp()
     {
         $loader = new FilesystemLoader();
-        $loader->addPath(__DIR__ . '/../../..', 'IDCIPaymentBundle');
+        $loader->addPath(__DIR__.'/../../..', 'IDCIPaymentBundle');
 
         $this->twig = new TwigEnvironment($loader);
 
