@@ -38,7 +38,7 @@ class AtosSipsPostPaymentGatewayTest extends PaymentGatewayTestCase
         $data = $this->gateway->initialize($this->paymentGatewayConfiguration, $this->transaction);
 
         $this->assertEquals('https://dummy_server_host_name/paymentInit', $data['url']);
-        $this->assertEquals('dummy_interface_version', $data['interfaceVersion']);
+        $this->assertEquals($this->paymentGatewayConfiguration->get('interface_version'), $data['interfaceVersion']);
     }
 
     /**
