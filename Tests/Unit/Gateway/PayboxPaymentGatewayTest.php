@@ -37,4 +37,14 @@ class PayboxPaymentGatewayTest extends PaymentGatewayTestCase
 
         $this->assertEquals('https://dummy_server_host_name/cgi/MYchoix_pagepaiement.cgi', $data['url']);
     }
+
+    /**
+     * @expectedException IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
+     */
+    public function testInvalidMethod()
+    {
+        $request = Request::create('dummy_uri', Request::METHOD_GET);
+
+        $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+    }
 }
