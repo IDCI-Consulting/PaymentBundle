@@ -10,7 +10,7 @@ use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
 {
     /**
-     * UrlGeneratorInterface.
+     * UrlGeneratorInterface
      */
     private $router;
 
@@ -27,7 +27,7 @@ class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
     }
 
     /**
-     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
+     * @expectedException IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
      */
     public function testInvalidMethod()
     {
@@ -36,7 +36,7 @@ class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
         $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
     }
 
-    public function testgetResponseEmptyPostDataRequest()
+    public function testGetResponseEmptyPostDataRequest()
     {
         $request = Request::create(
             'dummy_uri',
@@ -54,11 +54,11 @@ class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
             Request::METHOD_POST,
             [
                 'metadata' => [
-                    'transaction_id' => 'dummy_transaction_id',
+                    'transaction_id' => 'dummy_transaction_id'
                 ],
                 'amount' => 20,
                 'currency' => 'EUR',
-                'is_paid' => false,
+                'is_paid' => false
             ]
         );
 
@@ -66,18 +66,18 @@ class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
         $this->assertEquals('Transaction unauthorized', $gatewayResponse->getMessage());
     }
 
-    public function testgetResponseApproved()
+    public function testGetResponseApproved()
     {
         $request = Request::create(
             'dummy_uri',
             Request::METHOD_POST,
             [
                 'metadata' => [
-                    'transaction_id' => 'dummy_transaction_id',
+                    'transaction_id' => 'dummy_transaction_id'
                 ],
                 'amount' => 20,
                 'currency' => 'EUR',
-                'is_paid' => true,
+                'is_paid' => true
             ]
         );
 
