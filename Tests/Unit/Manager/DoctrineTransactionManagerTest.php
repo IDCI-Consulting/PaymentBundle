@@ -63,7 +63,7 @@ class DoctrineTransactionTest extends TestCase
     }
 
     /**
-     * @expectedException \Exception
+     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException
      */
     public function testNotRetrievedTransactionByUuid()
     {

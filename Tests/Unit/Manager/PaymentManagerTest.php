@@ -98,7 +98,7 @@ class PaymentManagerTest extends TestCase
     }
 
     /**
-     * @expectedException \Exception
+     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\NoPaymentGatewayConfigurationFoundException
      */
     public function testNotCreatedPaymentContextByAlias()
     {

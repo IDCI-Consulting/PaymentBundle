@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
-use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContextInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -88,7 +87,7 @@ class PaymentGatewayControllerTest extends TestCase
     public function testCallbackAction()
     {
         $request = Request::create('dummy_uri', Request::METHOD_POST, [
-            'transaction_uuid' => 'dummy_transaction_uuid'
+            'transaction_uuid' => 'dummy_transaction_uuid',
         ]);
 
         $transaction = $this->paymentGatewayController->callbackAction($request, $this->dispatcher, 'dummy_configuration_alias');

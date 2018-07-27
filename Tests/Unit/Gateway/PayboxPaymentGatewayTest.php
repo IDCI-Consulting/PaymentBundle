@@ -23,6 +23,15 @@ class PayboxPaymentGatewayTest extends PaymentGatewayTestCase
         $fileSystem->touch(sys_get_temp_dir().'/dummy_client_site.bin');
     }
 
+    public function tearDown()
+    {
+        $filePath = sprintf('%s/dummy_client_site.bin', sys_get_temp_dir());
+
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+    }
+
     public function testInitialize()
     {
         $this->paymentGatewayConfiguration
