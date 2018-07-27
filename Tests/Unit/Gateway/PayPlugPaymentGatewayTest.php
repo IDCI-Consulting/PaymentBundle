@@ -10,7 +10,7 @@ use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
 {
     /**
-     * UrlGeneratorInterface
+     * UrlGeneratorInterface.
      */
     private $router;
 
@@ -27,7 +27,7 @@ class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
     }
 
     /**
-     * @expectedException IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
+     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
      */
     public function testInvalidMethod()
     {
@@ -54,11 +54,11 @@ class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
             Request::METHOD_POST,
             [
                 'metadata' => [
-                    'transaction_id' => 'dummy_transaction_id'
+                    'transaction_id' => 'dummy_transaction_id',
                 ],
                 'amount' => 20,
                 'currency' => 'EUR',
-                'is_paid' => false
+                'is_paid' => false,
             ]
         );
 
@@ -73,11 +73,11 @@ class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
             Request::METHOD_POST,
             [
                 'metadata' => [
-                    'transaction_id' => 'dummy_transaction_id'
+                    'transaction_id' => 'dummy_transaction_id',
                 ],
                 'amount' => 20,
                 'currency' => 'EUR',
-                'is_paid' => true
+                'is_paid' => true,
             ]
         );
 
