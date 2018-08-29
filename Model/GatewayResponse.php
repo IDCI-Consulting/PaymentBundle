@@ -42,11 +42,11 @@ class GatewayResponse
     public function toArray(): array
     {
         return [
-            'transaction_uuid' => $this->transactionUuid,
-            'amount' => $amount,
-            'status' => $status,
-            'message' => $message,
-            'raw' => $raw,
+            'transaction_uuid' => $this->getTransactionUuid(),
+            'amount' => $this->getAmount(),
+            'status' => $this->getStatus(),
+            'message' => $this->getMessage(),
+            'raw' => $this->getRaw(),
         ];
     }
 

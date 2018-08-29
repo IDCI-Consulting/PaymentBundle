@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway\StatusCode;
 
-class AtosSipsStatusCode
+final class AtosSipsStatusCode
 {
     const STATUS = [
         '02' => 'Authorization limit on card exceeded',
