@@ -22,7 +22,8 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         return [
             'clientId' => $paymentGatewayConfiguration->get('client_id'),
             'transaction' => $transaction,
-            'url' => $paymentGatewayConfiguration->get('callback_url'),
+            'callbackUrl' => $paymentGatewayConfiguration->get('callback_url'),
+            'returnUrl' => $paymentGatewayConfiguration->get('return_url'),
             'environment' => $paymentGatewayConfiguration->get('environment'),
         ];
     }

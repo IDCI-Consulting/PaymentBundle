@@ -1,2 +1,4 @@
 imports:
     - { resource: step_types.yml }
+    - { resource: event_actions.yml }
+    - { resource: step_templates.yml }

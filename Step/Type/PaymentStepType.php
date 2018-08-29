@@ -44,13 +44,19 @@ class PaymentStepType extends AbstractStepType
      */
     protected $templating;
 
+    /**
+     * @var array
+     */
+    private $templates;
+
     public function __construct(
         PaymentManager $paymentManager,
         TransactionManagerInterface $transactionManager,
         EventDispatcher $dispatcher,
         RequestStack $requestStack,
         UrlGeneratorInterface $router,
-        \Twig_Environment $templating
+        \Twig_Environment $templating,
+        array $templates
     ) {
         $this->paymentManager = $paymentManager;
         $this->transactionManager = $transactionManager;
@@ -58,6 +64,7 @@ class PaymentStepType extends AbstractStepType
         $this->router = $router;
         $this->requestStack = $requestStack;
         $this->templating = $templating;
+        $this->templates = $templates;
     }
 
     public function configureOptions(OptionsResolver $resolver)
@@ -66,12 +73,12 @@ class PaymentStepType extends AbstractStepType
 
         $resolver
             ->setRequired([
-                'amount',
-                'currency_code',
-                'item_id',
                 'payment_gateway_configuration_alias',
             ])
             ->setDefaults([
+                'amount' => null,
+                'item_id' => 'null',
+                'currency_code' => null,
                 'callback_url' => null,
                 'customer_email' => null,
                 'customer_id' => null,
@@ -79,15 +86,15 @@ class PaymentStepType extends AbstractStepType
                 'return_url' => null,
             ])
             ->setNormalizer('amount', function (Options $options, $value) {
-                return intval($value, 10);
+                return null !== $value ? intval($value, 10) : -1;
             })
-            ->setAllowedTypes('amount', ['string', 'integer'])
+            ->setAllowedTypes('amount', ['null', 'string', 'integer'])
             ->setAllowedTypes('callback_url', ['null', 'string'])
-            ->setAllowedTypes('currency_code', ['string'])
+            ->setAllowedTypes('currency_code', ['null', 'string'])
             ->setAllowedTypes('customer_email', ['null', 'string'])
             ->setAllowedTypes('customer_id', ['null', 'string'])
             ->setAllowedTypes('description', ['null', 'string'])
-            ->setAllowedTypes('item_id', ['null', 'string'])
+            ->setAllowedTypes('item_id', ['string'])
             ->setAllowedTypes('payment_gateway_configuration_alias', ['string'])
             ->setAllowedTypes('return_url', ['null', 'string'])
         ;
@@ -98,7 +105,7 @@ class PaymentStepType extends AbstractStepType
         return;
     }
 
-    private function getReturnUrl(Request $request, Transaction $transaction)
+    private function getReturnUrl(Request $request, Transaction $transaction, $status = PaymentStatus::STATUS_PENDING)
     {
         $currentUrl = $this->router->generate(
             $request->attributes->get('_route'),
@@ -114,12 +121,15 @@ class PaymentStepType extends AbstractStepType
             $parsedUrl['path'],
             http_build_query([
                 'transaction_id' => $transaction->getId(),
+                'status' => $status,
             ])
         );
     }
 
     private function prepareInitializeTransaction(NavigatorInterface $navigator, array $options)
     {
+        $options['prevent_next'] = true;
+
         $request = $this->requestStack->getCurrentRequest();
         $paymentContext = $this->paymentManager->createPaymentContextByAlias(
             $options['payment_gateway_configuration_alias']
@@ -138,9 +148,10 @@ class PaymentStepType extends AbstractStepType
             ->getPaymentGatewayConfiguration()
             ->set('return_url', $this->getReturnUrl($request, $transaction))
         ;
+        $options['paymentContext'] = $paymentContext;
 
         $options['pre_step_content'] = $this->templating->render(
-            '@IDCIPaymentBundle/Resources/views/PaymentStep/initialize.html.twig',
+            $this->templates['initialize'],
             [
                 'view' => $paymentContext->buildHTMLView(),
                 'transaction' => $transaction,
@@ -165,10 +176,37 @@ class PaymentStepType extends AbstractStepType
             $this->dispatcher->dispatch(TransactionEvent::PENDING, new TransactionEvent($transaction));
         }
 
+        if (
+            null !== $request->query->get('status') &&
+            PaymentStatus::STATUS_FAILED === $request->query->get('status') &&
+            PaymentStatus::STATUS_PENDING === $transaction->getStatus()
+        ) {
+            $transaction->setStatus(PaymentStatus::STATUS_FAILED);
+            $this->dispatcher->dispatch(TransactionEvent::FAILED, new TransactionEvent($transaction));
+        }
+
+        if (PaymentStatus::STATUS_PENDING === $transaction->getStatus()) {
+            $options['prevent_next'] = true;
+            $options['prevent_previous'] = true;
+        }
+
         $options['pre_step_content'] = $this->templating->render(
-            '@IDCIPaymentBundle/Resources/views/PaymentStep/return.html.twig',
-            ['transaction' => $transaction]
+            $this->templates[$transaction->getStatus()],
+            [
+                'transaction' => $transaction,
+                'fail_url' => $this->getReturnUrl($request, $transaction, PaymentStatus::STATUS_FAILED),
+                'success_url' => $this->getReturnUrl($request, $transaction, PaymentStatus::STATUS_APPROVED),
+            ]
         );
+
+        $navigator
+            ->getFlow()
+            ->getData()
+            ->setStepData(
+                $navigator->getCurrentStep()->getName(),
+                ['transaction' => $transaction->toArray()]
+            )
+        ;
 
         return $options;
     }

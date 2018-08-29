@@ -10,17 +10,16 @@
                 }, 1000)
 
             } else {
-                console.log('max number of attempt reach'); // fail endpoint
+                location.href = '{{ fail_url }}'.replace(/&amp;/g, '&');;
             }
         }
 
         var getTransaction = function (callback) {
             $.get('{{ path('idci_payment_api_apitransaction_show', {'id': transaction.id}) }}', function (result) {
                 if (result.status === '{{ constant('IDCI\\Bundle\\PaymentBundle\\Payment\\PaymentStatus::STATUS_PENDING') }}') {
-                    console.log('current status: ' + result.status);
                     callback();
                 } else {
-                    console.log('payment final status: ' + result.status); // success endpoint
+                    location.href = '{{ success_url }}'.replace(/&amp;/g, '&');;
                 }
             });
         }

@@ -14,6 +14,18 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
+                ->arrayNode('templates')
+                    ->children()
+                        ->arrayNode('step')
+                            ->children()
+                                ->scalarNode('failed')->end()
+                                ->scalarNode('success')->end()
+                                ->scalarNode('pending')->end()
+                                ->scalarNode('initialize')->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
                 ->booleanNode('enabled_doctrine_subscriber')->end()
                 ->booleanNode('enabled_logger_subscriber')->end()
             ->end()
