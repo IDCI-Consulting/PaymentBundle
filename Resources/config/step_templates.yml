@@ -5,6 +5,6 @@ idci_payment:
         step:
 
             failed: '@IDCIPaymentBundle/Resources/views/PaymentStep/failed.html.twig'
-            success: '@IDCIPaymentBundle/Resources/views/PaymentStep/success.html.twig'
-            initialize: '@IDCIPaymentBundle/Resources/views/PaymentStep/initialize.html.twig'
+            approved: '@IDCIPaymentBundle/Resources/views/PaymentStep/approved.html.twig'
+            created: '@IDCIPaymentBundle/Resources/views/PaymentStep/created.html.twig'
             pending: '@IDCIPaymentBundle/Resources/views/PaymentStep/pending.html.twig'

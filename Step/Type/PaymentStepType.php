@@ -151,7 +151,7 @@ class PaymentStepType extends AbstractStepType
         $options['paymentContext'] = $paymentContext;
 
         $options['pre_step_content'] = $this->templating->render(
-            $this->templates['initialize'],
+            $this->templates[$transaction->getStatus()],
             [
                 'view' => $paymentContext->buildHTMLView(),
                 'transaction' => $transaction,

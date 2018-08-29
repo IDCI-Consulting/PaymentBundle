@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\DependencyInjection;
 
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -18,10 +19,10 @@ class Configuration implements ConfigurationInterface
                     ->children()
                         ->arrayNode('step')
                             ->children()
-                                ->scalarNode('failed')->end()
-                                ->scalarNode('success')->end()
-                                ->scalarNode('pending')->end()
-                                ->scalarNode('initialize')->end()
+                                ->scalarNode(PaymentStatus::STATUS_FAILED)->end()
+                                ->scalarNode(PaymentStatus::STATUS_APPROVED)->end()
+                                ->scalarNode(PaymentStatus::STATUS_PENDING)->end()
+                                ->scalarNode(PaymentStatus::STATUS_CREATED)->end()
                             ->end()
                         ->end()
                     ->end()

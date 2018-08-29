@@ -20,11 +20,21 @@ class ChangeTransactionDataStepEventAction extends AbstractStepEventAction
      */
     private $templating;
 
-    public function __construct(ObjectManager $om, PaymentManager $paymentManager, \Twig_Environment $templating)
-    {
+    /**
+     * @var array
+     */
+    private $templates;
+
+    public function __construct(
+        ObjectManager $om,
+        PaymentManager $paymentManager,
+        \Twig_Environment $templating,
+        array $templates
+    ) {
         $this->om = $om;
         $this->paymentManager = $paymentManager;
         $this->templating = $templating;
+        $this->templates = $templates;
     }
 
     /**
@@ -64,7 +74,7 @@ class ChangeTransactionDataStepEventAction extends AbstractStepEventAction
         $this->om->flush();
 
         $options['pre_step_content'] = $this->templating->render(
-            '@IDCIPaymentBundle/Resources/views/PaymentStep/initialize.html.twig',
+            $this->templates[$transaction->getStatus()],
             [
                 'view' => $paymentContext->buildHTMLView(),
                 'transaction' => $paymentContext->getTransaction(),

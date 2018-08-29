@@ -24,6 +24,8 @@ services:
     # Step Event Action
 
     IDCI\Bundle\PaymentBundle\Step\Event\Action\ChangeTransactionDataStepEventAction:
+        arguments:
+            $templates: '%idci_payment.templates.step%'
         tags:
             - {name: idci_step.step_event_action, alias: change_transaction_data}
 
