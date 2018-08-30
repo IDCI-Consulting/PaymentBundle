@@ -3,6 +3,8 @@
 namespace IDCI\Bundle\PaymentBundle\Model;
 
 use Flaky\Flaky;
+use PascalDeVink\ShortUuid\ShortUuid;
+use Ramsey\Uuid\Uuid;
 
 class Transaction
 {
@@ -81,7 +83,7 @@ class Transaction
         return [
             'id' => $this->id,
             'gatewayConfigurationAlias' => $this->gatewayConfigurationAlias,
-            'itemId' => $this->itemId,
+            'itemId' => $this->getItemId(),
             'customerId' => $this->customerId,
             'customerEmail' => $this->customerEmail,
             'status' => $this->status,
@@ -113,12 +115,22 @@ class Transaction
 
     public function getItemId(): ?string
     {
-        return $this->itemId;
+        if (36 !== strlen($this->itemId)) {
+            return $this->itemId;
+        }
+
+        return (new ShortUuid())->decode($this->itemId);
     }
 
     public function setItemId(string $itemId): self
     {
-        $this->itemId = $itemId;
+        if (36 !== strlen($itemId)) {
+            $this->itemId = $itemId;
+
+            return $this;
+        }
+
+        $this->itemId = (new ShortUuid())->encode(Uuid::fromString($itemId));
 
         return $this;
     }
