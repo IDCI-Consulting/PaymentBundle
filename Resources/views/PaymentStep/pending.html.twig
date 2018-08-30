@@ -1,16 +1,24 @@
 <h1>Please wait </h1>
+<div id="statusContainer"></div>
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
-        var maxAttempt = 10;
+        var prevBtn = document.querySelector('.idci_step_navigation_previous'); // on les cache
+        var nextBtn = document.querySelector('.idci_step_navigation_next'); // on les cache
+
+        prevBtn.hidden = true;
+        nextBtn.hidden = true;
+
+        var maxAttempt = 25;
 
         var endAttempt = function () {
             if (--maxAttempt > 0) {
                 setTimeout(function () {
                     getTransaction(endAttempt);
-                }, 1000)
+                }, 2000)
 
             } else {
-                location.href = '{{ fail_url }}'.replace(/&amp;/g, '&');;
+                document.querySelector('#statusContainer').innerText = 'There was a problem with your transaction, please try again.';
+                prevBtn.hidden = false
             }
         }
 
@@ -19,7 +27,9 @@
                 if (result.status === '{{ constant('IDCI\\Bundle\\PaymentBundle\\Payment\\PaymentStatus::STATUS_PENDING') }}') {
                     callback();
                 } else {
-                    location.href = '{{ success_url }}'.replace(/&amp;/g, '&');;
+                    // show success message
+                    document.querySelector('#statusContainer').innerText = 'Your transaction succeeded';
+                    nextBtn.hidden = false
                 }
             });
         }

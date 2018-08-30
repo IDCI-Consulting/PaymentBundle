@@ -7,6 +7,7 @@ use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
+use IDCI\Bundle\StepBundle\Flow\FlowData;
 use IDCI\Bundle\StepBundle\Navigation\NavigatorInterface;
 use IDCI\Bundle\StepBundle\Step\Type\AbstractStepType;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -77,7 +78,7 @@ class PaymentStepType extends AbstractStepType
             ])
             ->setDefaults([
                 'amount' => null,
-                'item_id' => 'null',
+                'item_id' => null,
                 'currency_code' => null,
                 'callback_url' => null,
                 'customer_email' => null,
@@ -88,13 +89,16 @@ class PaymentStepType extends AbstractStepType
             ->setNormalizer('amount', function (Options $options, $value) {
                 return null !== $value ? intval($value, 10) : -1;
             })
+            ->setNormalizer('item_id', function (Options $options, $value) {
+                return null !== $value ? $value : -1;
+            })
             ->setAllowedTypes('amount', ['null', 'string', 'integer'])
             ->setAllowedTypes('callback_url', ['null', 'string'])
             ->setAllowedTypes('currency_code', ['null', 'string'])
             ->setAllowedTypes('customer_email', ['null', 'string'])
             ->setAllowedTypes('customer_id', ['null', 'string'])
             ->setAllowedTypes('description', ['null', 'string'])
-            ->setAllowedTypes('item_id', ['string'])
+            ->setAllowedTypes('item_id', ['null', 'string'])
             ->setAllowedTypes('payment_gateway_configuration_alias', ['string'])
             ->setAllowedTypes('return_url', ['null', 'string'])
         ;
@@ -105,7 +109,7 @@ class PaymentStepType extends AbstractStepType
         return;
     }
 
-    private function getReturnUrl(Request $request, Transaction $transaction, $status = PaymentStatus::STATUS_PENDING)
+    private function getReturnUrl(Request $request, Transaction $transaction)
     {
         $currentUrl = $this->router->generate(
             $request->attributes->get('_route'),
@@ -121,7 +125,6 @@ class PaymentStepType extends AbstractStepType
             $parsedUrl['path'],
             http_build_query([
                 'transaction_id' => $transaction->getId(),
-                'status' => $status,
             ])
         );
     }
@@ -176,26 +179,10 @@ class PaymentStepType extends AbstractStepType
             $this->dispatcher->dispatch(TransactionEvent::PENDING, new TransactionEvent($transaction));
         }
 
-        if (
-            null !== $request->query->get('status') &&
-            PaymentStatus::STATUS_FAILED === $request->query->get('status') &&
-            PaymentStatus::STATUS_PENDING === $transaction->getStatus()
-        ) {
-            $transaction->setStatus(PaymentStatus::STATUS_FAILED);
-            $this->dispatcher->dispatch(TransactionEvent::FAILED, new TransactionEvent($transaction));
-        }
-
-        if (PaymentStatus::STATUS_PENDING === $transaction->getStatus()) {
-            $options['prevent_next'] = true;
-            $options['prevent_previous'] = true;
-        }
-
         $options['pre_step_content'] = $this->templating->render(
             $this->templates[$transaction->getStatus()],
             [
                 'transaction' => $transaction,
-                'fail_url' => $this->getReturnUrl($request, $transaction, PaymentStatus::STATUS_FAILED),
-                'success_url' => $this->getReturnUrl($request, $transaction, PaymentStatus::STATUS_APPROVED),
             ]
         );
 
@@ -204,7 +191,8 @@ class PaymentStepType extends AbstractStepType
             ->getData()
             ->setStepData(
                 $navigator->getCurrentStep()->getName(),
-                ['transaction' => $transaction->toArray()]
+                ['transaction' => $transaction->toArray()],
+                FlowData::TYPE_RETRIEVED
             )
         ;
 
