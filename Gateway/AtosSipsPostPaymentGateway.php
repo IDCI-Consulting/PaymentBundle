@@ -44,7 +44,6 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
             'currencyCode' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
             'merchantId' => $paymentGatewayConfiguration->get('merchant_id'),
             'normalReturnUrl' => $paymentGatewayConfiguration->get('return_url'),
-            'orderId' => $transaction->getShorterItemId(),
             'transactionReference' => $transaction->getId(),
             'keyVersion' => $paymentGatewayConfiguration->get('version'),
         ];
