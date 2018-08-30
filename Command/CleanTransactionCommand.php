@@ -3,7 +3,6 @@
 namespace IDCI\Bundle\PaymentBundle\Command;
 
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
-use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistry;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,12 +11,8 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 class CleanTransactionCommand extends ContainerAwareCommand
 {
-    private $paymentGatewayRegistry;
-
-    public function __construct(PaymentGatewayRegistry $paymentGatewayRegistry)
+    public function __construct()
     {
-        $this->paymentGatewayRegistry = $paymentGatewayRegistry;
-
         parent::__construct();
     }
 
