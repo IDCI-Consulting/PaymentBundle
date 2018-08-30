@@ -23,7 +23,8 @@
         "paypal/rest-api-sdk-php": "^1.13",
         "stripe/stripe-php": "^6.7",
         "jwarkentin/flaky": "~0.0.9",
-        "payplug/payplug-php": "~2.5"
+        "payplug/payplug-php": "~2.5",
+        "pascaldevink/shortuuid": "~2.0"
     },
     "suggest": {
         "idci/step-bundle": "~3.0"
