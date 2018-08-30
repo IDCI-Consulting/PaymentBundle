@@ -5,3 +5,10 @@ idci_step:
         change_transaction_data:
             parent: abstract
             description: ""
+            extra_form_options:
+                amount: {extra_form_type: "integer", options: {required: false}}
+                item_id: {extra_form_type: "text", options: {required: false}}
+                currency_code: {extra_form_type: "text", options: {required: false}}
+                customer_id: {extra_form_type: "text", options: {required: false}}
+                customer_email: {extra_form_type: "text", options: {required: false}}
+                description: {extra_form_type: "text", options: {required: false}}
