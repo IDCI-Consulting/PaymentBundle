@@ -115,24 +115,23 @@ class Transaction
 
     public function getItemId(): ?string
     {
-        if (36 !== strlen($this->itemId)) {
-            return $this->itemId;
-        }
-
-        return (new ShortUuid())->decode($this->itemId);
+        return $this->itemId;
     }
 
     public function setItemId(string $itemId): self
     {
-        if (36 !== strlen($itemId)) {
-            $this->itemId = $itemId;
-
-            return $this;
-        }
-
-        $this->itemId = (new ShortUuid())->encode(Uuid::fromString($itemId));
+        $this->itemId = $itemId;
 
         return $this;
+    }
+
+    public function getShorterItemId(): ?string
+    {
+        if (36 !== strlen($this->itemId)) {
+            return $this->itemId;
+        }
+
+        return (new ShortUuid())->encode(Uuid::fromString($this->itemId));
     }
 
     public function getCustomerId(): ?string
