@@ -153,6 +153,14 @@ class PaymentStepType extends AbstractStepType
         ;
         $options['paymentContext'] = $paymentContext;
 
+        $events = array_map(function ($event) {
+            return 'change_transaction_data' === $event['action'];
+        }, $options['events']['form.pre_set_data']);
+
+        if (in_array(true, $events)) {
+            return $options;
+        }
+
         $options['pre_step_content'] = $this->templating->render(
             $this->templates[$transaction->getStatus()],
             [
