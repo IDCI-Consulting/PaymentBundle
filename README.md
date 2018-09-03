@@ -18,7 +18,7 @@ return $this->render('@IDCIPaymentBundle/Resources/views/payment.html.twig', [
 ]);
 ```
 
-A list of [commands](#command) is provided by this bundle to create, retrieve, update or delete gateway configurations.
+A list of [commands](#command) is provided by this bundle to manage gateway configurations & transactions.
 
 Installation
 ------------
@@ -60,7 +60,7 @@ Supported Gateways
 * [Paypal](./Gateway/PaypalPaymentGateway.php)
 * [Paybox](./Gateway/PayboxPaymentGateway.php)
 * [Monetico](./Gateway/MoneticoPaymentGateway.php) (unfinished)
-* [Ogone](./Gateway/MoneticoPaymentGateway.php) (unfinished)
+* [Ogone](./Gateway/OgonePaymentGateway.php) (unfinished)
 * [PayPlug](./Gateway/PayPlugPaymentGateway.php)
 * [Atos Sips Bin](./Gateway/AtosSipsBinPaymentGateway.php)
     * Scellius
@@ -71,6 +71,10 @@ Supported Gateways
 * [Atos Sips JSON](./Gateway/AtosSipsJsonPaymentGateway.php)
     * Mercanet
     * Sogenactif
+
+For testing purpose:
+- [Parameters](./Resources/docs/test-parameters.md)
+- [Cards](./Resources/docs/test-cards.md)
 
 Command
 -------
@@ -89,6 +93,13 @@ $ php bin/console app:payment-gateway-configuration:update
 
 # To delete a PaymentGatewayConfiguration
 $ php bin/console app:payment-gateway-configuration:delete
+```
+
+##### Transaction
+
+```bash
+# Remove all the aborted transaction created 24 hours ago
+$ php bin/console app:transaction:clean 24
 ```
 
 Tests
