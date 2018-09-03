@@ -85,6 +85,8 @@ class PaymentStepType extends AbstractStepType
                 'customer_id' => null,
                 'description' => null,
                 'return_url' => null,
+                'success_message' => 'There was a problem with your transaction, please try again.',
+                'error_message' => 'Your transaction succeeded.',
             ])
             ->setNormalizer('amount', function (Options $options, $value) {
                 return null !== $value ? intval($value, 10) : -1;
@@ -101,6 +103,8 @@ class PaymentStepType extends AbstractStepType
             ->setAllowedTypes('item_id', ['null', 'string'])
             ->setAllowedTypes('payment_gateway_configuration_alias', ['string'])
             ->setAllowedTypes('return_url', ['null', 'string'])
+            ->setAllowedTypes('success_message', ['null', 'string'])
+            ->setAllowedTypes('error_message', ['null', 'string'])
         ;
     }
 
@@ -191,6 +195,8 @@ class PaymentStepType extends AbstractStepType
             $this->templates[$transaction->getStatus()],
             [
                 'transaction' => $transaction,
+                'successMessage' => $options['success_message'],
+                'errorMessage' => $options['error_message'],
             ]
         );
 

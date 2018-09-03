@@ -17,7 +17,7 @@
                 }, 2000)
 
             } else {
-                document.querySelector('#statusContainer').innerText = 'There was a problem with your transaction, please try again.';
+                document.querySelector('#statusContainer').innerText = '{{ errorMessage }}';
                 prevBtn.hidden = false
             }
         }
@@ -28,7 +28,7 @@
                     callback();
                 } else {
                     // show success message
-                    document.querySelector('#statusContainer').innerText = 'Your transaction succeeded';
+                    document.querySelector('#statusContainer').innerText = '{{ successMessage }}';
                     nextBtn.hidden = false
                 }
             });
