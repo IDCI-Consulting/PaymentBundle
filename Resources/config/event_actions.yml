@@ -2,13 +2,22 @@ idci_step:
 
     step_event_actions:
 
-        change_transaction_data:
+        initialize_transaction:
             parent: abstract
             description: ""
             extra_form_options:
-                amount: {extra_form_type: "integer", options: {required: false}}
-                item_id: {extra_form_type: "text", options: {required: false}}
-                currency_code: {extra_form_type: "text", options: {required: false}}
+                payment_gateway_configuration_alias: {extra_form_type: "text", options: {required: true}}
+                amount: {extra_form_type: "integer", options: {required: true}}
+                item_id: {extra_form_type: "text", options: {required: true}}
+                currency_code: {extra_form_type: "text", options: {required: true}}
                 customer_id: {extra_form_type: "text", options: {required: false}}
                 customer_email: {extra_form_type: "text", options: {required: false}}
                 description: {extra_form_type: "text", options: {required: false}}
+
+        return_transaction:
+            parent: abstract
+            description: ""
+            extra_form_options:
+                payment_gateway_configuration_alias: {extra_form_type: "text", options: {required: true}}
+                success_message: {extra_form_type: "text", options: {required: false}}
+                error_message: {extra_form_type: "text", options: {required: false}}

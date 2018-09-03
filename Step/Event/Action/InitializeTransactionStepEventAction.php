@@ -4,11 +4,15 @@ namespace IDCI\Bundle\PaymentBundle\Step\Event\Action;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\StepBundle\Step\Event\Action\AbstractStepEventAction;
 use IDCI\Bundle\StepBundle\Step\Event\StepEventInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class ChangeTransactionDataStepEventAction extends AbstractStepEventAction
+class InitializeTransactionStepEventAction extends AbstractStepEventAction
 {
     /**
      * @var PaymentManager
@@ -25,16 +29,50 @@ class ChangeTransactionDataStepEventAction extends AbstractStepEventAction
      */
     private $templates;
 
+    /**
+     * @var UrlGeneratorInterface
+     */
+    protected $router;
+
+    /**
+     * @var RequestStack
+     */
+    protected $requestStack;
+
     public function __construct(
         ObjectManager $om,
         PaymentManager $paymentManager,
         \Twig_Environment $templating,
+        UrlGeneratorInterface $router,
+        RequestStack $requestStack,
         array $templates
     ) {
         $this->om = $om;
         $this->paymentManager = $paymentManager;
         $this->templating = $templating;
+        $this->requestStack = $requestStack;
+        $this->router = $router;
         $this->templates = $templates;
+    }
+
+    private function getReturnUrl(Request $request, Transaction $transaction)
+    {
+        $currentUrl = $this->router->generate(
+            $request->attributes->get('_route'),
+            $request->attributes->get('_route_params'),
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        $parsedUrl = parse_url($currentUrl);
+
+        return sprintf('%s://%s%s?%s',
+            $parsedUrl['scheme'],
+            $parsedUrl['host'],
+            $parsedUrl['path'],
+            http_build_query([
+                'transaction_id' => $transaction->getId(),
+            ])
+        );
     }
 
     /**
@@ -46,32 +84,26 @@ class ChangeTransactionDataStepEventAction extends AbstractStepEventAction
         $configuration = $step->getConfiguration();
         $options = $configuration['options'];
 
-        if (!isset($options['paymentContext'])) {
-            return true;
-        }
-
-        $paymentContext = $options['paymentContext'];
+        $paymentContext = $this->paymentManager->createPaymentContextByAlias(
+            $parameters['payment_gateway_configuration_alias']
+        );
         $transaction = $paymentContext->getTransaction();
 
-        $builtParameters = [
-            'amount' => isset($parameters['amount']) ? $parameters['amount'] : $transaction->getAmount(),
-            'item_id' => isset($parameters['item_id']) ? $parameters['item_id'] : $transaction->getItemId(),
-            'currency_code' => isset($parameters['currency_code']) ? $parameters['currency_code'] : $transaction->getCurrencyCode(),
-            'customer_id' => isset($parameters['customer_id']) ? $parameters['customer_id'] : $transaction->getCustomerId(),
-            'customer_email' => isset($parameters['customer_email']) ? $parameters['customer_email'] : $transaction->getCustomerEmail(),
-            'description' => isset($parameters['description']) ? $parameters['description'] : $transaction->getDescription(),
-        ];
+        $transaction = $paymentContext->createTransaction([
+            'item_id' => $parameters['item_id'],
+            'amount' => $parameters['amount'],
+            'currency_code' => $parameters['currency_code'],
+            'customer_id' => $parameters['customer_id'],
+            'customer_email' => $parameters['customer_email'],
+            'description' => $parameters['description'],
+        ]);
 
-        $transaction
-            ->setAmount($builtParameters['amount'])
-            ->setItemId($builtParameters['item_id'])
-            ->setCurrencyCode($builtParameters['currency_code'])
-            ->setCustomerId($builtParameters['customer_id'])
-            ->setCustomerEmail($builtParameters['customer_email'])
-            ->setDescription($builtParameters['description'])
+        $request = $this->requestStack->getCurrentRequest();
+
+        $paymentContext
+            ->getPaymentGatewayConfiguration()
+            ->set('return_url', $this->getReturnUrl($request, $transaction))
         ;
-
-        $this->om->flush();
 
         $options['pre_step_content'] = $this->templating->render(
             $this->templates[$transaction->getStatus()],
@@ -94,14 +126,18 @@ class ChangeTransactionDataStepEventAction extends AbstractStepEventAction
     protected function setDefaultParameters(OptionsResolver $resolver)
     {
         $resolver
+            ->setRequired([
+                'payment_gateway_configuration_alias',
+                'amount',
+                'currency_code',
+                'item_id',
+            ])
             ->setDefaults([
-                'amount' => null,
-                'item_id' => null,
-                'currency_code' => null,
                 'customer_id' => null,
                 'customer_email' => null,
                 'description' => null,
             ])
+            ->setAllowedTypes('payment_gateway_configuration_alias', ['string'])
             ->setAllowedTypes('amount', ['integer', 'string'])
             ->setAllowedTypes('item_id', ['null', 'string'])
             ->setAllowedTypes('currency_code', ['null', 'string'])

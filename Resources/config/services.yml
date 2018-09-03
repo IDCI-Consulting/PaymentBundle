@@ -15,19 +15,23 @@ services:
     # Step
 
     IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType:
-        arguments:
-            $templates: '%idci_payment.templates.step%'
         tags:
             - { name: idci_step.step_type, alias: payment }
     IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepTypeInterface: '@IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType'
 
     # Step Event Action
 
-    IDCI\Bundle\PaymentBundle\Step\Event\Action\ChangeTransactionDataStepEventAction:
+    IDCI\Bundle\PaymentBundle\Step\Event\Action\InitializeTransactionStepEventAction:
         arguments:
             $templates: '%idci_payment.templates.step%'
         tags:
-            - {name: idci_step.step_event_action, alias: change_transaction_data}
+            - {name: idci_step.step_event_action, alias: initialize_transaction}
+
+    IDCI\Bundle\PaymentBundle\Step\Event\Action\ReturnTransactionStepEventAction:
+        arguments:
+            $templates: '%idci_payment.templates.step%'
+        tags:
+            - {name: idci_step.step_event_action, alias: return_transaction}
 
     # Subscriber
 
