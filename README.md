@@ -5,6 +5,8 @@ This Symfony bundle provide help for integrating payments solutions by the norma
 Example controller :
 
 ```php
+<?php
+
 $paymentContext = $this->paymentManager->createPaymentContextByAlias('stripe_test'); // raw alias
 
 $payment = $paymentContext->createPayment([
@@ -53,6 +55,26 @@ public function registerBundles()
 }
 ```
 
+Add this to your ```config.yml``` file
+
+```yaml
+
+imports:
+    - {resource: '@IDCIPaymentBundle/Resources/config/config.yml'}
+
+...
+idci_payment:
+    enabled_doctrine_subscriber: true
+    enabled_logger_subscriber: true
+```
+
+These tutorials may help you to personalize yourself this bundle:
+
+- [Create a new payment gateway](./Resources/docs/create-your-payment-gateway.md): incorporate new payment method to this bundle
+- [Create your own transaction manager](./Resources/docs/create-your-transaction-manager.md) : help you to retrieve transaction from other stockages methods (default: Doctrine)
+- [Use this bundle with step bundle](./Resources/docs/how-to-work-with-step-bundle.md): simple configuration to make this bundle work with step bundle
+- [Create your own event subscriber](./Resources/docs/create-your-event-subscriber.md): learn to work with transaction event
+
 Supported Gateways
 ------------------
 
@@ -98,8 +120,8 @@ $ php bin/console app:payment-gateway-configuration:delete
 ##### Transaction
 
 ```bash
-# Remove all the aborted transaction created 24 hours ago
-$ php bin/console app:transaction:clean 24
+# Remove all the aborted transaction created 1 day ago
+$ php bin/console app:transaction:clean
 ```
 
 Tests
