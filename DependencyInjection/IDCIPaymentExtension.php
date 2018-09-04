@@ -19,6 +19,7 @@ class IDCIPaymentExtension extends Extension
 
         $container->setParameter('idci_payment.enabled_doctrine_subscriber', $config['enabled_doctrine_subscriber']);
         $container->setParameter('idci_payment.enabled_logger_subscriber', $config['enabled_logger_subscriber']);
+        $container->setParameter('idci_payment.enabled_redis_subscriber', $config['enabled_logger_subscriber']);
         $container->setParameter('idci_payment.gateway_configurations', $config['gateway_configurations']);
 
         if (isset($config['templates'])) {

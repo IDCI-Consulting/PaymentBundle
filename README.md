@@ -66,6 +66,7 @@ imports:
 idci_payment:
     enabled_doctrine_subscriber: true
     enabled_logger_subscriber: true
+    enabled_redis_subscriber: true
 ```
 
 These tutorials may help you to personalize yourself this bundle:

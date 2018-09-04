@@ -12,6 +12,10 @@ services:
     # Manager
     IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface: '@IDCI\Bundle\PaymentBundle\Manager\DoctrineTransactionManager'
 
+    IDCI\Bundle\PaymentBundle\Manager\RedisTransactionManager:
+        arguments:
+            $redis: "@=container.has('snc_redis.default') ? service('snc_redis.default') : null"
+
     IDCI\Bundle\PaymentBundle\Manager\PaymentManager:
         arguments:
             $gatewayConfigurations: '%idci_payment.gateway_configurations%'
@@ -47,6 +51,11 @@ services:
         arguments:
             $logger: '@monolog.logger.payment'
             $enabled: '%idci_payment.enabled_logger_subscriber%'
+
+    IDCI\Bundle\PaymentBundle\Event\Subscriber\RedisTransactionEventSubscriber:
+        arguments:
+            $redis: "@=container.has('snc_redis.default') ? service('snc_redis.default') : null"
+            $enabled: '%idci_payment.enabled_redis_subscriber%'
 
     # Payment Gateways
 
