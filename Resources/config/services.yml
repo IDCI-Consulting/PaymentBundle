@@ -12,6 +12,10 @@ services:
     # Manager
     IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface: '@IDCI\Bundle\PaymentBundle\Manager\DoctrineTransactionManager'
 
+    IDCI\Bundle\PaymentBundle\Manager\PaymentManager:
+        arguments:
+            $gatewayConfigurations: '%idci_payment.gateway_configurations%'
+
     # Step
 
     IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType:
