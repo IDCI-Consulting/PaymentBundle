@@ -24,7 +24,7 @@ class UnexpectedAtosSipsResponseCodeException extends \Exception
             '99' => 'Temporary problem with the payment server.',
         ];
 
-        $message = isset($messages[$errorCode]) ? $messages[$errorCode] : 'Unkwown error code';
+        $message = isset($messages[$errorCode]) ? $messages[$errorCode] : sprintf('Unkwown error code : %s', $errorCode);
 
         parent::__construct($message, $code, $previous);
     }

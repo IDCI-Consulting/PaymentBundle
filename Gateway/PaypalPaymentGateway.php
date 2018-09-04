@@ -22,7 +22,8 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         return [
             'clientId' => $paymentGatewayConfiguration->get('client_id'),
             'transaction' => $transaction,
-            'url' => $paymentGatewayConfiguration->get('callback_url'),
+            'callbackUrl' => $paymentGatewayConfiguration->get('callback_url'),
+            'returnUrl' => $paymentGatewayConfiguration->get('return_url'),
             'environment' => $paymentGatewayConfiguration->get('environment'),
         ];
     }
@@ -42,7 +43,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
-        if (!$request->isMethod('POST')) {
+        if (!$request->isMethod(Request::METHOD_POST)) {
             throw new InvalidPaymentCallbackMethodException('Request method should be POST');
         }
 

@@ -3,7 +3,8 @@
 <script src="https://www.paypalobjects.com/api/checkout.js"></script>
 
 <script>
-    var EXECUTE_PAYMENT_URL = '{{ initializationData.url }}';
+    var EXECUTE_PAYMENT_URL = '{{ initializationData.callbackUrl }}';
+    var RETURN_PAYMENT_URL = '{{ initializationData.returnUrl }}';
 
     paypal.Button.render({
 
@@ -34,8 +35,7 @@
                 payerID: data.payerID,
                 transactionID: "{{ initializationData.transaction.id }}"
             }).then(function() {
-                // The payment is complete!
-                // You can now show a confirmation message to the customer
+                location.href = RETURN_PAYMENT_URL;
             });
         }
 

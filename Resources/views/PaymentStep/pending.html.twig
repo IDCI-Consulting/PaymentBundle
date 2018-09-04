@@ -1,26 +1,35 @@
 <h1>Please wait </h1>
+<div id="statusContainer"></div>
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
-        var maxAttempt = 10;
+        var prevBtn = document.querySelector('.idci_step_navigation_previous'); // on les cache
+        var nextBtn = document.querySelector('.idci_step_navigation_next'); // on les cache
+
+        prevBtn.hidden = true;
+        nextBtn.hidden = true;
+
+        var maxAttempt = 25;
 
         var endAttempt = function () {
             if (--maxAttempt > 0) {
                 setTimeout(function () {
                     getTransaction(endAttempt);
-                }, 1000)
+                }, 2000)
 
             } else {
-                console.log('max number of attempt reach'); // fail endpoint
+                document.querySelector('#statusContainer').innerText = '{{ errorMessage }}';
+                prevBtn.hidden = false
             }
         }
 
         var getTransaction = function (callback) {
             $.get('{{ path('idci_payment_api_apitransaction_show', {'id': transaction.id}) }}', function (result) {
                 if (result.status === '{{ constant('IDCI\\Bundle\\PaymentBundle\\Payment\\PaymentStatus::STATUS_PENDING') }}') {
-                    console.log('current status: ' + result.status);
                     callback();
                 } else {
-                    console.log('payment final status: ' + result.status); // success endpoint
+                    // show success message
+                    document.querySelector('#statusContainer').innerText = '{{ successMessage }}';
+                    nextBtn.hidden = false
                 }
             });
         }
