@@ -2,7 +2,6 @@
 
 namespace IDCI\Bundle\PaymentBundle\Controller;
 
-use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
@@ -19,20 +18,12 @@ use Symfony\Component\HttpFoundation\Request;
 class PaymentGatewayController extends Controller
 {
     /**
-     * @var ObjectManager
-     */
-    private $om;
-
-    /**
      * @var PaymentManager
      */
     private $paymentManager;
 
-    public function __construct(
-        ObjectManager $om,
-        PaymentManager $paymentManager
-    ) {
-        $this->om = $om;
+    public function __construct(PaymentManager $paymentManager)
+    {
         $this->paymentManager = $paymentManager;
     }
 

@@ -2,7 +2,6 @@
 
 namespace IDCI\Bundle\PaymentBundle\Payment;
 
-use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedTransactionException;
@@ -15,11 +14,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 class PaymentContext implements PaymentContextInterface
 {
-    /**
-     * @var ObjectManager
-     */
-    private $om;
-
     /**
      * @var PaymentGatewayConfigurationInterface
      */

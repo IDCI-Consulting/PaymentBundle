@@ -2,7 +2,6 @@
 
 namespace IDCI\Bundle\PaymentBundle\Step\Event\Action;
 
-use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\StepBundle\Step\Event\Action\AbstractStepEventAction;
@@ -40,14 +39,12 @@ class InitializeTransactionStepEventAction extends AbstractStepEventAction
     protected $requestStack;
 
     public function __construct(
-        ObjectManager $om,
         PaymentManager $paymentManager,
         \Twig_Environment $templating,
         UrlGeneratorInterface $router,
         RequestStack $requestStack,
         array $templates
     ) {
-        $this->om = $om;
         $this->paymentManager = $paymentManager;
         $this->templating = $templating;
         $this->requestStack = $requestStack;
