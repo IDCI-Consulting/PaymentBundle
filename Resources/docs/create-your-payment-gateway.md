@@ -114,6 +114,6 @@ idci_payment:
                 client_id: (id)
                 client_secret: (secret)
                 environment: sandbox
-                return_url: www.example
-                callback_url: www.example
+                return_url: www.example.com
+                callback_url: www.example.com
 ```
