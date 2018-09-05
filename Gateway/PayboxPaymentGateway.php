@@ -36,12 +36,12 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         return sprintf('https://%s/cgi/MYchoix_pagepaiement.cgi', $this->serverHostName);
     }
 
-    private function getKeyPath($clientSite)
+    private function getKeyPath(string $clientSite): string
     {
         return sprintf('%s/%s.bin', $this->keyPath, $clientSite);
     }
 
-    private function getPayboxReturnString()
+    private function getPayboxReturnString(): string
     {
         $codeMap = array(
             'M' => 'amount',

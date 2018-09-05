@@ -5,6 +5,7 @@ namespace IDCI\Bundle\PaymentBundle\Manager;
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
+use IDCI\Bundle\PaymentBundle\Model\Transaction as TransactionModel;
 
 class DoctrineTransactionManager implements TransactionManagerInterface
 {
@@ -18,7 +19,13 @@ class DoctrineTransactionManager implements TransactionManagerInterface
         $this->om = $om;
     }
 
-    public function retrieveTransactionByUuid(string $transactionUuid): Transaction
+    public function saveTransaction(TransactionModel $transaction)
+    {
+        $this->om->persist($transaction);
+        $this->om->flush();
+    }
+
+    public function retrieveTransactionByUuid(string $transactionUuid): TransactionModel
     {
         $transaction = $this
             ->om
