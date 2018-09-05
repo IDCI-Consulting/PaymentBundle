@@ -63,9 +63,7 @@ imports:
     - {resource: '@IDCIPaymentBundle/Resources/config/config.yml'}
 
 idci_payment:
-    enabled_doctrine_subscriber: true
     enabled_logger_subscriber: true
-    enabled_redis_subscriber: true
 
 # (optional) if you want to customize the payment logger
 monolog:

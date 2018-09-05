@@ -38,9 +38,7 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
-                ->booleanNode('enabled_doctrine_subscriber')->end()
                 ->booleanNode('enabled_logger_subscriber')->end()
-                ->booleanNode('enabled_redis_subscriber')->end()
             ->end()
         ;
 
