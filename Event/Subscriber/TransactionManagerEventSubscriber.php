@@ -3,25 +3,19 @@
 namespace IDCI\Bundle\PaymentBundle\Event\Subscriber;
 
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
-use Predis\Client;
+use IDCI\Bundle\PAymentBundle\Manager\TransactionManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class RedisTransactionEventSubscriber implements EventSubscriberInterface
+class TransactionManagerEventSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var Client
+     * @var TransactionManagerInterface
      */
-    private $redis;
+    private $transactionManager;
 
-    /**
-     * @var bool
-     */
-    private $enabled;
-
-    public function __construct(?Client $redis, bool $enabled)
+    public function __construct(TransactionManagerInterface $transactionManager)
     {
-        $this->redis = $redis;
-        $this->enabled = $enabled;
+        $this->transactionManager = $transactionManager;
     }
 
     public static function getSubscribedEvents()
@@ -47,11 +41,6 @@ class RedisTransactionEventSubscriber implements EventSubscriberInterface
 
     public function save(TransactionEvent $transactionEvent)
     {
-        if (!$this->enabled || null == $this->redis) {
-            return;
-        }
-
-        $transaction = $transactionEvent->getTransaction();
-        $this->redis->set($transaction->getId(), serialize($transaction));
+        $this->transactionManager->saveTransaction($transactionEvent->getTransaction());
     }
 }
