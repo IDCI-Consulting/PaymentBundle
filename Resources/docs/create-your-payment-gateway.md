@@ -18,68 +18,80 @@ All of the payment gateway extends from [AbstractPaymentGateway](../../Gateway/A
 /**
  * Example inspired by PaypalPaymentGateway
  */
+namespace MyBundle\Gateway;
 
-// Return the data that will be used in payment gateway view
-public function initialize(
-    PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-    Transaction $transaction
-): array {
-    return [
-        'clientId' => $paymentGatewayConfiguration->get('client_id'),
-        'transaction' => $transaction,
-        'callbackUrl' => $paymentGatewayConfiguration->get('callback_url'),
-        'returnUrl' => $paymentGatewayConfiguration->get('return_url'),
-        'environment' => $paymentGatewayConfiguration->get('environment'),
-    ];
-}
+use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
+use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
+use Symfony\Component\HttpFoundation\Request;
 
-// Return the builded view in HTML format by using twig templating
-public function buildHTMLView(
-    PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-    Transaction $transaction
-): string {
-    return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paypal.html.twig', [
-        'initializationData' => $this->initialize($paymentGatewayConfiguration, $transaction),
-    ]);
-}
+class ExemplePaymentGateway extends AbstractPaymentGateway
+{
 
-// Return the bank response in formalized GatewayResponse format to let PaymentContext verify that the transaction is correct
-public function getResponse(
-    Request $request,
-    PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-): GatewayResponse {
-    // ...
-
-    // normalize the return parameters into the GatewayReponse object
-    $amount = $paypalPayment->getTransactions()[0]->getAmount();
-
-    $gatewayResponse
-        ->setTransactionUuid($request->get('transactionID'))
-        ->setAmount($amount->total * 100)
-        ->setCurrencyCode($amount->currency)
-    ;
-
-    // ...
-
-    // don't forget to set the payment status (failed or approved)
-    if ('approved' !== $result->getState()) {
-        return $gatewayResponse->setMessage('Transaction unauthorized');
+    // Return the data that will be used in payment gateway view
+    public function initialize(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): array {
+        return [
+            'clientId' => $paymentGatewayConfiguration->get('client_id'),
+            'transaction' => $transaction,
+            'callbackUrl' => $paymentGatewayConfiguration->get('callback_url'),
+            'returnUrl' => $paymentGatewayConfiguration->get('return_url'),
+            'environment' => $paymentGatewayConfiguration->get('environment'),
+        ];
     }
 
-    return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
-}
+    // Return the builded view in HTML format by using twig templating
+    public function buildHTMLView(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): string {
+        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paypal.html.twig', [
+            'initializationData' => $this->initialize($paymentGatewayConfiguration, $transaction),
+        ]);
+    }
 
-// Return the available parameters used in payment gateway configuration commands and configuration file
-public static function getParameterNames(): ?array
-{
-    return array_merge(
-        parent::getParameterNames(),
-        [
-            'client_id',
-            'client_secret',
-            'environment',
-        ]
-    );
+    // Return the bank response in formalized GatewayResponse format to let PaymentContext verify that the transaction is correct
+    public function getResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        // ...
+
+        // normalize the return parameters into the GatewayReponse object
+        $amount = $paypalPayment->getTransactions()[0]->getAmount();
+
+        $gatewayResponse
+            ->setTransactionUuid($request->get('transactionID'))
+            ->setAmount($amount->total * 100)
+            ->setCurrencyCode($amount->currency)
+        ;
+
+        // ...
+
+        // don't forget to set the payment status (failed or approved)
+        if ('approved' !== $result->getState()) {
+            return $gatewayResponse->setMessage('Transaction unauthorized');
+        }
+
+        return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
+    }
+
+    // Return the available parameters used in payment gateway configuration commands and configuration file
+    public static function getParameterNames(): ?array
+    {
+        return array_merge(
+            parent::getParameterNames(),
+            [
+                'client_id',
+                'client_secret',
+                'environment',
+            ]
+        );
+    }
+
 }
 ```
 

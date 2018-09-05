@@ -22,32 +22,116 @@ All your event subscriber must be using [TransactionEvent](../../Event/Transacti
 ```php
 <?php
 
-public static function getSubscribedEvents()
-{
-    return [
-        TransactionEvent::APPROVED => [
-            ['methodCalledOnApprove', 0],
-        ],
-        TransactionEvent::CANCELED => [
-            ['methodCalledOnCancel', 0],
-        ],
-        TransactionEvent::CREATED => [
-            ['methodCalledOnCreated', 0],
-        ],
-        TransactionEvent::FAILED => [
-            ['methodCalledOnFailed', 0],
-        ],
-        TransactionEvent::PENDING => [
-            ['methodCalledOnPending', 0],
-        ],
-    ];
-}
+namespace MyBundle\Event\Subscriber;
 
-// example method called on approve
-public function methodCalledOnApprove(TransactionEvent $transactionEvent)
+use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
+class ExempleEventSubscriber implements EventSubscriberInterface
 {
-    // what to do if the transaction is approved
+
+    public static function getSubscribedEvents()
+    {
+        return [
+            TransactionEvent::APPROVED => [
+                ['methodCalledOnApprove', 0],
+            ],
+            TransactionEvent::CANCELED => [
+                ['methodCalledOnCancel', 0],
+            ],
+            TransactionEvent::CREATED => [
+                ['methodCalledOnCreated', 0],
+            ],
+            TransactionEvent::FAILED => [
+                ['methodCalledOnFail', 0],
+            ],
+            TransactionEvent::PENDING => [
+                ['methodCalledOnPending', 0],
+            ],
+        ];
+    }
+
+    public function methodCalledOnApprove(TransactionEvent $transactionEvent)
+    {
+        // what to do if the transaction is approved
+    }
+
+    public function methodCalledOnCancel(TransactionEvent $transactionEvent)
+    {
+        // what to do if the transaction is canceled
+    }
+
+    public function methodCalledOnCreate(TransactionEvent $transactionEvent)
+    {
+        // what to do if the transaction is created
+    }
+
+    public function methodCalledOnFail(TransactionEvent $transactionEvent)
+    {
+        // what to do if the transaction has failed
+    }
+
+    public function methodCalledOnPending(TransactionEvent $transactionEvent)
+    {
+        // what to do if the transaction is suspended
+    }
 }
 ```
 
-Your new event subscriber will be automaticaly bind to [TransactionEvent](../../Event/TransactionEvent.php) dispatch and when the status of the transaction change your method will be called.
+Your new event subscriber will be automaticaly bind to [TransactionEvent](../../Event/TransactionEvent.php) dispatch and when the status of the transaction change your methods will be called.
+
+## Usage example with swiftmailer
+
+Here's a little example of what you can do with subscriber
+
+```php
+<?php
+
+namespace MyBundle\Event\Subscriber;
+
+use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
+use Swift_Mailer;
+use Swift_Message;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
+class SwiftMailerTransactionEventSubscriber implements EventSubscriberInterface
+{
+    /**
+     * @var Swift_Mailer
+     */
+    private $mailer;
+
+    public function __construct(Swift_Mailer $mailer)
+    {
+        $this->mailer = $mailer;
+    }
+
+    public static function getSubscribedEvents()
+    {
+        return [
+            TransactionEvent::APPROVED => [
+                ['approve', 0],
+            ],
+        ];
+    }
+
+    public function approve(TransactionEvent $transactionEvent)
+    {
+        $transaction = $transactionEvent->getTransaction();
+
+        $message = (new Swift_Message('Transaction approved'))
+            ->setTo($transaction->getCustomerEmail())
+            ->setBody(
+                sprintf(
+                    'Your transaction of %s %s have been approved',
+                    $transaction->getAmount() / 100,
+                    $transaction->getCurrencyCode()
+                )
+            )
+        ;
+
+        $this->mailer->send($message);
+    }
+}
+
+```

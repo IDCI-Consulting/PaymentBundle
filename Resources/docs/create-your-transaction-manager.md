@@ -1,19 +1,52 @@
 How to create your own transaction manager
---------------------------------------
+------------------------------------------
 
 ## Introduction
 
 Q: What's a transaction manager ?  
-A: It is used to retrieve your transactions from a specific stockage method (ex: Doctrine, Redis, ...)
+A: It is used to retrieve and save your transactions with a specific stockage method (ex: Doctrine, Redis, ...)
 
-## Learn by example
+## Learn by example (for redis)
 
-A transaction manager implement the interface [TransactionManagerInterface](../../Manager/TransactionManagerInterface.php) that contain only one method:
-
+A transaction manager must implement the interface [TransactionManagerInterface](../../Manager/TransactionManagerInterface.php).
+This is a little exemple of manager working with Redis.
 ```php
 <?php
 
-public function retrieveTransactionByUuid(string $transactionUuid): Transaction
+namespace MyBundle\Manager;
+
+use IDCI\Bundle\PaymentBundle\Entity\Transaction;
+use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
+use Predis\Client;
+
+class RedisTransactionManager implements TransactionManagerInterface
+{
+    private $redis;
+
+    public function __construct(Client $redis)
+    {
+        $this->redis = $redis;
+    }
+
+    public function saveTransaction(Transaction $transaction)
+    {
+        $this->redis->set($transaction->getId(), serialize($transaction));
+    }
+
+    public function retrieveTransactionByUuid(string $transactionUuid): Transaction
+    {
+        $transaction = $this->redis->get($transactionUuid);
+
+        if (null === $transaction) {
+            throw new UndefinedTransactionException(
+                sprintf('No transaction found with the uuid : %s', $transactionUuid)
+            );
+        }
+
+        return unserialize($transaction);
+    }
+}
+
 
 ```
 
@@ -25,5 +58,8 @@ In your configuration :
 
 ```yaml
 # services.yml
-IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface: '@YourBundle\YourPath\NewTransactionManager'
+IDCI\Bundle\PaymentBundle\Manager\RedisTransactionManager:
+    arguments:
+        $redis: '@snc_redis.default'
+IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface: '@MyBundle\Manager\RedisTransactionManager'
 ```

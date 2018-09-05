@@ -58,42 +58,76 @@ public function registerBundles()
 Add this to your ```config.yml``` file
 
 ```yaml
-
+# app/config/config.yml
 imports:
     - {resource: '@IDCIPaymentBundle/Resources/config/config.yml'}
 
-...
 idci_payment:
     enabled_doctrine_subscriber: true
     enabled_logger_subscriber: true
     enabled_redis_subscriber: true
+
+# (optional) if you want to customize the payment logger
+monolog:
+    channels: [payment]
+    handlers:
+        payment_log:
+            type: stream
+            path: "%kernel.logs_dir%/new_payment_%kernel.environment%.log"
+            channels: [payment]
+
+```
+
+And these parameters in ```parameters.yml(.dist)``` file
+```yaml
+# app/config/parameters.yml(.dist)
+idci_payment.mercanet.server_host_name: 'payment-webinit.simu.mercanet.bnpparibas.net' # prod: payment-webinit.mercanet.bnpparibas.net
+idci_payment.sogenactif.server_host_name: 'payment-webinit.simu.sips-atos.com' # prod: payment-webinit-ws.sogenactif.com
+idci_payment.paybox.server_host_name: 'preprod-tpeweb.paybox.com' # prod: tpeweb.paybox.com
+idci_payment.paybox.key_path: /var/www/html/vendor/idci/payment-bundle/Resources/paybox/keys
+idci_payment.paybox.public_key_url: 'http://www1.paybox.com/wp-content/uploads/2014/03/pubkey.pem'
+```
+
+Install routes in your ```routing.yml``` file:
+```yaml
+# app/config/routing.yml
+idci_payment:
+    resource: '@IDCIPaymentBundle/Resources/config/routing.yml'
+    prefix:   /
+
+idci_payment_api:
+    resource: '@IDCIPaymentBundle/Resources/config/routing_api.yml'
+    prefix:   /api
 ```
 
 These tutorials may help you to personalize yourself this bundle:
 
 - [Create a new payment gateway](./Resources/docs/create-your-payment-gateway.md): incorporate new payment method to this bundle
 - [Create your own transaction manager](./Resources/docs/create-your-transaction-manager.md) : help you to retrieve transaction from other stockages methods (default: Doctrine)
-- [Use this bundle with step bundle](./Resources/docs/how-to-work-with-step-bundle.md): simple configuration to make this bundle work with step bundle
-- [Create your own event subscriber](./Resources/docs/create-your-event-subscriber.md): learn to work with transaction event
+- [Use this bundle with step bundle](./Resources/docs/use-step-bundle.md): simple configuration to make this bundle work with step bundle
+- [Create your own event subscriber](./Resources/docs/create-your-event-subscriber.md): learn how to work with transaction event
 
 Supported Gateways
 ------------------
 
-* [Stripe](./Gateway/StripePaymentGateway.php)
+* [Stripe](./Gateway/StripePaymentGateway.php) ([example](./Resources/docs/example/stripe.md))
 * [Paypal](./Gateway/PaypalPaymentGateway.php)
+([example](./Resources/docs/example/paypal.md))
 * [Paybox](./Gateway/PayboxPaymentGateway.php)
+([example](./Resources/docs/example/paybox.md))
 * [Monetico](./Gateway/MoneticoPaymentGateway.php) (unfinished)
 * [Ogone](./Gateway/OgonePaymentGateway.php) (unfinished)
 * [PayPlug](./Gateway/PayPlugPaymentGateway.php)
+([example](./Resources/docs/example/payplug.md))
 * [Atos Sips Bin](./Gateway/AtosSipsBinPaymentGateway.php)
-    * Scellius
-    * Sogenactif
+    * Scellius ([example](./Resources/docs/example/scellius-bin.md))
+    * Sogenactif ([example](./Resources/docs/example/sogenactif-bin.md))
 * [Atos Sips POST](./Gateway/AtosSipsPostPaymentGateway.php)
-    * Mercanet
-    * Sogenactif
+    * Mercanet ([example](./Resources/docs/example/mercanet-post.md))
+    * Sogenactif ([example](./Resources/docs/example/sogenactif-post.md))
 * [Atos Sips JSON](./Gateway/AtosSipsJsonPaymentGateway.php)
-    * Mercanet
-    * Sogenactif
+    * Mercanet ([example](./Resources/docs/example/mercanet-json.md))
+    * Sogenactif ([example](./Resources/docs/example/sogenactif-json.md))
 
 For testing purpose:
 - [Parameters](./Resources/docs/test-parameters.md)
@@ -131,7 +165,7 @@ Tests
 Add test routing :
 
 ```yaml
-# app/config/routing_dev.php
+# app/config/routing_dev.yml
 
 _test_payment:
     resource: '@IDCIPaymentBundle/Resources/config/routing.yml'

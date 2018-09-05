@@ -9,13 +9,31 @@ This bundle can work with [IDCIStepBundle](https://github.com/IDCI-Consulting/St
 
 Make sure you have already installed step bundle
 
-Add this to your config.yml file:
+Add this to your ```config.yml``` file:
 
 ```yaml
 imports:
     - {resource: '@IDCIPaymentBundle/Resources/config/step_types.yml'}
     - {resource: '@IDCIPaymentBundle/Resources/config/event_actions.yml'}
     - {resource: '@IDCIPaymentBundle/Resources/config/step_templates.yml'}
+```
+
+And this in your ```services.yml``` file:
+```yaml
+# PaymentBundle - Step
+
+IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType:
+    tags:
+        - { name: idci_step.step_type, alias: payment }
+IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepTypeInterface: '@IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType'
+
+# PaymentBundle - Step Event Action
+
+IDCI\Bundle\PaymentBundle\Step\Event\Action\ManageTransactionStepEventAction:
+    arguments:
+        $templates: '%idci_payment.templates.step%'
+    tags:
+        - {name: idci_step.step_event_action, alias: manage_transaction}
 ```
 
 ## Override default twig views
