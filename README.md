@@ -71,7 +71,7 @@ monolog:
     handlers:
         payment_log:
             type: stream
-            path: "%kernel.logs_dir%/new_payment_%kernel.environment%.log"
+            path: "%kernel.logs_dir%/%kernel.environment%.log"
             channels: [payment]
 
 ```

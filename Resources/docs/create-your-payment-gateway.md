@@ -99,9 +99,9 @@ Now add the following configuration in your ```service.yml``` file:
 
 ```yml
 # service.yml
-YourBundle\YourPath\NewPaymentGateway:
+MyBundle\Gateway\ExemplePaymentGateway:
     tags:
-        - { name: idci_payment.gateways, alias: your_gateway_name }
+        - { name: idci_payment.gateways, alias: exemple }
 ```
 
 Warning : The payment gateway ```getResponse()``` method will never be call by the client but by the bank itself in backend controller for security reason.  
@@ -119,8 +119,8 @@ You can also add it to your ```config.yml``` file:
 ```yml
 idci_payment:
     gateway_configurations:
-        paypal_example:
-            gateway_name: paypal
+        exemple_test:
+            gateway_name: exemple
             enabled: true
             parameters:
                 client_id: (id)

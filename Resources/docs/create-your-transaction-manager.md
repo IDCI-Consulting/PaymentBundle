@@ -58,7 +58,7 @@ In your configuration :
 
 ```yaml
 # services.yml
-IDCI\Bundle\PaymentBundle\Manager\RedisTransactionManager:
+MyBundle\Manager\RedisTransactionManager:
     arguments:
         $redis: '@snc_redis.default'
 IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface: '@MyBundle\Manager\RedisTransactionManager'

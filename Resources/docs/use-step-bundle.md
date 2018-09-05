@@ -72,14 +72,7 @@ You can now modify which views this bundle will use in case of payment step
                             "item_id": "{{ flow_data.retrievedData.order.id }}",
                             "description": "A transaction test",
                             "customer_id": "{{ flow_data.retrievedData.user.id }}",
-                            "customer_email": "{{ flow_data.data.user.email_address }}"
-                        }
-                    },
-                    {
-                        "action": "return_transaction",
-                        "name": "transaction",
-                        "parameters": {
-                            "payment_gateway_configuration_alias": "paypal_test",
+                            "customer_email": "{{ flow_data.data.user.email_address }}",
                             "success_message": "Your transaction succeeded.",
                             "error_message": "There was a problem with your transaction, please try again."
                         }

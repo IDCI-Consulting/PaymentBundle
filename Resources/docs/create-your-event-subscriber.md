@@ -82,7 +82,7 @@ Your new event subscriber will be automaticaly bind to [TransactionEvent](../../
 
 ## Usage example with swiftmailer
 
-Here's a little example of what you can do with subscriber
+Here's a little example of what you can do with an event subscriber
 
 ```php
 <?php
