@@ -14,7 +14,7 @@ services:
 
     IDCI\Bundle\PaymentBundle\Manager\PaymentManager:
         arguments:
-            $gatewayConfigurations: '%idci_payment.gateway_configurations%'
+            $paymentGatewayConfigurations: '%idci_payment.gateway_configurations%'
 
     # Subscriber
 

@@ -4,7 +4,6 @@ namespace IDCI\Bundle\PaymentBundle\Manager;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
-use IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentGatewayConfigurationException;
 use IDCI\Bundle\PaymentBundle\Exception\NoPaymentGatewayConfigurationFoundException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistryInterface;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContext;
@@ -36,56 +35,55 @@ class PaymentManager
     /**
      * @var array
      */
-    private $gatewayConfigurations;
+    private $paymentGatewayConfigurations;
 
     public function __construct(
         ObjectManager $om,
         PaymentGatewayRegistryInterface $paymentGatewayRegistry,
         TransactionManagerInterface $transactionManager,
         EventDispatcher $dispatcher,
-        array $gatewayConfigurations
+        array $paymentGatewayConfigurations
     ) {
         $this->om = $om;
         $this->dispatcher = $dispatcher;
         $this->paymentGatewayRegistry = $paymentGatewayRegistry;
         $this->transactionManager = $transactionManager;
-        $this->gatewayConfigurations = $gatewayConfigurations;
+        $this->paymentGatewayConfigurations = $paymentGatewayConfigurations;
     }
 
     public function getAllPaymentGatewayConfigurationFromDoctrine(): array
     {
-        $paymentGatewayConfigurations = $this
+        $paymentGatewayConfigurations = [];
+
+        $doctrinePaymentGatewayConfigurations = $this
             ->om
             ->getRepository(PaymentGatewayConfiguration::class)
             ->findAll()
         ;
 
-        foreach ($paymentGatewayConfigurations as $key => $paymentGatewayConfiguration) {
-            $paymentGatewayConfigurations[$paymentGatewayConfiguration->getAlias()] = $paymentGatewayConfiguration;
-            unset($paymentGatewayConfigurations[$key]);
+        foreach ($doctrinePaymentGatewayConfigurations as $key => $doctrinePaymentGatewayConfiguration) {
+            $paymentGatewayConfigurations[$doctrinePaymentGatewayConfiguration->getAlias()] = $doctrinePaymentGatewayConfiguration;
         }
 
         return $paymentGatewayConfigurations;
     }
 
-    public function getAllPaymentGatewayConfigurationFromConfiguration(): array
+    public function getAllPaymentGatewayConfiguration(): array
     {
         $paymentGatewayConfigurations = [];
 
-        foreach ($this->gatewayConfigurations as $alias => $configuration) {
-            if (!isset($configuration['gateway_name'])) {
-                throw new InvalidPaymentGatewayConfigurationException(
-                    sprintf('No gateway name given for the payment gateway configuration %s', $alias)
-                );
-            }
-
+        foreach ($this->paymentGatewayConfigurations as $alias => $configuration) {
             $paymentGatewayList = $this->paymentGatewayRegistry->getAll();
             $paymentGatewayFQCN = get_class($paymentGatewayList[$configuration['gateway_name']]);
 
             foreach ($paymentGatewayFQCN::getParameterNames() as $parameterName) {
                 if (!array_key_exists($parameterName, $configuration['parameters'])) {
-                    throw new InvalidPaymentGatewayConfigurationException(
-                        sprintf('Parameter %s not found for payment gateway configuration %s', $parameterName, $alias)
+                    throw new \UnexpectedValueException(
+                        'Payment Manager : Payment Gateway Configuration error : '.
+                        sprintf(
+                            'Parameter %s not found for payment gateway configuration %s',
+                            $parameterName, $alias
+                        )
                     );
                 }
             }
@@ -98,30 +96,28 @@ class PaymentManager
             ;
         }
 
-        return $paymentGatewayConfigurations;
-    }
-
-    public function getAllPaymentGatewayConfiguration(): array
-    {
         return array_merge(
+            $paymentGatewayConfigurations
             $this->getAllPaymentGatewayConfigurationFromDoctrine(),
-            $this->getAllPaymentGatewayConfigurationFromConfiguration()
         );
     }
 
-    public function createPaymentContextByAlias(string $alias): PaymentContextInterface
+    public function getPaymentGatewayConfiguration(string $alias): PaymentGatewayConfigurationInterface
     {
         $paymentGatewayConfigurations = $this->getAllPaymentGatewayConfiguration();
 
         if (!isset($paymentGatewayConfigurations[$alias])) {
-            throw new NoPaymentGatewayConfigurationFoundException();
+            throw new NoPaymentGatewayConfigurationFoundException($alias);
         }
 
-        $paymentGatewayConfiguration = $paymentGatewayConfigurations[$alias];
+        return $paymentGatewayConfigurations[$alias];
+    }
 
+    public function createPaymentContextByAlias(string $alias): PaymentContextInterface
+    {
         return new PaymentContext(
             $this->dispatcher,
-            $paymentGatewayConfiguration,
+            $this->getPaymentGatewayConfiguration($alias),
             $this->paymentGatewayRegistry->get($paymentGatewayConfiguration->getGatewayName()),
             $this->transactionManager
         );
