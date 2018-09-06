@@ -4,7 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Manager;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
-use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
+use IDCI\Bundle\PaymentBundle\Exception\NoTransactionFoundException;
 use IDCI\Bundle\PaymentBundle\Model\Transaction as TransactionModel;
 
 class DoctrineTransactionManager implements TransactionManagerInterface
@@ -34,7 +34,7 @@ class DoctrineTransactionManager implements TransactionManagerInterface
         ;
 
         if (null === $transaction) {
-            throw new UndefinedTransactionException(sprintf('No transaction found with the uuid : %s', $transactionUuid));
+            throw new NoTransactionFoundException($transactionUuid);
         }
 
         return $transaction;

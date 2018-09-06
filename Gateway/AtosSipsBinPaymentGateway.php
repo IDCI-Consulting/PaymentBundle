@@ -2,8 +2,6 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Exception\InvalidAtosSipsInitializationException;
-use IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException;
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AtosSipsStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
@@ -156,12 +154,12 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
         $process->run();
 
         if (empty($process->getOutput())) {
-            throw new InvalidAtosSipsInitializationException('Empty data response');
+            throw new \UnexpectedValueException('Atos SIPS : Initialization error (empty data response)');
         }
 
         list($_, $code, $error, $form) = explode('!', $process->getOutput());
         if ('0' !== $code) {
-            throw new InvalidAtosSipsInitializationException($error);
+            throw new \UnexpectedValueException(sprintf('Atos SIPS : Initialization error (%s)', $error));
         }
 
         return [
@@ -185,7 +183,7 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
         if (!$request->isMethod('POST')) {
-            throw new InvalidPaymentCallbackMethodException('Request method should be POST');
+            throw new \UnexpectedValueException('Atos SIPS : Payment Gateway error (Request method should be POST)');
         }
 
         $gatewayResponse = (new GatewayResponse())

@@ -2,9 +2,9 @@
 
 namespace IDCI\Bundle\PaymentBundle\Exception;
 
-class UnexpectedAtosSipsResponseCodeException extends \Exception
+class UnexpectedAtosSipsResponseCodeException extends \UnexpectedValueException
 {
-    public function __construct($errorCode, $code = 0, \Exception $previous = null)
+    public function __construct($errorCode)
     {
         $messages = [
             '02' => 'Authorization limit on card exceeded',
@@ -26,6 +26,6 @@ class UnexpectedAtosSipsResponseCodeException extends \Exception
 
         $message = isset($messages[$errorCode]) ? $messages[$errorCode] : sprintf('Unkwown error code : %s', $errorCode);
 
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message);
     }
 }

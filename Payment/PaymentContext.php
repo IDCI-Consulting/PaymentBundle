@@ -3,8 +3,6 @@
 namespace IDCI\Bundle\PaymentBundle\Payment;
 
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
-use IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedTransactionException;
-use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
@@ -67,7 +65,7 @@ class PaymentContext implements PaymentContextInterface
         ;
 
         if (null === $gatewayResponse->getTransactionUuid()) {
-            throw new UndefinedTransactionException('No transaction uuid found for this callback');
+            throw new \UnexpectedValueException('No transaction uuid found for this callback');
         }
 
         $transaction = $this
@@ -120,9 +118,7 @@ class PaymentContext implements PaymentContextInterface
     public function setTransaction(Transaction $transaction): PaymentContextInterface
     {
         if ($this->hasTransaction()) {
-            throw new AlreadyDefinedTransactionException(
-                sprintf('The payment context has already a transaction defined.')
-            );
+            throw new \LogicException('Payment context : The payment context already has a transaction defined.');
         }
 
         $this->transaction = $transaction;

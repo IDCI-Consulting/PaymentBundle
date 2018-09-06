@@ -16,7 +16,7 @@ This is a little exemple of manager working with Redis.
 namespace MyBundle\Manager;
 
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
-use IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException;
+use IDCI\Bundle\PaymentBundle\Exception\NoTransactionFoundException;
 use Predis\Client;
 
 class RedisTransactionManager implements TransactionManagerInterface
@@ -38,9 +38,7 @@ class RedisTransactionManager implements TransactionManagerInterface
         $transaction = $this->redis->get($transactionUuid);
 
         if (null === $transaction) {
-            throw new UndefinedTransactionException(
-                sprintf('No transaction found with the uuid : %s', $transactionUuid)
-            );
+            throw new NoTransactionFoundException($transactionUuid);
         }
 
         return unserialize($transaction);

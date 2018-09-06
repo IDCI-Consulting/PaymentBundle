@@ -2,7 +2,6 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -44,7 +43,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
         if (!$request->isMethod(Request::METHOD_POST)) {
-            throw new InvalidPaymentCallbackMethodException('Request method should be POST');
+            throw new \UnexpectedValueException('Paypal : Payment Gateway error (Request method should be POST)');
         }
 
         $gatewayResponse = (new GatewayResponse())

@@ -2,8 +2,8 @@
 
 namespace IDCI\Bundle\PaymentBundle\Tests\Unit\Gateway;
 
-use Symfony\Component\HttpFoundation\Request;
 use IDCI\Bundle\PaymentBundle\Gateway\PaypalPaymentGateway;
+use Symfony\Component\HttpFoundation\Request;
 
 class PaypalPaymentGatewayTest extends PaymentGatewayTestCase
 {
@@ -31,7 +31,7 @@ class PaypalPaymentGatewayTest extends PaymentGatewayTestCase
     }
 
     /**
-     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
+     * @expectedException \UnexpectedValueException
      */
     public function testInvalidMethod()
     {

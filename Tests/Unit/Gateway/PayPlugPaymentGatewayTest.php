@@ -2,10 +2,10 @@
 
 namespace IDCI\Bundle\PaymentBundle\Tests\Unit\Gateway;
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use IDCI\Bundle\PaymentBundle\Gateway\PayPlugPaymentGateway;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
 {
@@ -27,7 +27,7 @@ class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
     }
 
     /**
-     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
+     * @expectedException \UnexpectedValueException
      */
     public function testInvalidMethod()
     {
