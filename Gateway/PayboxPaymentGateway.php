@@ -3,7 +3,6 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use GuzzleHttp\Client;
-use IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -36,12 +35,12 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         return sprintf('https://%s/cgi/MYchoix_pagepaiement.cgi', $this->serverHostName);
     }
 
-    private function getKeyPath($clientSite)
+    private function getKeyPath(string $clientSite): string
     {
         return sprintf('%s/%s.bin', $this->keyPath, $clientSite);
     }
 
-    private function getPayboxReturnString()
+    private function getPayboxReturnString(): string
     {
         $codeMap = array(
             'M' => 'amount',
@@ -144,7 +143,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
         if (!$request->isMethod('POST')) {
-            throw new InvalidPaymentCallbackMethodException('Request method should be POST');
+            throw new \UnexpectedValueException('Paybox : Payment Gateway error (Request method should be POST)');
         }
 
         $gatewayResponse = (new GatewayResponse())

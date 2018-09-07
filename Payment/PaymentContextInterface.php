@@ -2,9 +2,9 @@
 
 namespace IDCI\Bundle\PaymentBundle\Payment;
 
-use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Symfony\Component\HttpFoundation\Request;
 
 interface PaymentContextInterface

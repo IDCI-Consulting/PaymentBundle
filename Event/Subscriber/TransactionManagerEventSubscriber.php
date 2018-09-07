@@ -2,26 +2,20 @@
 
 namespace IDCI\Bundle\PaymentBundle\Event\Subscriber;
 
-use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
+use IDCI\Bundle\PAymentBundle\Manager\TransactionManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class DoctrineTransactionEventSubscriber implements EventSubscriberInterface
+class TransactionManagerEventSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var ObjectManager
+     * @var TransactionManagerInterface
      */
-    private $om;
+    private $transactionManager;
 
-    /**
-     * @var bool
-     */
-    private $enabled;
-
-    public function __construct(ObjectManager $om, bool $enabled)
+    public function __construct(TransactionManagerInterface $transactionManager)
     {
-        $this->om = $om;
-        $this->enabled = $enabled;
+        $this->transactionManager = $transactionManager;
     }
 
     public static function getSubscribedEvents()
@@ -47,11 +41,6 @@ class DoctrineTransactionEventSubscriber implements EventSubscriberInterface
 
     public function save(TransactionEvent $transactionEvent)
     {
-        if (!$this->enabled) {
-            return;
-        }
-
-        $this->om->persist($transactionEvent->getTransaction());
-        $this->om->flush();
+        $this->transactionManager->saveTransaction($transactionEvent->getTransaction());
     }
 }

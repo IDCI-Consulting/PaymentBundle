@@ -7,37 +7,20 @@ services:
 
     IDCI\Bundle\PaymentBundle\:
         resource: '../../*'
-        exclude: '../../{Entity,Repository,Tests}'
+        exclude: '../../{Entity,Repository,Tests,Event/Subscriber}'
 
     # Manager
     IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface: '@IDCI\Bundle\PaymentBundle\Manager\DoctrineTransactionManager'
 
-    # Step
-
-    IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType:
-        tags:
-            - { name: idci_step.step_type, alias: payment }
-    IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepTypeInterface: '@IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType'
-
-    # Step Event Action
-
-    IDCI\Bundle\PaymentBundle\Step\Event\Action\InitializeTransactionStepEventAction:
+    IDCI\Bundle\PaymentBundle\Manager\PaymentManager:
         arguments:
-            $templates: '%idci_payment.templates.step%'
-        tags:
-            - {name: idci_step.step_event_action, alias: initialize_transaction}
-
-    IDCI\Bundle\PaymentBundle\Step\Event\Action\ReturnTransactionStepEventAction:
-        arguments:
-            $templates: '%idci_payment.templates.step%'
-        tags:
-            - {name: idci_step.step_event_action, alias: return_transaction}
+            $paymentGatewayConfigurations: '%idci_payment.gateway_configurations%'
 
     # Subscriber
 
-    IDCI\Bundle\PaymentBundle\Event\Subscriber\DoctrineTransactionEventSubscriber:
+    IDCI\Bundle\PaymentBundle\Event\Subscriber\TransactionManagerEventSubscriber:
         arguments:
-            $enabled: '%idci_payment.enabled_doctrine_subscriber%'
+            $transactionManager: '@IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface'
 
     IDCI\Bundle\PaymentBundle\Event\Subscriber\LoggerTransactionEventSubscriber:
         arguments:

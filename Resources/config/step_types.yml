@@ -6,12 +6,3 @@ idci_step:
             parent : abstract
             description: ""
             extra_form_options:
-                payment_gateway_configuration_alias: {extra_form_type: "text", options: {required: true}}
-                amount: {extra_form_type: "text", options: {required: true}}
-                currency_code: {extra_form_type: "text", options: {required: true}}
-                item_id: {extra_form_type: "text", options: {required: true}}
-                callback_url: {extra_form_type: "text", options: {required: false}}
-                customer_email: {extra_form_type: "text", options: {required: false}}
-                customer_id: {extra_form_type: "text", options: {required: false}}
-                description: {extra_form_type: "text", options: {required: false}}
-                return_url: {extra_form_type: "text", options: {required: false}}

@@ -2,7 +2,6 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException;
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AtosSipsStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
@@ -98,7 +97,7 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
         if (!$request->isMethod('POST')) {
-            throw new InvalidPaymentCallbackMethodException('Request method should be POST');
+            throw new \UnexpectedValueException('Atos SIPS : Payment Gateway error (Request method should be POST)');
         }
 
         $gatewayResponse = (new GatewayResponse())

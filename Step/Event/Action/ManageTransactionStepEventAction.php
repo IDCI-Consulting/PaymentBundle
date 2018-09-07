@@ -2,17 +2,20 @@
 
 namespace IDCI\Bundle\PaymentBundle\Step\Event\Action;
 
-use Doctrine\Common\Persistence\ObjectManager;
+use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
+use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use IDCI\Bundle\StepBundle\Step\Event\Action\AbstractStepEventAction;
 use IDCI\Bundle\StepBundle\Step\Event\StepEventInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class InitializeTransactionStepEventAction extends AbstractStepEventAction
+class ManageTransactionStepEventAction extends AbstractStepEventAction
 {
     /**
      * @var PaymentManager
@@ -20,14 +23,9 @@ class InitializeTransactionStepEventAction extends AbstractStepEventAction
     protected $paymentManager;
 
     /**
-     * @var \Twig_Environment
+     * @var TransactionManagerInterface
      */
-    private $templating;
-
-    /**
-     * @var array
-     */
-    private $templates;
+    protected $transactionManager;
 
     /**
      * @var UrlGeneratorInterface
@@ -39,19 +37,36 @@ class InitializeTransactionStepEventAction extends AbstractStepEventAction
      */
     protected $requestStack;
 
+    /**
+     * @var EventDispatcher
+     */
+    protected $dispatcher;
+
+    /**
+     * @var \Twig_Environment
+     */
+    private $templating;
+
+    /**
+     * @var array
+     */
+    private $templates;
+
     public function __construct(
-        ObjectManager $om,
         PaymentManager $paymentManager,
-        \Twig_Environment $templating,
+        TransactionManagerInterface $transactionManager,
         UrlGeneratorInterface $router,
         RequestStack $requestStack,
+        EventDispatcher $dispatcher,
+        \Twig_Environment $templating,
         array $templates
     ) {
-        $this->om = $om;
         $this->paymentManager = $paymentManager;
+        $this->transactionManager = $transactionManager;
         $this->templating = $templating;
         $this->requestStack = $requestStack;
         $this->router = $router;
+        $this->dispatcher = $dispatcher;
         $this->templates = $templates;
     }
 
@@ -75,10 +90,7 @@ class InitializeTransactionStepEventAction extends AbstractStepEventAction
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function doExecute(StepEventInterface $event, array $parameters = array())
+    private function prepareInitializeTransaction(StepEventInterface $event, array $parameters = array())
     {
         $step = $event->getNavigator()->getCurrentStep();
         $configuration = $step->getConfiguration();
@@ -117,7 +129,50 @@ class InitializeTransactionStepEventAction extends AbstractStepEventAction
 
         $step->setOptions($options);
 
-        return true;
+        return $transaction->toArray();
+    }
+
+    private function prepareReturnTransaction(StepEventInterface $event, array $parameters = array())
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        $paymentContext = $this->paymentManager->createPaymentContextByAlias(
+            $parameters['payment_gateway_configuration_alias']
+        );
+
+        $transaction = $this->transactionManager->retrieveTransactionByUuid($request->query->get('transaction_id'));
+        $paymentContext->setTransaction($transaction);
+
+        if (PaymentStatus::STATUS_CREATED === $transaction->getStatus()) {
+            $transaction->setStatus(PaymentStatus::STATUS_PENDING);
+            $this->dispatcher->dispatch(TransactionEvent::PENDING, new TransactionEvent($transaction));
+        }
+
+        $options = $event->getNavigator()->getCurrentStep()->getOptions();
+        $options['pre_step_content'] = $this->templating->render(
+            $this->templates[$transaction->getStatus()],
+            [
+                'transaction' => $transaction,
+                'successMessage' => $parameters['success_message'],
+                'errorMessage' => $parameters['error_message'],
+            ]
+        );
+        $event->getNavigator()->getCurrentStep()->setOptions($options);
+
+        return $transaction->toArray();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function doExecute(StepEventInterface $event, array $parameters = array())
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        if (!$request->query->has('transaction_id')) {
+            return $this->prepareInitializeTransaction($event, $parameters);
+        }
+
+        return $this->prepareReturnTransaction($event, $parameters);
     }
 
     /**
@@ -136,6 +191,8 @@ class InitializeTransactionStepEventAction extends AbstractStepEventAction
                 'customer_id' => null,
                 'customer_email' => null,
                 'description' => null,
+                'success_message' => 'Your transaction succeeded.',
+                'error_message' => 'There was a problem with your transaction, please try again.',
             ])
             ->setAllowedTypes('payment_gateway_configuration_alias', ['string'])
             ->setAllowedTypes('amount', ['integer', 'string'])
@@ -144,6 +201,8 @@ class InitializeTransactionStepEventAction extends AbstractStepEventAction
             ->setAllowedTypes('customer_id', ['null', 'string'])
             ->setAllowedTypes('customer_email', ['null', 'string'])
             ->setAllowedTypes('description', ['null', 'string'])
+            ->setAllowedTypes('success_message', ['null', 'string'])
+            ->setAllowedTypes('error_message', ['null', 'string'])
         ;
     }
 }

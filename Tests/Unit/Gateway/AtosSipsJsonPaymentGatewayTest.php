@@ -2,10 +2,10 @@
 
 namespace IDCI\Bundle\PaymentBundle\Tests\Unit\Gateway;
 
-use Symfony\Component\HttpFoundation\Request;
 use IDCI\Bundle\PaymentBundle\Gateway\AtosSipsJsonPaymentGateway;
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AtosSipsStatusCode;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
+use Symfony\Component\HttpFoundation\Request;
 
 class AtosSipsJsonPaymentGatewayTest extends PaymentGatewayTestCase
 {
@@ -20,7 +20,7 @@ class AtosSipsJsonPaymentGatewayTest extends PaymentGatewayTestCase
     }
 
     /**
-     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\InvalidPaymentCallbackMethodException
+     * @expectedException \UnexpectedValueException
      */
     public function testInvalidMethod()
     {

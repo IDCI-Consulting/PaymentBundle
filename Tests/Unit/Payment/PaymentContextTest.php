@@ -2,11 +2,6 @@
 
 namespace IDCI\Bundle\PaymentBundle\Tests\Payment;
 
-use PHPUnit\Framework\TestCase;
-use Twig\Environment as TwigEnvironment;
-use Twig\Loader\ArrayLoader;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\HttpFoundation\Request;
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Gateway\AbstractPaymentGateway;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
@@ -16,6 +11,11 @@ use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContext;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use IDCI\Bundle\PaymentBundle\Payment\TransactionFactory;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\HttpFoundation\Request;
+use Twig\Environment as TwigEnvironment;
+use Twig\Loader\ArrayLoader;
 
 class PaymentContextTest extends TestCase
 {
@@ -233,7 +233,7 @@ class PaymentContextTest extends TestCase
 
     /**
      * @dataProvider getHandleGatewayCallbackDataProvider
-     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\UndefinedTransactionException
+     * @expectedException \UnexpectedValueException
      */
     public function testHandleGatewayCallbackWithNoTransactionUuid(
         array $parameters,
@@ -269,7 +269,7 @@ class PaymentContextTest extends TestCase
 
     /**
      * @dataProvider getTransactionDataProvider
-     * @expectedException \IDCI\Bundle\PaymentBundle\Exception\AlreadyDefinedTransactionException
+     * @expectedException \LogicException
      */
     public function testTransactionAlreadyDefined(Transaction $transaction)
     {

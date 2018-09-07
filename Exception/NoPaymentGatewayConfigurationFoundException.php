@@ -2,13 +2,10 @@
 
 namespace IDCI\Bundle\PaymentBundle\Exception;
 
-class NoPaymentGatewayConfigurationFoundException extends \Exception
+class NoPaymentGatewayConfigurationFoundException extends \InvalidArgumentException
 {
-    public function __construct(
-        $message = 'No payment gateway configuration found',
-        $code = 0,
-        \Exception $previous = null
-    ) {
-        parent::__construct($message, $code, $previous);
+    public function __construct(string $alias)
+    {
+        parent::__construct(sprintf('No payment gateway configuration found for alias %s', $alias));
     }
 }
