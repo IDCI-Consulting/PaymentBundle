@@ -1,8 +1,20 @@
 idci_step:
-
     step_types:
-
         payment:
             parent : abstract
             description: ""
             extra_form_options:
+    step_event_actions:
+        manage_transaction:
+            parent: abstract
+            description: "help you to manage initialization et return of transaction"
+            extra_form_options:
+                payment_gateway_configuration_alias: {extra_form_type: "text", options: {required: true}}
+                amount: {extra_form_type: "integer", options: {required: true}}
+                item_id: {extra_form_type: "text", options: {required: true}}
+                currency_code: {extra_form_type: "text", options: {required: true}}
+                customer_id: {extra_form_type: "text", options: {required: false}}
+                customer_email: {extra_form_type: "text", options: {required: false}}
+                description: {extra_form_type: "text", options: {required: false}}
+                success_message: {extra_form_type: "text", options: {required: false}}
+                error_message: {extra_form_type: "text", options: {required: false}}
