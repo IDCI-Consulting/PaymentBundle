@@ -102,3 +102,16 @@ services:
     IDCI\Bundle\PaymentBundle\Gateway\PayPlugPaymentGateway:
         tags:
             - { name: idci_payment.gateways, alias: payplug }
+
+    # Step Bundle Configuration
+
+    IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType:
+        tags:
+            - { name: idci_step.step_type, alias: payment }
+    IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepTypeInterface: '@IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType'
+
+    IDCI\Bundle\PaymentBundle\Step\Event\Action\ManageTransactionStepEventAction:
+        arguments:
+            $templates: '%idci_payment.templates.step%'
+        tags:
+            - {name: idci_step.step_event_action, alias: manage_transaction}
