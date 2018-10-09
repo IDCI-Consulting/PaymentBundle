@@ -21,6 +21,12 @@ class PaymentStepType extends AbstractStepType
 
     public function prepareNavigation(NavigatorInterface $navigator, array $options)
     {
+        if (!$navigator->getRequest()->query->has('transaction_id')) {
+            $options['prevent_next'] = true;
+        } else {
+            $options['prevent_previous'] = true;
+        }
+
         return $options;
     }
 }

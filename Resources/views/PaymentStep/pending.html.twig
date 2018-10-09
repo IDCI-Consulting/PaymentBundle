@@ -2,10 +2,8 @@
 <div id="statusContainer"></div>
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
-        var prevBtn = document.querySelector('.idci_step_navigation_previous'); // on les cache
         var nextBtn = document.querySelector('.idci_step_navigation_next'); // on les cache
 
-        prevBtn.hidden = true;
         nextBtn.hidden = true;
 
         var maxAttempt = 25;
@@ -18,7 +16,6 @@
 
             } else {
                 document.querySelector('#statusContainer').innerText = '{{ errorMessage }}';
-                prevBtn.hidden = false
             }
         }
 
