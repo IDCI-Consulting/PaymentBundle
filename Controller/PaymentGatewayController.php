@@ -42,7 +42,7 @@ class PaymentGatewayController extends Controller
                 '[gateway configuration alias: %s, data: %s, ip: %s]',
                 $configuration_alias,
                 json_encode($data),
-                $request->getClientIp()
+                json_encode($request->getClientIps())
             )
         );
 
