@@ -1,7 +1,2 @@
 monolog:
     channels: [payment]
-    handlers:
-        payment_log:
-            type: stream
-            path: "%kernel.logs_dir%/payment_%kernel.environment%.log"
-            channels: [payment]

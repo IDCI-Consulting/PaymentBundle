@@ -62,17 +62,17 @@ Add this to your ```config.yml``` file
 imports:
     - {resource: '@IDCIPaymentBundle/Resources/config/config.yml'}
 
+# Enable monolog logging using event subscriber plugged on transaction state changes
 idci_payment:
     enabled_logger_subscriber: true
 
-# (optional) if you want to customize the payment logger
+# (optional) if you want to customize the payment logger, by defaults, it will output into main handler
 monolog:
-    channels: [payment]
     handlers:
         payment_log:
             type: stream
             path: "%kernel.logs_dir%/%kernel.environment%.log"
-            channels: [payment]
+            channels: ['payment']
 
 ```
 
