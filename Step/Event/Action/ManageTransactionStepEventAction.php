@@ -80,13 +80,19 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
 
         $parsedUrl = parse_url($currentUrl);
 
-        return sprintf('%s://%s%s?%s',
+        return sprintf(
+            '%s://%s%s?%s',
             $parsedUrl['scheme'],
             $parsedUrl['host'],
             $parsedUrl['path'],
-            http_build_query([
-                'transaction_id' => $transaction->getId(),
-            ])
+            http_build_query(
+                array_merge(
+                    $request->query->all(),
+                    [
+                        'transaction_id' => $transaction->getId(),
+                    ]
+                )
+            )
         );
     }
 
