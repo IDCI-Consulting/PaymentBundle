@@ -83,6 +83,15 @@ services:
         tags:
             - { name: idci_payment.gateways, alias: scellius_bin_atos_sips }
 
+    idci_payment.gateways.mercanet_bin:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsBinPaymentGateway
+        arguments:
+            $pathfile: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/param/mercanet/pathfile.mercanet')"
+            $requestBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/request')"
+            $responseBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/response')"
+        tags:
+            - { name: idci_payment.gateways, alias: mercanet_bin_atos_sips }
+
     IDCI\Bundle\PaymentBundle\Gateway\PayboxPaymentGateway:
         arguments:
             $serverHostName: '%idci_payment.paybox.server_host_name%'
