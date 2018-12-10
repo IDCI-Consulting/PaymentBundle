@@ -98,14 +98,9 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
 
     private function prepareInitializeTransaction(StepEventInterface $event, array $parameters = array())
     {
-        $step = $event->getNavigator()->getCurrentStep();
-        $configuration = $step->getConfiguration();
-        $options = $configuration['options'];
-
         $paymentContext = $this->paymentManager->createPaymentContextByAlias(
             $parameters['payment_gateway_configuration_alias']
         );
-        $transaction = $paymentContext->getTransaction();
 
         $transaction = $paymentContext->createTransaction([
             'item_id' => $parameters['item_id'],
@@ -116,24 +111,26 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             'description' => $parameters['description'],
         ]);
 
-        $request = $this->requestStack->getCurrentRequest();
-
         $paymentContext
             ->getPaymentGatewayConfiguration()
-            ->set('return_url', $this->getReturnUrl($request, $transaction))
+            ->set('return_url', $this->getReturnUrl($this->requestStack->getCurrentRequest(), $transaction))
         ;
 
+        $options = $event->getNavigator()->getCurrentStep()->getOptions();
+        if ($parameters['allow_skip']) {
+            $options['prevent_next'] = false;
+            $options['prevent_previous'] = false;
+        }
+        $options['transaction'] = $transaction;
         $options['pre_step_content'] = $this->templating->render(
-            $this->templates[$transaction->getStatus()],
+            $this->templates[PaymentStatus::STATUS_CREATED],
             [
                 'view' => $paymentContext->buildHTMLView(),
-                'transaction' => $paymentContext->getTransaction(),
+                'transaction' => $transaction,
             ]
         );
-
-        $options['transaction'] = $transaction;
-
-        $step->setOptions($options);
+        $event->getNavigator()->getCurrentStep()->setOptions($options);
+        dump($options);
 
         return $transaction->toArray();
     }
@@ -154,6 +151,11 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         }
 
         $options = $event->getNavigator()->getCurrentStep()->getOptions();
+        if ($parameters['allow_skip']) {
+            $options['prevent_next'] = false;
+            $options['prevent_previous'] = false;
+        }
+        $options['transaction'] = $transaction;
         $options['pre_step_content'] = $this->templating->render(
             $this->templates[$transaction->getStatus()],
             [
@@ -194,12 +196,14 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
                 'item_id',
             ])
             ->setDefaults([
+                'allow_skip' => false,
                 'customer_id' => null,
                 'customer_email' => null,
                 'description' => null,
                 'success_message' => 'Your transaction succeeded.',
                 'error_message' => 'There was a problem with your transaction, please try again.',
             ])
+            ->setAllowedTypes('allow_skip', array('bool', 'string'))
             ->setAllowedTypes('payment_gateway_configuration_alias', ['string'])
             ->setAllowedTypes('amount', ['integer', 'string'])
             ->setAllowedTypes('item_id', ['null', 'string'])
@@ -209,6 +213,12 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             ->setAllowedTypes('description', ['null', 'string'])
             ->setAllowedTypes('success_message', ['null', 'string'])
             ->setAllowedTypes('error_message', ['null', 'string'])
+            ->setNormalizer(
+                'allow_skip',
+                function (OptionsResolver $options, $value) {
+                    return (bool) $value;
+                }
+            )
         ;
     }
 }
