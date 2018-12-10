@@ -130,7 +130,6 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             ]
         );
         $event->getNavigator()->getCurrentStep()->setOptions($options);
-        dump($options);
 
         return $transaction->toArray();
     }
