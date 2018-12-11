@@ -6,6 +6,7 @@ idci_step:
             parent: abstract
             description: "help you to manage initialization et return of transaction"
             extra_form_options:
+                allow_skip: {extra_form_type: "text", options: {required: false}}
                 payment_gateway_configuration_alias: {extra_form_type: "text", options: {required: true}}
                 amount: {extra_form_type: "integer", options: {required: true}}
                 item_id: {extra_form_type: "text", options: {required: true}}

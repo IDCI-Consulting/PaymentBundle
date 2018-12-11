@@ -44,9 +44,10 @@ if you want to override default step twig template, add this to your configurati
 idci_payment:
     templates:
         step:
-            failed: '@IDCIPaymentBundle/Resources/views/PaymentStep/failed.html.twig'
             approved: '@IDCIPaymentBundle/Resources/views/PaymentStep/approved.html.twig'
+            canceled: '@IDCIPaymentBundle/Resources/views/PaymentStep/canceled.html.twig'
             created: '@IDCIPaymentBundle/Resources/views/PaymentStep/created.html.twig'
+            failed: '@IDCIPaymentBundle/Resources/views/PaymentStep/failed.html.twig'
             pending: '@IDCIPaymentBundle/Resources/views/PaymentStep/pending.html.twig'
 ```
 
@@ -64,8 +65,9 @@ You can now modify which views this bundle will use in case of payment step
             "events": {
                 "form.pre_set_data": [
                     {
-                        "action": "initialize_transaction",
+                        "action": "manage_transaction",
                         "parameters": {
+                            "allow_skip": "{{ app.request.session.get('allow_skip_payment_step')|default('0') }}",
                             "payment_gateway_configuration_alias": "paypal_test",
                             "amount": "{{ flow_data.retrievedData.order.amount * 100 }}",
                             "currency_code": "EUR",
