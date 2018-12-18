@@ -5,12 +5,12 @@
 
     <entity name="IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration" table="idci_payment_gateway_configuration">
         <id name="id" type="uuid" column="id">
-            <generator strategy="CUSTOM"/>
-            <custom-id-generator class="Ramsey\Uuid\Doctrine\UuidGenerator"/>
+            <generator strategy="CUSTOM" />
+            <custom-id-generator class="Ramsey\Uuid\Doctrine\UuidGenerator" />
         </id>
-        <field name="alias" type="string" column="alias" unique="true"/>
-        <field name="gatewayName" type="string" column="gateway_name"/>
-        <field name="enabled" type="boolean" column="enabled"/>
-        <field name="parameters" type="json_array" column="parameters"/>
+        <field name="alias" type="string" column="alias" unique="true" />
+        <field name="gatewayName" type="string" column="gateway_name" />
+        <field name="enabled" type="boolean" column="enabled" />
+        <field name="parameters" type="json_array" column="parameters" />
     </entity>
 </doctrine-mapping>
