@@ -13,7 +13,7 @@ class PaymentGatewayRegistry implements PaymentGatewayRegistryInterface
 
     public function has(string $alias): bool
     {
-        return isset($this->paymentGateways['alias']);
+        return isset($this->paymentGateways[$alias]);
     }
 
     public function set(string $alias, PaymentGatewayInterface $paymentGateway): PaymentGatewayRegistryInterface
