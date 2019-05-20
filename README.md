@@ -30,7 +30,7 @@ Add dependency in your ```composer.json``` file:
 ```json
 "require": {
     ...,
-    "idci/payment-bundle": "dev-master",
+    "idci/payment-bundle": "^4.0",
 }
 ```
 
@@ -44,51 +44,50 @@ Enable bundle in your application kernel :
 
 ```php
 <?php
-// app/AppKernel.php
-
-public function registerBundles()
-{
-    $bundles = array(
-        // ...
-        new IDCI\Bundle\PaymentBundle\IDCIPaymentBundle(),
-    );
-}
+// config/bundles.php
+return [
+    // ...
+    new IDCI\Bundle\PaymentBundle\IDCIPaymentBundle(),
+];
 ```
 
 Add this to your ```config.yml``` file
 
 ```yaml
-# app/config/config.yml
+# config/packages/idci_payment.yaml
 imports:
     - {resource: '@IDCIPaymentBundle/Resources/config/config.yml'}
+
+parameters:
+    idci_payment.mercanet.server_host_name: 'payment-webinit.simu.mercanet.bnpparibas.net' # prod: payment-webinit.mercanet.bnpparibas.net
+    idci_payment.sogenactif.server_host_name: 'payment-webinit.simu.sips-atos.com' # prod: payment-webinit-ws.sogenactif.com
+    idci_payment.paybox.server_host_name: 'preprod-tpeweb.paybox.com' # prod: tpeweb.paybox.com
+    idci_payment.paybox.key_path: /var/www/html/vendor/idci/payment-bundle/Resources/paybox/keys
+    idci_payment.paybox.public_key_url: 'http://www1.paybox.com/wp-content/uploads/2014/03/pubkey.pem'
 
 # Enable monolog logging using event subscriber plugged on transaction state changes
 idci_payment:
     enabled_logger_subscriber: true
 
-# (optional) if you want to customize the payment logger, by defaults, it will output into main handler
+```
+
+(Optional) If you want to customize the payment logger, by defaults, it will output into main handler
+
+```
+# config/packages/monolog.yaml
 monolog:
     handlers:
+        # ...
         payment_log:
             type: stream
             path: "%kernel.logs_dir%/%kernel.environment%.log"
             channels: ['payment']
-
 ```
 
-And these parameters in ```parameters.yml(.dist)``` file
-```yaml
-# app/config/parameters.yml(.dist)
-idci_payment.mercanet.server_host_name: 'payment-webinit.simu.mercanet.bnpparibas.net' # prod: payment-webinit.mercanet.bnpparibas.net
-idci_payment.sogenactif.server_host_name: 'payment-webinit.simu.sips-atos.com' # prod: payment-webinit-ws.sogenactif.com
-idci_payment.paybox.server_host_name: 'preprod-tpeweb.paybox.com' # prod: tpeweb.paybox.com
-idci_payment.paybox.key_path: /var/www/html/vendor/idci/payment-bundle/Resources/paybox/keys
-idci_payment.paybox.public_key_url: 'http://www1.paybox.com/wp-content/uploads/2014/03/pubkey.pem'
-```
+Install routes in your ```config/routes/idci_payment.yaml``` file:
 
-Install routes in your ```routing.yml``` file:
 ```yaml
-# app/config/routing.yml
+# config/routes/idci_payment.yaml
 idci_payment:
     resource: '@IDCIPaymentBundle/Resources/config/routing.yml'
     prefix:   /
@@ -109,14 +108,11 @@ Supported Gateways
 ------------------
 
 * [Stripe](./Gateway/StripePaymentGateway.php) ([example](./Resources/docs/example/stripe.md))
-* [Paypal](./Gateway/PaypalPaymentGateway.php)
-([example](./Resources/docs/example/paypal.md))
-* [Paybox](./Gateway/PayboxPaymentGateway.php)
-([example](./Resources/docs/example/paybox.md))
+* [Paypal](./Gateway/PaypalPaymentGateway.php) ([example](./Resources/docs/example/paypal.md))
+* [Paybox](./Gateway/PayboxPaymentGateway.php) ([example](./Resources/docs/example/paybox.md))
 * [Monetico](./Gateway/MoneticoPaymentGateway.php) (unfinished)
 * [Ogone](./Gateway/OgonePaymentGateway.php) (unfinished)
-* [PayPlug](./Gateway/PayPlugPaymentGateway.php)
-([example](./Resources/docs/example/payplug.md))
+* [PayPlug](./Gateway/PayPlugPaymentGateway.php) ([example](./Resources/docs/example/payplug.md))
 * [Atos Sips Bin](./Gateway/AtosSipsBinPaymentGateway.php)
     * Scellius ([example](./Resources/docs/example/scellius-bin.md))
     * Sogenactif ([example](./Resources/docs/example/sogenactif-bin.md))
@@ -163,7 +159,7 @@ Tests
 Add test routing :
 
 ```yaml
-# app/config/routing_dev.yml
+# config/routes/dev/idci_payment.yaml
 
 _test_payment:
     resource: '@IDCIPaymentBundle/Resources/config/routing.yml'
