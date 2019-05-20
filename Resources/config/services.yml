@@ -10,13 +10,18 @@ services:
         exclude: '../../{Entity,Repository,Tests,Event/Subscriber}'
 
     # Manager
-    Doctrine\Common\Persistence\ObjectManager:
-        lazy: true
-    IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface: '@IDCI\Bundle\PaymentBundle\Manager\DoctrineTransactionManager'
+    Doctrine\Common\Persistence\ObjectManager: null
+
+    IDCI\Bundle\PaymentBundle\Manager\DoctrineTransactionManager:
+        arguments:
+            $om: '@?doctrine.orm.entity_manager'
 
     IDCI\Bundle\PaymentBundle\Manager\PaymentManager:
         arguments:
+            $om: '@?doctrine.orm.entity_manager'
             $paymentGatewayConfigurations: '%idci_payment.gateway_configurations%'
+
+    IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface: '@IDCI\Bundle\PaymentBundle\Manager\DoctrineTransactionManager'
 
     # Subscriber
 

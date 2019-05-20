@@ -39,7 +39,7 @@ class PaymentManager
     private $paymentGatewayConfigurations;
 
     public function __construct(
-        ObjectManager $om,
+        ?ObjectManager $om = null,
         PaymentGatewayRegistryInterface $paymentGatewayRegistry,
         TransactionManagerInterface $transactionManager,
         EventDispatcherInterface $dispatcher,
@@ -95,6 +95,10 @@ class PaymentManager
                 ->setEnabled($configuration['enabled'])
                 ->setParameters($configuration['parameters'])
             ;
+        }
+
+        if (!$this->om) {
+            return $paymentGatewayConfigurations;
         }
 
         return array_merge(

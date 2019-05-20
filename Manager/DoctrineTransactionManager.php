@@ -14,7 +14,7 @@ class DoctrineTransactionManager implements TransactionManagerInterface
      */
     private $om;
 
-    public function __construct(ObjectManager $om)
+    public function __construct(?ObjectManager $om = null)
     {
         $this->om = $om;
     }

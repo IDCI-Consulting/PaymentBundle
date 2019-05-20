@@ -162,7 +162,7 @@ Add test routing :
 # config/routes/dev/idci_payment.yaml
 
 _test_payment:
-    resource: '@IDCIPaymentBundle/Resources/config/routing.yml'
+    resource: '@IDCIPaymentBundle/Resources/config/routing_test.yml'
     prefix:   /_test/
 
 ```
