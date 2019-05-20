@@ -21,7 +21,7 @@
         "symfony/monolog-bundle": "^3.3",
         "ramsey/uuid": "^3.7",
         "ramsey/uuid-doctrine": "^1.4",
-        "doctrine/persistence": "~1.0",
+        "doctrine/persistence": "^1.1",
         "payum/iso4217": "~1.0",
         "paypal/rest-api-sdk-php": "^1.13",
         "stripe/stripe-php": "^6.7",
