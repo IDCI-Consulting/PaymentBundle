@@ -10,6 +10,8 @@ services:
         exclude: '../../{Entity,Repository,Tests,Event/Subscriber}'
 
     # Manager
+    Doctrine\Common\Persistence\ObjectManager:
+        lazy: true
     IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface: '@IDCI\Bundle\PaymentBundle\Manager\DoctrineTransactionManager'
 
     IDCI\Bundle\PaymentBundle\Manager\PaymentManager:
