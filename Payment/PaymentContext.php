@@ -7,7 +7,7 @@ use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class PaymentContext implements PaymentContextInterface
@@ -33,7 +33,7 @@ class PaymentContext implements PaymentContextInterface
     private $transaction;
 
     public function __construct(
-        EventDispatcher $dispatcher,
+        EventDispatcherInterface $dispatcher,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         PaymentGatewayInterface $paymentGateway,
         TransactionManagerInterface $transactionManager,
