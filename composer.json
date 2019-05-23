@@ -19,6 +19,7 @@
         "symfony/templating": "^4.0",
         "symfony/twig-bundle": "^4.0",
         "symfony/monolog-bundle": "^3.3",
+        "symfony/process": "^4.0",
         "ramsey/uuid": "^3.7",
         "ramsey/uuid-doctrine": "^1.4",
         "doctrine/persistence": "^1.1",
