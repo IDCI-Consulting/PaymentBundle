@@ -58,13 +58,6 @@ Add this to your ```config.yml``` file
 imports:
     - {resource: '@IDCIPaymentBundle/Resources/config/config.yml'}
 
-parameters:
-    idci_payment.mercanet.server_host_name: 'payment-webinit.simu.mercanet.bnpparibas.net' # prod: payment-webinit.mercanet.bnpparibas.net
-    idci_payment.sogenactif.server_host_name: 'payment-webinit.simu.sips-atos.com' # prod: payment-webinit-ws.sogenactif.com
-    idci_payment.paybox.server_host_name: 'preprod-tpeweb.paybox.com' # prod: tpeweb.paybox.com
-    idci_payment.paybox.key_path: /var/www/html/vendor/idci/payment-bundle/Resources/paybox/keys
-    idci_payment.paybox.public_key_url: 'http://www1.paybox.com/wp-content/uploads/2014/03/pubkey.pem'
-
 # Enable monolog logging using event subscriber plugged on transaction state changes
 idci_payment:
     enabled_logger_subscriber: true
@@ -73,7 +66,7 @@ idci_payment:
 
 (Optional) If you want to customize the payment logger, by defaults, it will output into main handler
 
-```
+```yaml
 # config/packages/monolog.yaml
 monolog:
     handlers:
