@@ -109,3 +109,9 @@ services:
     IDCI\Bundle\PaymentBundle\Gateway\PayPlugPaymentGateway:
         tags:
             - { name: idci_payment.gateways, alias: payplug }
+
+    IDCI\Bundle\PaymentBundle\Gateway\SystemPayPaymentGateway:
+        arguments:
+            $serverUrl: '%idci_payment.systempay.server_url%'
+        tags:
+            - { name: idci_payment.gateways, alias: systempay }
