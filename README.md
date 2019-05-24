@@ -30,7 +30,7 @@ Add dependency in your ```composer.json``` file:
 ```json
 "require": {
     ...,
-    "idci/payment-bundle": "dev-master",
+    "idci/payment-bundle": "^3.4",
 }
 ```
 
