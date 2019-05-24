@@ -9,6 +9,8 @@ EXPIRATION: any date above now
 The two last digits are for testing prupose  
 ex: 4100 0000 0000 0014 will provoke error n°14
 
+<sup>(\*) In mercanet bin you must let the CVV at null</sup>
+
 # Paypal
 account: [your buyer account] ex: email-buyer@example.com  
 password: [your buyer account password]

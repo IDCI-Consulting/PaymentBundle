@@ -75,20 +75,29 @@ services:
     idci_payment.gateways.sogenactif_bin:
         class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsBinPaymentGateway
         arguments:
-            $pathfile: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/param/sogenactif/pathfile.sogenactif')"
-            $requestBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/request')"
-            $responseBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/response')"
+            $pathfile: "%idci_payment.sogenactif_bin.pathfile_path%"
+            $requestBinPath: "%idci_payment.atos_sips_bin.request_bin_path%"
+            $responseBinPath: "%idci_payment.atos_sips_bin.response_bin_path%"
         tags:
             - { name: idci_payment.gateways, alias: sogenactif_bin_atos_sips }
 
     idci_payment.gateways.scellius_bin:
         class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsBinPaymentGateway
         arguments:
-            $pathfile: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/param/scellius/pathfile.scellius')"
-            $requestBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/request')"
-            $responseBinPath: "@=service('kernel').locateResource('@IDCIPaymentBundle/Resources/sips/atos/bin/static/response')"
+            $pathfile: "%idci_payment.scellius_bin.pathfile_path%"
+            $requestBinPath: "%idci_payment.atos_sips_bin.request_bin_path%"
+            $responseBinPath: "%idci_payment.atos_sips_bin.response_bin_path%"
         tags:
             - { name: idci_payment.gateways, alias: scellius_bin_atos_sips }
+
+    idci_payment.gateways.mercanet_bin:
+        class: IDCI\Bundle\PaymentBundle\Gateway\AtosSipsBinPaymentGateway
+        arguments:
+            $pathfile: "%idci_payment.mercanet_bin.pathfile_path%"
+            $requestBinPath: "%idci_payment.atos_sips_bin.request_bin_path%"
+            $responseBinPath: "%idci_payment.atos_sips_bin.response_bin_path%"
+        tags:
+            - { name: idci_payment.gateways, alias: mercanet_bin_atos_sips }
 
     IDCI\Bundle\PaymentBundle\Gateway\PayboxPaymentGateway:
         arguments:
