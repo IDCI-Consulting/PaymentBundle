@@ -202,8 +202,8 @@ idci_payment:
             gateway_name: systempay
             enabled: true
             parameters:
-                return_url: http://front.maier.docker/
-                callback_url: http://front.maier.docker/payment-gateway/sogenactif_bin_test/callback # must be public
+                return_url: http://www.example.com/
+                callback_url: http://[your server host]/payment-gateway/systempay_test/callback # must be public
                 action_mode: INTERACTIVE
                 ctx_mode: TEST
                 page_action: PAYMENT
