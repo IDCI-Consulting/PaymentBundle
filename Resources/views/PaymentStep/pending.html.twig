@@ -1,5 +1,6 @@
 <h1>Please wait </h1>
 <div id="statusContainer"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
         var nextBtn = document.querySelector('.idci_step_navigation_next');
@@ -20,7 +21,11 @@
         }
 
         var getTransaction = function (callback) {
-            $.get('{{ path('idci_payment_api_apitransaction_show', {'id': transaction.id}) }}', function (result) {
+            fetch('{{ path('idci_payment_api_apitransaction_show', {'id': transaction.id}) }}')
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(result) {
                 if (result.status === '{{ constant('IDCI\\Bundle\\PaymentBundle\\Payment\\PaymentStatus::STATUS_PENDING') }}') {
                     callback();
                 } else {
