@@ -20,7 +20,11 @@
         }
 
         var getTransaction = function (callback) {
-            $.get('{{ path('idci_payment_api_apitransaction_show', {'id': transaction.id}) }}', function (result) {
+            fetch('{{ path('idci_payment_api_apitransaction_show', {'id': transaction.id}) }}')
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(result) {
                 if (result.status === '{{ constant('IDCI\\Bundle\\PaymentBundle\\Payment\\PaymentStatus::STATUS_PENDING') }}') {
                     callback();
                 } else {

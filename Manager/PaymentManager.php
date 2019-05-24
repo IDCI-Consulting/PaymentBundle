@@ -9,7 +9,7 @@ use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistryInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContext;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContextInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class PaymentManager
 {
@@ -29,7 +29,7 @@ class PaymentManager
     private $transactionManager;
 
     /**
-     * @var EventDispatcher
+     * @var EventDispatcherInterface
      */
     private $dispatcher;
 
@@ -39,10 +39,10 @@ class PaymentManager
     private $paymentGatewayConfigurations;
 
     public function __construct(
-        ObjectManager $om,
+        ?ObjectManager $om = null,
         PaymentGatewayRegistryInterface $paymentGatewayRegistry,
         TransactionManagerInterface $transactionManager,
-        EventDispatcher $dispatcher,
+        EventDispatcherInterface $dispatcher,
         array $paymentGatewayConfigurations
     ) {
         $this->om = $om;
@@ -97,6 +97,10 @@ class PaymentManager
             ;
         }
 
+        if (!$this->om) {
+            return $paymentGatewayConfigurations;
+        }
+
         return array_merge(
             $paymentGatewayConfigurations,
             $this->getAllPaymentGatewayConfigurationFromDoctrine()
@@ -116,7 +120,7 @@ class PaymentManager
 
     public function createPaymentContextByAlias(string $alias): PaymentContextInterface
     {
-	$paymentGatewayConfiguration = $this->getPaymentGatewayConfiguration($alias);
+        $paymentGatewayConfiguration = $this->getPaymentGatewayConfiguration($alias);
 
         return new PaymentContext(
             $this->dispatcher,

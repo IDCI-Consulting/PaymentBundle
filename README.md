@@ -76,16 +76,6 @@ monolog:
 
 ```
 
-And these parameters in ```parameters.yml(.dist)``` file
-```yaml
-# app/config/parameters.yml(.dist)
-idci_payment.mercanet.server_host_name: 'payment-webinit.simu.mercanet.bnpparibas.net' # prod: payment-webinit.mercanet.bnpparibas.net
-idci_payment.sogenactif.server_host_name: 'payment-webinit.simu.sips-atos.com' # prod: payment-webinit-ws.sogenactif.com
-idci_payment.paybox.server_host_name: 'preprod-tpeweb.paybox.com' # prod: tpeweb.paybox.com
-idci_payment.paybox.key_path: /var/www/html/vendor/idci/payment-bundle/Resources/paybox/keys
-idci_payment.paybox.public_key_url: 'http://www1.paybox.com/wp-content/uploads/2014/03/pubkey.pem'
-```
-
 Install routes in your ```routing.yml``` file:
 ```yaml
 # app/config/routing.yml
@@ -109,18 +99,17 @@ Supported Gateways
 ------------------
 
 * [Stripe](./Gateway/StripePaymentGateway.php) ([example](./Resources/docs/example/stripe.md))
-* [Paypal](./Gateway/PaypalPaymentGateway.php)
-([example](./Resources/docs/example/paypal.md))
-* [Paybox](./Gateway/PayboxPaymentGateway.php)
-([example](./Resources/docs/example/paybox.md))
+* [Paypal](./Gateway/PaypalPaymentGateway.php) ([example](./Resources/docs/example/paypal.md))
+* [Paybox](./Gateway/PayboxPaymentGateway.php) ([example](./Resources/docs/example/paybox.md))
 * [Monetico](./Gateway/MoneticoPaymentGateway.php) (unfinished)
 * [Ogone](./Gateway/OgonePaymentGateway.php) (unfinished)
-* [PayPlug](./Gateway/PayPlugPaymentGateway.php)
-([example](./Resources/docs/example/payplug.md))
+* [PayPlug](./Gateway/PayPlugPaymentGateway.php) ([example](./Resources/docs/example/payplug.md))
+* [SystemPay](./Gateway/SystemPayPaymentGateway.php) ([example](./Resources/docs/example/systempay.md))
 * [Atos Sips Bin](./Gateway/AtosSipsBinPaymentGateway.php)
     * Scellius ([example](./Resources/docs/example/scellius-bin.md))
     * Sogenactif ([example](./Resources/docs/example/sogenactif-bin.md))
 * [Atos Sips POST](./Gateway/AtosSipsPostPaymentGateway.php)
+    * Mercanet ([example](./Resources/docs/example/mercanet-bin.md))
     * Mercanet ([example](./Resources/docs/example/mercanet-post.md))
     * Sogenactif ([example](./Resources/docs/example/sogenactif-post.md))
 * [Atos Sips JSON](./Gateway/AtosSipsJsonPaymentGateway.php)
@@ -166,7 +155,7 @@ Add test routing :
 # app/config/routing_dev.yml
 
 _test_payment:
-    resource: '@IDCIPaymentBundle/Resources/config/routing.yml'
+    resource: '@IDCIPaymentBundle/Resources/config/routing_test.yml'
     prefix:   /_test/
 
 ```

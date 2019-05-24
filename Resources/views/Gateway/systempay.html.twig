@@ -1,15 +1,6 @@
-<form method="POST" action="https://paiement.systempay.fr/vads-payment/">
-    <input type="hidden" name="vads_action_mode" value="INTERACTIVE" />
-    <input type="hidden" name="vads_amount" value="3000" />
-    <input type="hidden" name="vads_capture_delay" value="0" />
-    <input type="hidden" name="vads_ctx_mode" value="TEST" />
-    <input type="hidden" name="vads_currency" value="978" />
-    <input type="hidden" name="vads_page_action" value="PAYMENT" />
-    <input type="hidden" name="vads_payment_config" value="SINGLE" />
-    <input type="hidden" name="vads_site_id" value="12345678" />
-    <input type="hidden" name="vads_trans_date" value="20140526101407" />
-    <input type="hidden" name="vads_trans_id" value="239848" />
-    <input type="hidden" name="vads_version" value="V2" />
-    <input type="hidden" name="signature" value="0WaYrONo3L0VZqMcvyVf8vT/g8KfZKJ+1jqiAs3Ehiw="/>
-    <input type="submit" name="payer" value="Payer"/>
+<form method="POST" action="{{ initializationData.url }}">
+    {% for name, value in initializationData.options %}
+        <input type="hidden" name="{{ name }}" value="{{ value }}" />
+    {% endfor %}
+    <input type="submit"  name="payer" value="Payer">
 </form>

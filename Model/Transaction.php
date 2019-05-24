@@ -80,13 +80,13 @@ class Transaction
     {
         return [
             'id' => $this->id,
-            'gatewayConfigurationAlias' => $this->gatewayConfigurationAlias,
-            'itemId' => $this->itemId,
-            'customerId' => $this->customerId,
-            'customerEmail' => $this->customerEmail,
+            'gateway_configuration_alias' => $this->gatewayConfigurationAlias,
+            'item_id' => $this->itemId,
+            'customer_id' => $this->customerId,
+            'customer_email' => $this->customerEmail,
             'status' => $this->status,
             'amount' => $this->amount,
-            'currencyCode' => $this->currencyCode,
+            'currency_code' => $this->currencyCode,
             'description' => $this->description,
             'metadatas' => $this->metadatas,
             'createdAt' => $this->createdAt,
@@ -97,6 +97,13 @@ class Transaction
     public function getId(): ?string
     {
         return $this->id;
+    }
+
+    public function setId(string $id): self
+    {
+        $this->id = $id;
+
+        return $this;
     }
 
     public function getGatewayConfigurationAlias(): string

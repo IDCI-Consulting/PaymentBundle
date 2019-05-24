@@ -40,7 +40,7 @@ class ExempleEventSubscriber implements EventSubscriberInterface
                 ['methodCalledOnCancel', 0],
             ],
             TransactionEvent::CREATED => [
-                ['methodCalledOnCreated', 0],
+                ['methodCalledOnCreate', 0],
             ],
             TransactionEvent::FAILED => [
                 ['methodCalledOnFail', 0],
