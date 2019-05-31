@@ -2,6 +2,8 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\SystemPayAuthStatusCode;
+use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\SystemPayTransactionStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -44,6 +46,8 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
             'vads_site_id' => $paymentGatewayConfiguration->get('site_id'),
             'vads_trans_date' => (new \DateTime())->format('Ymdhis'),
             'vads_trans_id' => 0, // [0, 999999]
+            'vads_url_check' => $paymentGatewayConfiguration->get('callback_url'),
+            'vads_url_return' => $paymentGatewayConfiguration->get('return_url'),
             'vads_version' => $paymentGatewayConfiguration->get('version'),
         ];
     }
@@ -90,7 +94,47 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
-        throw new \BadMethodCallException('The getResponse method of SystemPay gateway has not yet been implemented');
+        if (!$request->isMethod(Request::METHOD_POST)) {
+            throw new \UnexpectedValueException('Payment Gateway error (Request method should be POST)');
+        }
+
+        $requestData = $request->request;
+
+        $gatewayResponse = (new GatewayResponse())
+            ->setDate(new \DateTime())
+            ->setStatus(PaymentStatus::STATUS_FAILED)
+        ;
+
+        if ($requestData->get('vads_ctx_mode') !== $paymentGatewayConfiguration->get('ctx_mode')) {
+            return $gatewayResponse->setMessage('Payment gateway environment mismatch');
+        }
+
+        if ($requestData->get('vads_site_id') !== $paymentGatewayConfiguration->get('site_id')) {
+            return $gatewayResponse->setMessage(
+                'The site_id returned by the request is not the same as the one configured'
+            );
+        }
+
+        if (SystemPayTransactionStatusCode::isError($requestData->get('vads_trans_status'))) {
+            return $gatewayResponse->setMessage(
+                SystemPayTransactionStatusCode::getErrorStatusMessage($requestData->get('vads_trans_status'))
+            );
+        }
+
+        if (SystemPayAuthStatusCode::hasStatus($requestData->get('vads_auth_result'))) {
+            return $gatewayResponse->setMessage(
+                SystemPayAuthStatusCode::getStatusMessage($requestData->get('vads_auth_result'))
+            );
+        }
+
+        $gatewayResponse
+            ->setTransactionUuid($requestData->get('vads_order_id'))
+            ->setAmount($requestData->get('vads_amount'))
+            ->setCurrencyCode((new ISO4217())->findByNumeric($requestData->get('vads_currency'))->getAlpha3())
+            ->setRaw($returnParams)
+        ;
+
+        return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array
