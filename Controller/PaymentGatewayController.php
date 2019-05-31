@@ -8,7 +8,7 @@ use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -31,7 +31,7 @@ class PaymentGatewayController extends Controller
      * @Route("/{configuration_alias}/callback")
      * @Method({"GET", "POST"})
      */
-    public function callbackAction(Request $request, EventDispatcher $dispatcher, $configuration_alias)
+    public function callbackAction(Request $request, EventDispatcherInterface $dispatcher, $configuration_alias)
     {
         $logger = $this->container->get('monolog.logger.payment');
 
