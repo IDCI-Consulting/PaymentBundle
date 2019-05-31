@@ -116,7 +116,7 @@ idci_payment:
                 callback_url: http://[your server host]/payment-gateway/mercanet_bin_test/callback # must be public
                 capture_day: 0
                 capture_mode: 'AUTHOR_CAPTURE'
-                merchant_id: '011223344551111' # 3DSecure = 011223344551112
+                merchant_id: '082584341411111' # 3DSecure = 082584341411112
 ```
 
 # Atos Sips JSON
