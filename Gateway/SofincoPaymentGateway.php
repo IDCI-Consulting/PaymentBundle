@@ -104,8 +104,8 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
-        if (!$request->isMethod(Request::METHOD_POST)) {
-            throw new \UnexpectedValueException('Sofinco : Payment Gateway error (Request method should be POST)');
+        if (!$request->isMethod(Request::METHOD_GET)) {
+            throw new \UnexpectedValueException('Sofinco : Payment Gateway error (Request method should be GET)');
         }
 
         $gatewayResponse = (new GatewayResponse())
@@ -113,7 +113,16 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
             ->setStatus(PaymentStatus::STATUS_FAILED)
         ;
 
-        return $gatewayResponse->setMessage('The request do not contains required post data');
+        if (1 == $request->query->get('c3')) {
+            return $gatewayResponse->setMessage('Transaction unauthorized');
+        }
+
+        $gatewayResponse
+            ->setTransactionUuid($request->query->get('ti'))
+            ->setAmount($request->query->get('s3'))
+        ;
+
+        return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
     public static function getParameterNames(): ?array
