@@ -124,3 +124,9 @@ services:
             $serverUrl: '%idci_payment.systempay.server_url%'
         tags:
             - { name: idci_payment.gateways, alias: systempay }
+
+    IDCI\Bundle\PaymentBundle\Gateway\SofincoPaymentGateway:
+        arguments:
+            $serverUrl: '%idci_payment.sofinco.server_url%'
+        tags:
+            - { name: idci_payment.gateways, alias: sofinco }

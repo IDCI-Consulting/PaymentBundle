@@ -26,5 +26,8 @@ parameters:
     # System Pay default server url
     idci_payment.systempay.server_url: https://paiement.systempay.fr/vads-payment/
 
+    # Sofinco default server url for test purposes
+    idci_payment.sofinco.server_url: https://re7financement.transcred.com/sofgate.asp # prod ?
+
 monolog:
     channels: [payment]

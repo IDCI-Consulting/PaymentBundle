@@ -107,6 +107,7 @@ Supported Gateways
 * [Ogone](./Gateway/OgonePaymentGateway.php) (Unsupported for now)
 * [PayPlug](./Gateway/PayPlugPaymentGateway.php) ([example](./Resources/docs/example/payplug.md))
 * [SystemPay](./Gateway/SystemPayPaymentGateway.php) ([example](./Resources/docs/example/systempay.md))
+* [Sofinco](./Gateway/SofincoPaymentGateway.php) ([example](./Resources/docs/example/sofinco.md))
 * [Atos Sips Bin](./Gateway/AtosSipsBinPaymentGateway.php)
     * Mercanet ([example](./Resources/docs/example/mercanet-bin.md))
     * Scellius ([example](./Resources/docs/example/scellius-bin.md))
