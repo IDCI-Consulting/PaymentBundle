@@ -12,6 +12,11 @@ class Transaction
     protected $id;
 
     /**
+     * @var int
+     */
+    protected $number;
+
+    /**
      * @var string
      */
     protected $gatewayConfigurationAlias;
@@ -102,6 +107,18 @@ class Transaction
     public function setId(string $id): self
     {
         $this->id = $id;
+
+        return $this;
+    }
+
+    public function getNumber(): ?int
+    {
+        return $this->number;
+    }
+
+    public function setNumber(?int $number): self
+    {
+        $this->number = $number;
 
         return $this;
     }

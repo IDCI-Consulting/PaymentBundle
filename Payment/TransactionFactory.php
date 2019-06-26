@@ -32,6 +32,7 @@ class TransactionFactory
 
         return (new Transaction())
             ->setId($resolvedParameters['id'])
+            ->setNumber($resolvedParameters['number'])
             ->setItemId($resolvedParameters['item_id'])
             ->setGatewayConfigurationAlias($resolvedParameters['gateway_configuration_alias'])
             ->setCustomerId($resolvedParameters['customer_id'])
@@ -60,6 +61,7 @@ class TransactionFactory
             ])
             ->setDefaults([
                 'id' => Flaky::id(62),
+                'number' => null,
                 'gateway_configuration_alias' => null,
                 'customer_id' => null,
                 'customer_email' => null,
@@ -68,6 +70,7 @@ class TransactionFactory
                 'status' => PaymentStatus::STATUS_CREATED,
             ])
             ->setAllowedTypes('item_id', ['int', 'string'])
+            ->setAllowedTypes('number', ['null', 'int'])
             ->setAllowedTypes('gateway_configuration_alias', ['null', 'string'])
             ->setAllowedTypes('amount', ['int', 'double', 'string'])
             ->setAllowedTypes('currency_code', 'string')
