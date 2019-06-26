@@ -45,7 +45,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
             'vads_payment_config' => $paymentGatewayConfiguration->get('payment_config'),
             'vads_site_id' => $paymentGatewayConfiguration->get('site_id'),
             'vads_trans_date' => (new \DateTime())->format('Ymdhis'),
-            'vads_trans_id' => 0, // [0, 999999]
+            'vads_trans_id' => sprintf('%06d', $transaction->getNumber()),
             'vads_url_check' => $paymentGatewayConfiguration->get('callback_url'),
             'vads_url_return' => $paymentGatewayConfiguration->get('return_url'),
             'vads_version' => $paymentGatewayConfiguration->get('version'),
@@ -57,7 +57,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         array $options
     ): string {
         $key = $paymentGatewayConfiguration->get('site_key');
-        $rawSignature = mb_convert_encoding(implode('+', $options).$key, 'UTF-8');
+        $rawSignature = mb_convert_encoding(implode('+', $options).'+'.$key, 'UTF-8');
 
         if (self::SIGNATURE_ALGORITHM_SHA1 === $paymentGatewayConfiguration->get('signature_algorithm')) {
             return sha1($rawSignature);
