@@ -9,6 +9,7 @@ use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistryInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContext;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContextInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class PaymentManager
@@ -43,12 +44,14 @@ class PaymentManager
         PaymentGatewayRegistryInterface $paymentGatewayRegistry,
         TransactionManagerInterface $transactionManager,
         EventDispatcherInterface $dispatcher,
+        LoggerInterface $logger,
         array $paymentGatewayConfigurations
     ) {
         $this->om = $om;
         $this->dispatcher = $dispatcher;
         $this->paymentGatewayRegistry = $paymentGatewayRegistry;
         $this->transactionManager = $transactionManager;
+        $this->logger = $logger;
         $this->paymentGatewayConfigurations = $paymentGatewayConfigurations;
     }
 
@@ -126,7 +129,8 @@ class PaymentManager
             $this->dispatcher,
             $paymentGatewayConfiguration,
             $this->paymentGatewayRegistry->get($paymentGatewayConfiguration->getGatewayName()),
-            $this->transactionManager
+            $this->transactionManager,
+            $this->logger
         );
     }
 }
