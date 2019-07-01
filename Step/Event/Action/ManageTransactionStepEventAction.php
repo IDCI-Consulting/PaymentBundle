@@ -5,6 +5,7 @@ namespace IDCI\Bundle\PaymentBundle\Step\Event\Action;
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
+use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfiguration;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use IDCI\Bundle\StepBundle\Step\Event\Action\AbstractStepEventAction;
@@ -96,6 +97,17 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         );
     }
 
+    private function getDefaultCallbackUrl(PaymentGatewayConfiguration $paymentGatewayConfiguration)
+    {
+        return $this->router->generate(
+            'idci_payment_payment_gateway_callback',
+            [
+                'configuration_alias' => $paymentGatewayConfiguration->getAlias(),
+            ],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+    }
+
     private function prepareInitializeTransaction(StepEventInterface $event, array $parameters = array())
     {
         $paymentContext = $this->paymentManager->createPaymentContextByAlias(
@@ -111,10 +123,17 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             'description' => $parameters['description'],
         ]);
 
-        $paymentContext
-            ->getPaymentGatewayConfiguration()
+        $paymentGatewayConfiguration = $paymentContext->getPaymentGatewayConfiguration();
+
+        $paymentGatewayConfiguration
             ->set('return_url', $this->getReturnUrl($this->requestStack->getCurrentRequest(), $transaction))
         ;
+
+        if (!$paymentGatewayConfiguration->get('callback_url')) {
+            $paymentGatewayConfiguration
+                ->set('callback_url', $this->getDefaultCallbackUrl($paymentGatewayConfiguration))
+            ;
+        }
 
         $options = $event->getNavigator()->getCurrentStep()->getOptions();
         if ($parameters['allow_skip']) {
