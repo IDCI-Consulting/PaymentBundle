@@ -5,17 +5,16 @@ namespace IDCI\Bundle\PaymentBundle\Controller;
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/payment-gateway")
  */
-class PaymentGatewayController extends Controller
+class PaymentGatewayController extends AbstractController
 {
     /**
      * @var PaymentManager
@@ -28,8 +27,7 @@ class PaymentGatewayController extends Controller
     }
 
     /**
-     * @Route("/{configuration_alias}/callback", name="idci_payment_payment_gateway_callback")
-     * @Method({"GET", "POST"})
+     * @Route("/{configuration_alias}/callback", name="idci_payment_payment_gateway_callback", methods={"GET", "POST"})
      */
     public function callbackAction(Request $request, EventDispatcherInterface $dispatcher, $configuration_alias)
     {

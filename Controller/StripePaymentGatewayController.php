@@ -4,16 +4,15 @@ namespace IDCI\Bundle\PaymentBundle\Controller;
 
 use GuzzleHttp\Client;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Stripe;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/stripe-payment-gateway")
  */
-class StripePaymentGatewayController extends Controller
+class StripePaymentGatewayController extends AbstractController
 {
     /**
      * @var PaymentManager
@@ -26,8 +25,7 @@ class StripePaymentGatewayController extends Controller
     }
 
     /**
-     * @Route("/proxy/{configuration_alias}")
-     * @Method({"POST"})
+     * @Route("/proxy/{configuration_alias}", methods={"POST"})
      */
     public function proxyAction(Request $request, $configuration_alias)
     {
