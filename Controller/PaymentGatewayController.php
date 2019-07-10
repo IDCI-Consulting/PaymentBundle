@@ -5,6 +5,7 @@ namespace IDCI\Bundle\PaymentBundle\Controller;
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,7 +22,7 @@ class PaymentGatewayController extends AbstractController
      */
     private $paymentManager;
 
-    public function __construct(PaymentManager $paymentManager, Logger $logger)
+    public function __construct(PaymentManager $paymentManager, LoggerInterface $logger)
     {
         $this->paymentManager = $paymentManager;
         $this->logger = $logger;
