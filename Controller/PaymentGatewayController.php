@@ -21,9 +21,10 @@ class PaymentGatewayController extends AbstractController
      */
     private $paymentManager;
 
-    public function __construct(PaymentManager $paymentManager)
+    public function __construct(PaymentManager $paymentManager, Logger $logger)
     {
         $this->paymentManager = $paymentManager;
+        $this->logger = $logger;
     }
 
     /**
@@ -31,11 +32,9 @@ class PaymentGatewayController extends AbstractController
      */
     public function callbackAction(Request $request, EventDispatcherInterface $dispatcher, $configuration_alias)
     {
-        $logger = $this->container->get('monolog.logger.payment');
-
         $data = $request->isMethod(Request::METHOD_POST) ? $request->request->all() : $request->query->all();
 
-        $logger->info(
+        $this->logger->info(
             sprintf(
                 '[gateway configuration alias: %s, data: %s, ip: %s]',
                 $configuration_alias,

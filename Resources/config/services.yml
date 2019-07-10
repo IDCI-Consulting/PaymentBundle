@@ -9,6 +9,11 @@ services:
         resource: '../../*'
         exclude: '../../{Entity,Repository,Tests,Event/Subscriber}'
 
+    # Controller
+    IDCI\Bundle\PaymentBundle\Controller\PaymentGatewayController:
+        arguments:
+            $logger: '@monolog.logger.payment'
+
     # Manager
     Doctrine\Common\Persistence\ObjectManager: null
 
