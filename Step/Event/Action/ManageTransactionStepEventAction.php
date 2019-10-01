@@ -140,13 +140,17 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             $options['prevent_next'] = false;
             $options['prevent_previous'] = false;
         }
+
         $options['transaction'] = $transaction;
         $options['pre_step_content'] = $this->templating->render(
             $this->templates[PaymentStatus::STATUS_CREATED],
-            [
-                'view' => $paymentContext->buildHTMLView(),
-                'transaction' => $transaction,
-            ]
+            array_merge(
+                $parameters['template_extra_vars'],
+                [
+                    'view' => $paymentContext->buildHTMLView(),
+                    'transaction' => $transaction,
+                ]
+            )
         );
         $event->getNavigator()->getCurrentStep()->setOptions($options);
 
@@ -176,11 +180,14 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         $options['transaction'] = $transaction;
         $options['pre_step_content'] = $this->templating->render(
             $this->templates[$transaction->getStatus()],
-            [
-                'transaction' => $transaction,
-                'successMessage' => $parameters['success_message'],
-                'errorMessage' => $parameters['error_message'],
-            ]
+            array_merge(
+                $parameters['template_extra_vars'],
+                [
+                    'transaction' => $transaction,
+                    'successMessage' => $parameters['success_message'],
+                    'errorMessage' => $parameters['error_message'],
+                ]
+            )
         );
         $event->getNavigator()->getCurrentStep()->setOptions($options);
 
@@ -220,6 +227,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
                 'description' => null,
                 'success_message' => 'Your transaction succeeded.',
                 'error_message' => 'There was a problem with your transaction, please try again.',
+                'template_extra_vars' => [],
             ])
             ->setAllowedTypes('allow_skip', array('bool', 'string'))
             ->setAllowedTypes('payment_gateway_configuration_alias', ['string'])
@@ -231,10 +239,21 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             ->setAllowedTypes('description', ['null', 'string'])
             ->setAllowedTypes('success_message', ['null', 'string'])
             ->setAllowedTypes('error_message', ['null', 'string'])
+            ->setAllowedTypes('template_extra_vars', ['array'])
             ->setNormalizer(
                 'allow_skip',
                 function (OptionsResolver $options, $value) {
                     return (bool) $value;
+                }
+            )
+            ->setNormalizer(
+                'template_extra_vars',
+                function (OptionsResolver $options, $templateExtraVars) {
+                    array_walk_recursive($templateExtraVars, function (&$value, $key) {
+                        $value = json_decode($value, true) ?? $value;
+                    });
+
+                    return $templateExtraVars;
                 }
             )
         ;
