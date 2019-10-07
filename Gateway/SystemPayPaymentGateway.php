@@ -107,6 +107,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
             ->setCurrencyCode((new ISO4217())->findByNumeric($requestData->get('vads_currency'))->getAlpha3())
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
+            ->setPaymentMethod($requestData->get('vads_card_brand'))
         ;
 
         if ($requestData->get('vads_ctx_mode') != $paymentGatewayConfiguration->get('ctx_mode')) {

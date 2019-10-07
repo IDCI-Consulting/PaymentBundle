@@ -14,6 +14,7 @@ idci_step:
                 customer_id: {extra_form_type: "text", options: {required: false}}
                 customer_email: {extra_form_type: "text", options: {required: false}}
                 description: {extra_form_type: "text", options: {required: false}}
+                metadata: {extra_form_type: "text", options: {required: false}}
                 success_message: {extra_form_type: "text", options: {required: false}}
                 error_message: {extra_form_type: "text", options: {required: false}}
                 template_extra_vars: {extra_form_type: "text", options: {required: false}}

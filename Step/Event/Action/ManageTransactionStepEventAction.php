@@ -121,6 +121,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             'customer_id' => $parameters['customer_id'],
             'customer_email' => $parameters['customer_email'],
             'description' => $parameters['description'],
+            'metadata' => $parameters['metadata'],
         ]);
 
         $paymentGatewayConfiguration = $paymentContext->getPaymentGatewayConfiguration();
@@ -225,6 +226,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
                 'customer_id' => null,
                 'customer_email' => null,
                 'description' => null,
+                'metadata' => [],
                 'success_message' => 'Your transaction succeeded.',
                 'error_message' => 'There was a problem with your transaction, please try again.',
                 'template_extra_vars' => [],
@@ -237,6 +239,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             ->setAllowedTypes('customer_id', ['null', 'string'])
             ->setAllowedTypes('customer_email', ['null', 'string'])
             ->setAllowedTypes('description', ['null', 'string'])
+            ->setAllowedTypes('metadata', ['array'])
             ->setAllowedTypes('success_message', ['null', 'string'])
             ->setAllowedTypes('error_message', ['null', 'string'])
             ->setAllowedTypes('template_extra_vars', ['array'])
@@ -244,6 +247,16 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
                 'allow_skip',
                 function (OptionsResolver $options, $value) {
                     return (bool) $value;
+                }
+            )
+            ->setNormalizer(
+                'metadata',
+                function (OptionsResolver $options, $metadata) {
+                    array_walk_recursive($metadata, function (&$value, $key) {
+                        $value = json_decode($value, true) ?? $value;
+                    });
+
+                    return $metadata;
                 }
             )
             ->setNormalizer(

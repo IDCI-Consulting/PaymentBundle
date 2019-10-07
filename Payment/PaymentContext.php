@@ -93,7 +93,11 @@ class PaymentContext implements PaymentContextInterface
             ]);
         }
 
-        return $transaction->setStatus($status);
+        return $transaction
+            ->setStatus($status)
+            ->setPaymentMethod($gatewayResponse->getPaymentMethod())
+            ->setRaw($gatewayResponse->getRaw())
+        ;
     }
 
     public function hasTransaction(): bool
