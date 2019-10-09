@@ -108,6 +108,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
             ->setPaymentMethod($requestData->get('vads_card_brand'))
+            ->setRaw($request->request->all())
         ;
 
         if ($requestData->get('vads_ctx_mode') != $paymentGatewayConfiguration->get('ctx_mode')) {
