@@ -114,15 +114,20 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             $parameters['payment_gateway_configuration_alias']
         );
 
-        $transaction = $paymentContext->createTransaction([
-            'item_id' => $parameters['item_id'],
-            'amount' => $parameters['amount'],
-            'currency_code' => $parameters['currency_code'],
-            'customer_id' => $parameters['customer_id'],
-            'customer_email' => $parameters['customer_email'],
-            'description' => $parameters['description'],
-            'metadata' => $parameters['metadata'],
-        ]);
+        if (isset($event->getStepEventData()['id'])) {
+            $transaction = $this->transactionManager->retrieveTransactionByUuid($event->getStepEventData()['id']);
+            $paymentContext->setTransaction($transaction);
+        } else {
+            $transaction = $paymentContext->createTransaction([
+                'item_id' => $parameters['item_id'],
+                'amount' => $parameters['amount'],
+                'currency_code' => $parameters['currency_code'],
+                'customer_id' => $parameters['customer_id'],
+                'customer_email' => $parameters['customer_email'],
+                'description' => $parameters['description'],
+                'metadata' => $parameters['metadata'],
+            ]);
+        }
 
         $paymentGatewayConfiguration = $paymentContext->getPaymentGatewayConfiguration();
 
@@ -165,7 +170,9 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             $parameters['payment_gateway_configuration_alias']
         );
 
-        $transaction = $this->transactionManager->retrieveTransactionByUuid($request->query->get('transaction_id'));
+        $transactionId = $event->getStepEventData()['id'] ?? $request->query->get('transaction_id');
+
+        $transaction = $this->transactionManager->retrieveTransactionByUuid($transactionId);
         $paymentContext->setTransaction($transaction);
 
         if (PaymentStatus::STATUS_CREATED === $transaction->getStatus()) {
@@ -178,6 +185,12 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             $options['prevent_next'] = false;
             $options['prevent_previous'] = false;
         }
+
+        if (PaymentStatus::STATUS_APPROVED === $transaction->getStatus()) {
+            $options['prevent_next'] = false;
+            $options['prevent_previous'] = true;
+        }
+
         $options['transaction'] = $transaction;
         $options['pre_step_content'] = $this->templating->render(
             $this->templates[$transaction->getStatus()],
@@ -202,7 +215,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        if (!$request->query->has('transaction_id')) {
+        if (!$request->query->has('transaction_id') && !isset($event->getStepEventData()['id'])) {
             return $this->prepareInitializeTransaction($event, $parameters);
         }
 
