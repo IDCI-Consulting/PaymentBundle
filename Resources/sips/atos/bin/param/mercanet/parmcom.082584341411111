@@ -14,19 +14,11 @@
 
 # URL de retour suite a paiement refuse
 
-CANCEL_URL!http://localhost/mercanet/payment/sample/call_response.php!
+CANCEL_URL!http://!
 
 # URL de retour suite a paiement accepte
 
-RETURN_URL!http://localhost/pdm/checkout/returnpayment!
-
-# Code devise  ( 978=EURO )
-
-CURRENCY!978!
-
-# Logo du commercant
-
-LOGO2!commercant.gif!
+RETURN_URL!http://!
 
 # Liste des moyens de paiement acceptés
 
