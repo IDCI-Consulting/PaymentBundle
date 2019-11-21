@@ -5,6 +5,7 @@ namespace IDCI\Bundle\PaymentBundle\Controller;
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -22,9 +23,10 @@ class PaymentGatewayController extends Controller
      */
     private $paymentManager;
 
-    public function __construct(PaymentManager $paymentManager)
+    public function __construct(PaymentManager $paymentManager, LoggerInterface $logger)
     {
         $this->paymentManager = $paymentManager;
+        $this->logger = $logger;
     }
 
     /**
@@ -33,11 +35,9 @@ class PaymentGatewayController extends Controller
      */
     public function callbackAction(Request $request, EventDispatcher $dispatcher, $configuration_alias)
     {
-        $logger = $this->container->get('monolog.logger.payment');
-
         $data = $request->isMethod(Request::METHOD_POST) ? $request->request->all() : $request->query->all();
 
-        $logger->info(
+        $this->logger->info(
             sprintf(
                 '[gateway configuration alias: %s, data: %s, ip: %s]',
                 $configuration_alias,
