@@ -213,7 +213,18 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        if (!$request->query->has('transaction_id') && !isset($event->getStepEventData()['id'])) {
+        $transaction = isset($event->getStepEventData()['id']) ?
+            $this->transactionManager->retrieveTransactionByUuid($event->getStepEventData()['id']) :
+            null
+        ;
+
+        if (
+            !$request->query->has('transaction_id') &&
+            (
+                null === $transaction ||
+                in_array($transaction->getStatus(), [PaymentStatus::STATUS_CREATED, PaymentStatus::STATUS_PENDING])
+            )
+        ) {
             return $this->prepareInitializeTransaction($event, $parameters);
         }
 
