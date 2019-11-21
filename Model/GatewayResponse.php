@@ -10,6 +10,11 @@ class GatewayResponse
     private $transactionUuid;
 
     /**
+     * @var string
+     */
+    private $paymentMethod;
+
+    /**
      * @var int
      */
     private $amount;
@@ -58,6 +63,18 @@ class GatewayResponse
     public function setTransactionUuid(string $transactionUuid): self
     {
         $this->transactionUuid = $transactionUuid;
+
+        return $this;
+    }
+
+    public function getPaymentMethod(): ?string
+    {
+        return $this->paymentMethod;
+    }
+
+    public function setPaymentMethod(?string $paymentMethod): self
+    {
+        $this->paymentMethod = $paymentMethod;
 
         return $this;
     }
@@ -122,17 +139,13 @@ class GatewayResponse
         return $this;
     }
 
-    public function getRaw(): ?string
+    public function getRaw(): ?array
     {
         return $this->raw;
     }
 
-    public function setRaw($raw): self
+    public function setRaw(array $raw): self
     {
-        if (is_array($raw)) {
-            $raw = json_encode($raw);
-        }
-
         $this->raw = $raw;
 
         return $this;

@@ -89,7 +89,7 @@ class PaymentContextTest extends TestCase
             'amount' => 100,
             'currency_code' => 'EUR',
             'description' => 'Dummy description',
-            'metadatas' => [],
+            'metadata' => [],
         ];
 
         $this->dispatcher
@@ -106,7 +106,7 @@ class PaymentContextTest extends TestCase
         $this->assertEquals($transaction->getAmount(), $parameters['amount']);
         $this->assertEquals($transaction->getCurrencyCode(), $parameters['currency_code']);
         $this->assertEquals($transaction->getDescription(), $parameters['description']);
-        $this->assertEquals($transaction->getMetadatas(), $parameters['metadatas']);
+        $this->assertEquals($transaction->getMetadata(), $parameters['metadata']);
         $this->assertEquals($transaction->getStatus(), PaymentStatus::STATUS_CREATED);
         $this->assertEquals(
             $transaction->getGatewayConfigurationAlias(),
@@ -126,7 +126,7 @@ class PaymentContextTest extends TestCase
             'amount' => 100,
             'currency_code' => 'EUR',
             'description' => 'Dummy description',
-            'metadatas' => [],
+            'metadata' => [],
         ];
 
         $this->dispatcher
@@ -296,7 +296,7 @@ class PaymentContextTest extends TestCase
             'amount' => 100,
             'currency_code' => 'EUR',
             'description' => 'Dummy description',
-            'metadatas' => [],
+            'metadata' => [],
         ];
 
         return [
@@ -319,7 +319,7 @@ class PaymentContextTest extends TestCase
             'amount' => 100,
             'currency_code' => 'EUR',
             'description' => 'Dummy description',
-            'metadatas' => [],
+            'metadata' => [],
         ];
 
         return [

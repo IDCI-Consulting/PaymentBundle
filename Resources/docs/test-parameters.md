@@ -264,3 +264,17 @@ idci_payment:
                 public_key: [Available in your account]
                 secret_key: [Available in your account]
 ```
+
+# Sofinco
+
+```yaml
+idci_payment:
+    gateway_configurations:
+        sofinco_test:
+            gateway_name: sofinco
+            enabled: true
+            parameters:
+                return_url: http://www.example.com/
+                callback_url: http://[your server host]/payment-gateway/sofinco_test/callback # must be public
+                site_id: [Given in the documentation]
+```

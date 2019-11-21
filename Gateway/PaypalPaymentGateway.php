@@ -18,13 +18,13 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
-        return [
+        return array(
             'clientId' => $paymentGatewayConfiguration->get('client_id'),
             'transaction' => $transaction,
             'callbackUrl' => $paymentGatewayConfiguration->get('callback_url'),
             'returnUrl' => $paymentGatewayConfiguration->get('return_url'),
             'environment' => $paymentGatewayConfiguration->get('environment'),
-        ];
+        );
     }
 
     public function buildHTMLView(
@@ -33,9 +33,9 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paypal.html.twig', [
+        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paypal.html.twig', array(
             'initializationData' => $initializationData,
-        ]);
+        ));
     }
 
     public function getResponse(
@@ -47,6 +47,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         }
 
         $gatewayResponse = (new GatewayResponse())
+            ->setRaw($request->request->all())
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
         ;
@@ -61,9 +62,11 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         $amount = $paypalPayment->getTransactions()[0]->getAmount();
 
         $gatewayResponse
+            ->setPaymentMethod($paypalPayment->getPayer()->getPaymentMethod())
             ->setTransactionUuid($request->get('transactionID'))
             ->setAmount($amount->total * 100)
             ->setCurrencyCode($amount->currency)
+            ->setRaw($paypalPayment->toArray())
         ;
 
         $execution = new PaymentExecution();
@@ -82,11 +85,11 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
     {
         return array_merge(
             parent::getParameterNames(),
-            [
+            array(
                 'client_id',
                 'client_secret',
                 'environment',
-            ]
+            )
         );
     }
 }

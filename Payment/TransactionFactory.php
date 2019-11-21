@@ -32,7 +32,9 @@ class TransactionFactory
 
         return (new Transaction())
             ->setId($resolvedParameters['id'])
+            ->setNumber($resolvedParameters['number'])
             ->setItemId($resolvedParameters['item_id'])
+            ->setPaymentMethod($resolvedParameters['payment_method'])
             ->setGatewayConfigurationAlias($resolvedParameters['gateway_configuration_alias'])
             ->setCustomerId($resolvedParameters['customer_id'])
             ->setCustomerEmail($resolvedParameters['customer_email'])
@@ -40,7 +42,8 @@ class TransactionFactory
             ->setAmount($resolvedParameters['amount'])
             ->setCurrencyCode($resolvedParameters['currency_code'])
             ->setDescription($resolvedParameters['description'])
-            ->setMetadatas($resolvedParameters['metadatas'])
+            ->setMetadata($resolvedParameters['metadata'])
+            ->setRaw($resolvedParameters['raw'])
         ;
     }
 
@@ -60,21 +63,27 @@ class TransactionFactory
             ])
             ->setDefaults([
                 'id' => Flaky::id(62),
+                'number' => null,
                 'gateway_configuration_alias' => null,
+                'payment_method' => null,
                 'customer_id' => null,
                 'customer_email' => null,
                 'description' => null,
-                'metadatas' => [],
+                'metadata' => [],
+                'raw' => [],
                 'status' => PaymentStatus::STATUS_CREATED,
             ])
             ->setAllowedTypes('item_id', ['int', 'string'])
+            ->setAllowedTypes('number', ['null', 'int'])
             ->setAllowedTypes('gateway_configuration_alias', ['null', 'string'])
+            ->setAllowedTypes('payment_method', ['null', 'string'])
             ->setAllowedTypes('amount', ['int', 'double', 'string'])
             ->setAllowedTypes('currency_code', 'string')
             ->setAllowedTypes('customer_id', ['null', 'int', 'string'])
             ->setAllowedTypes('customer_email', ['null', 'string'])
             ->setAllowedTypes('description', ['null', 'string'])
-            ->setAllowedTypes('metadatas', ['null', 'array'])
+            ->setAllowedTypes('metadata', ['null', 'array'])
+            ->setAllowedTypes('raw', ['null', 'array'])
             ->setAllowedTypes('status', ['string'])
             ->setAllowedValues('status', [
                 PaymentStatus::STATUS_APPROVED,

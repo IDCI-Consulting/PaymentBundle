@@ -96,38 +96,65 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         );
     }
 
+    private function getDefaultCallbackUrl(PaymentGatewayConfiguration $paymentGatewayConfiguration)
+    {
+        return $this->router->generate(
+            'idci_payment_payment_gateway_callback',
+            [
+                'configuration_alias' => $paymentGatewayConfiguration->getAlias(),
+            ],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+    }
+
     private function prepareInitializeTransaction(StepEventInterface $event, array $parameters = array())
     {
         $paymentContext = $this->paymentManager->createPaymentContextByAlias(
             $parameters['payment_gateway_configuration_alias']
         );
 
-        $transaction = $paymentContext->createTransaction([
-            'item_id' => $parameters['item_id'],
-            'amount' => $parameters['amount'],
-            'currency_code' => $parameters['currency_code'],
-            'customer_id' => $parameters['customer_id'],
-            'customer_email' => $parameters['customer_email'],
-            'description' => $parameters['description'],
-        ]);
+        if (isset($event->getStepEventData()['id'])) {
+            $transaction = $this->transactionManager->retrieveTransactionByUuid($event->getStepEventData()['id']);
+            $paymentContext->setTransaction($transaction);
+        } else {
+            $transaction = $paymentContext->createTransaction([
+                'item_id' => $parameters['item_id'],
+                'amount' => $parameters['amount'],
+                'currency_code' => $parameters['currency_code'],
+                'customer_id' => $parameters['customer_id'],
+                'customer_email' => $parameters['customer_email'],
+                'description' => $parameters['description'],
+                'metadata' => $parameters['metadata'],
+            ]);
+        }
+        $paymentGatewayConfiguration = $paymentContext->getPaymentGatewayConfiguration();
 
-        $paymentContext
-            ->getPaymentGatewayConfiguration()
+        $paymentGatewayConfiguration
             ->set('return_url', $this->getReturnUrl($this->requestStack->getCurrentRequest(), $transaction))
         ;
+
+        if (!$paymentGatewayConfiguration->get('callback_url')) {
+            $paymentGatewayConfiguration
+                ->set('callback_url', $this->getDefaultCallbackUrl($paymentGatewayConfiguration))
+            ;
+        }
 
         $options = $event->getNavigator()->getCurrentStep()->getOptions();
         if ($parameters['allow_skip']) {
             $options['prevent_next'] = false;
             $options['prevent_previous'] = false;
         }
+
         $options['transaction'] = $transaction;
         $options['pre_step_content'] = $this->templating->render(
             $this->templates[PaymentStatus::STATUS_CREATED],
-            [
-                'view' => $paymentContext->buildHTMLView(),
-                'transaction' => $transaction,
-            ]
+            array_merge(
+               $parameters['template_extra_vars'],
+               [
+                   'view' => $paymentContext->buildHTMLView(),
+                   'transaction' => $transaction,
+               ]
+           )
         );
         $event->getNavigator()->getCurrentStep()->setOptions($options);
 
@@ -141,7 +168,9 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             $parameters['payment_gateway_configuration_alias']
         );
 
-        $transaction = $this->transactionManager->retrieveTransactionByUuid($request->query->get('transaction_id'));
+        $transactionId = $event->getStepEventData()['id'] ?? $request->query->get('transaction_id');
+
+        $transaction = $this->transactionManager->retrieveTransactionByUuid($transactionId);
         $paymentContext->setTransaction($transaction);
 
         if (PaymentStatus::STATUS_CREATED === $transaction->getStatus()) {
@@ -154,14 +183,23 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             $options['prevent_next'] = false;
             $options['prevent_previous'] = false;
         }
+
+        if (PaymentStatus::STATUS_APPROVED === $transaction->getStatus()) {
+            $options['prevent_next'] = false;
+            $options['prevent_previous'] = true;
+        }
+
         $options['transaction'] = $transaction;
         $options['pre_step_content'] = $this->templating->render(
             $this->templates[$transaction->getStatus()],
-            [
-                'transaction' => $transaction,
-                'successMessage' => $parameters['success_message'],
-                'errorMessage' => $parameters['error_message'],
-            ]
+            array_merge(
+                $parameters['template_extra_vars'],
+                [
+                    'transaction' => $transaction,
+                    'successMessage' => $parameters['success_message'],
+                    'errorMessage' => $parameters['error_message'],
+                ]
+            )
         );
         $event->getNavigator()->getCurrentStep()->setOptions($options);
 
@@ -175,7 +213,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        if (!$request->query->has('transaction_id')) {
+        if (!$request->query->has('transaction_id') && !isset($event->getStepEventData()['id'])) {
             return $this->prepareInitializeTransaction($event, $parameters);
         }
 
@@ -199,8 +237,10 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
                 'customer_id' => null,
                 'customer_email' => null,
                 'description' => null,
+                'metadata' => [],
                 'success_message' => 'Your transaction succeeded.',
                 'error_message' => 'There was a problem with your transaction, please try again.',
+                'template_extra_vars' => [],
             ])
             ->setAllowedTypes('allow_skip', array('bool', 'string'))
             ->setAllowedTypes('payment_gateway_configuration_alias', ['string'])
@@ -210,12 +250,34 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             ->setAllowedTypes('customer_id', ['null', 'string'])
             ->setAllowedTypes('customer_email', ['null', 'string'])
             ->setAllowedTypes('description', ['null', 'string'])
+            ->setAllowedTypes('metadata', ['array'])
             ->setAllowedTypes('success_message', ['null', 'string'])
             ->setAllowedTypes('error_message', ['null', 'string'])
+            ->setAllowedTypes('template_extra_vars', ['array'])
             ->setNormalizer(
                 'allow_skip',
                 function (OptionsResolver $options, $value) {
                     return (bool) $value;
+                }
+            )
+            ->setNormalizer(
+                'metadata',
+                function (OptionsResolver $options, $metadata) {
+                    array_walk_recursive($metadata, function (&$value, $key) {
+                        $value = json_decode($value, true) ?? $value;
+                    });
+
+                    return $metadata;
+                }
+            )
+            ->setNormalizer(
+                'template_extra_vars',
+                function (OptionsResolver $options, $templateExtraVars) {
+                    array_walk_recursive($templateExtraVars, function (&$value, $key) {
+                        $value = json_decode($value, true) ?? $value;
+                    });
+
+                    return $templateExtraVars;
                 }
             )
         ;
