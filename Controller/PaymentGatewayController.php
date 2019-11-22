@@ -30,7 +30,7 @@ class PaymentGatewayController extends Controller
     }
 
     /**
-     * @Route("/{configuration_alias}/callback")
+     * @Route("/{configuration_alias}/callback", name="idci_payment_payment_gateway_callback")
      * @Method({"GET", "POST"})
      */
     public function callbackAction(Request $request, EventDispatcher $dispatcher, $configuration_alias)

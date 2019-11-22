@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Step\Event\Action;
 
+use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
