@@ -2,12 +2,12 @@
 
 namespace IDCI\Bundle\PaymentBundle\Tests\Unit\Gateway;
 
-use PHPUnit\Framework\TestCase;
-use Twig\Environment as TwigEnvironment;
-use Twig\Loader\FilesystemLoader;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfiguration;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\TransactionFactory;
+use PHPUnit\Framework\TestCase;
+use Twig\Environment as TwigEnvironment;
+use Twig\Loader\FilesystemLoader;
 
 class PaymentGatewayTestCase extends TestCase
 {
@@ -50,7 +50,7 @@ class PaymentGatewayTestCase extends TestCase
             'amount' => 100,
             'currency_code' => 'EUR',
             'description' => 'Dummy description',
-            'metadatas' => [],
+            'metadata' => [],
         ]);
     }
 }

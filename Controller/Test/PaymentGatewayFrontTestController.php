@@ -5,16 +5,15 @@ namespace IDCI\Bundle\PaymentBundle\Controller\Test;
 use IDCI\Bundle\PaymentBundle\Form\TransactionFormType;
 use IDCI\Bundle\PaymentBundle\Form\Type\PaymentGatewayConfigurationChoiceType;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/payment-gateway")
  */
-class PaymentGatewayFrontTestController extends Controller
+class PaymentGatewayFrontTestController extends AbstractController
 {
     /**
      * @var PaymentManager
@@ -27,8 +26,7 @@ class PaymentGatewayFrontTestController extends Controller
     }
 
     /**
-     * @Route("/select")
-     * @Method({"GET"})
+     * @Route("/select", methods={"GET"})
      */
     public function selectAction(Request $request)
     {
@@ -61,8 +59,7 @@ class PaymentGatewayFrontTestController extends Controller
     }
 
     /**
-     * @Route("/{configuration_alias}/transaction/configure")
-     * @Method({"GET"})
+     * @Route("/{configuration_alias}/transaction/configure", methods={"GET"})
      */
     public function configureAction(Request $request, string $configuration_alias)
     {
@@ -97,8 +94,7 @@ class PaymentGatewayFrontTestController extends Controller
     }
 
     /**
-     * @Route("/{configuration_alias}/transaction/initialize")
-     * @Method({"GET"})
+     * @Route("/{configuration_alias}/transaction/initialize", methods={"GET"})
      */
     public function initializeAction(Request $request, $configuration_alias)
     {
@@ -113,8 +109,7 @@ class PaymentGatewayFrontTestController extends Controller
     }
 
     /**
-     * @Route("/{configuration_alias}/transaction/done")
-     * @Method({"GET", "POST"})
+     * @Route("/{configuration_alias}/transaction/done", methods={"GET", "POST"})
      */
     public function doneAction(Request $request, $configuration_alias)
     {

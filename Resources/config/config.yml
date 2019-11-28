@@ -1,2 +1,33 @@
+parameters:
+    # Atos Sips bin default request & response bin files
+    idci_payment.atos_sips_bin.request_bin_path: '%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/static/request'
+    idci_payment.atos_sips_bin.response_bin_path: '%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/static/response'
+
+    # Mercanet bin default pathfile
+    idci_payment.mercanet_bin.pathfile_path: "%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/param/mercanet/pathfile.mercanet"
+
+    # Scellius bin default pathfile
+    idci_payment.scellius_bin.pathfile_path: "%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/param/scellius/pathfile.scellius"
+
+    # Sogenactif bin default pathfile
+    idci_payment.sogenactif_bin.pathfile_path: "%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/param/sogenactif/pathfile.sogenactif"
+
+    # PayBox default parameters for test purposes
+    idci_payment.paybox.server_host_name: preprod-tpeweb.paybox.com # prod: tpeweb.paybox.com
+    idci_payment.paybox.key_path: "%kernel.project_dir%/vendor/idci/payment-bundle/Resources/paybox/keys"
+    idci_payment.paybox.public_key_url: http://www1.paybox.com/wp-content/uploads/2014/03/pubkey.pem
+
+    # Sogenactif default url used in Atos Sips JSON & Atos Sips POST
+    idci_payment.sogenactif.server_host_name: payment-webinit.simu.sips-atos.com # prod: payment-webinit-ws.sogenactif.com
+
+    # Mercanet default url used in Atos Sips JSON & Atos Sips POST
+    idci_payment.mercanet.server_host_name: payment-webinit.simu.mercanet.bnpparibas.net # prod: payment-webinit.mercanet.bnpparibas.net
+
+    # System Pay default server url
+    idci_payment.systempay.server_url: https://paiement.systempay.fr/vads-payment/
+
+    # Sofinco default server url for test purposes
+    idci_payment.sofinco.server_url: https://re7financement.transcred.com/sofgate.asp # prod ?
+
 monolog:
     channels: [payment]

@@ -7,7 +7,8 @@ use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayInterface;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class PaymentContext implements PaymentContextInterface
@@ -33,16 +34,18 @@ class PaymentContext implements PaymentContextInterface
     private $transaction;
 
     public function __construct(
-        EventDispatcher $dispatcher,
+        EventDispatcherInterface $dispatcher,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         PaymentGatewayInterface $paymentGateway,
         TransactionManagerInterface $transactionManager,
+        LoggerInterface $logger,
         ?Transaction $transaction = null
     ) {
         $this->dispatcher = $dispatcher;
         $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
         $this->paymentGateway = $paymentGateway;
         $this->transactionManager = $transactionManager;
+        $this->logger = $logger;
         $this->transaction = $transaction;
     }
 
@@ -84,7 +87,17 @@ class PaymentContext implements PaymentContextInterface
             $status = PaymentStatus::STATUS_FAILED;
         }
 
-        return $transaction->setStatus($status);
+        if ($this->logger) {
+            $this->logger->info('Gateway response: ', [
+                'response' => json_encode($gatewayResponse->toArray()),
+            ]);
+        }
+
+        return $transaction
+            ->setStatus($status)
+            ->setPaymentMethod($gatewayResponse->getPaymentMethod())
+            ->setRaw($gatewayResponse->getRaw())
+        ;
     }
 
     public function hasTransaction(): bool

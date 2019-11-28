@@ -47,6 +47,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         }
 
         $gatewayResponse = (new GatewayResponse())
+            ->setRaw($request->request->all())
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
         ;
@@ -61,9 +62,11 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         $amount = $paypalPayment->getTransactions()[0]->getAmount();
 
         $gatewayResponse
+            ->setPaymentMethod($paypalPayment->getPayer()->getPaymentMethod())
             ->setTransactionUuid($request->get('transactionID'))
             ->setAmount($amount->total * 100)
             ->setCurrencyCode($amount->currency)
+            ->setRaw($paypalPayment->toArray())
         ;
 
         $execution = new PaymentExecution();

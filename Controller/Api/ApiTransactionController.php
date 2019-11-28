@@ -3,15 +3,14 @@
 namespace IDCI\Bundle\PaymentBundle\Controller\Api;
 
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/transactions")
  */
-class ApiTransactionController extends Controller
+class ApiTransactionController extends AbstractController
 {
     /**
      * @var TransactionManagerInterface
@@ -24,8 +23,7 @@ class ApiTransactionController extends Controller
     }
 
     /**
-     * @Route("/{id}")
-     * @Method({"GET"})
+     * @Route("/{id}", methods={"GET"})
      */
     public function show($id)
     {

@@ -5,39 +5,37 @@ namespace IDCI\Bundle\PaymentBundle\Controller;
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Psr\Log\LoggerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/payment-gateway")
  */
-class PaymentGatewayController extends Controller
+class PaymentGatewayController extends AbstractController
 {
     /**
      * @var PaymentManager
      */
     private $paymentManager;
 
-    public function __construct(PaymentManager $paymentManager)
+    public function __construct(PaymentManager $paymentManager, LoggerInterface $logger)
     {
         $this->paymentManager = $paymentManager;
+        $this->logger = $logger;
     }
 
     /**
-     * @Route("/{configuration_alias}/callback")
-     * @Method({"GET", "POST"})
+     * @Route("/{configuration_alias}/callback", name="idci_payment_payment_gateway_callback", methods={"GET", "POST"})
      */
-    public function callbackAction(Request $request, EventDispatcher $dispatcher, $configuration_alias)
+    public function callbackAction(Request $request, EventDispatcherInterface $dispatcher, $configuration_alias)
     {
-        $logger = $this->container->get('monolog.logger.payment');
-
         $data = $request->isMethod(Request::METHOD_POST) ? $request->request->all() : $request->query->all();
 
-        $logger->info(
+        $this->logger->info(
             sprintf(
                 '[gateway configuration alias: %s, data: %s, ip: %s]',
                 $configuration_alias,

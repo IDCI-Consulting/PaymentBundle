@@ -12,9 +12,19 @@ class Transaction
     protected $id;
 
     /**
+     * @var int
+     */
+    protected $number;
+
+    /**
      * @var string
      */
     protected $gatewayConfigurationAlias;
+
+    /**
+     * @var string
+     */
+    protected $paymentMethod;
 
     /**
      * @var string
@@ -54,7 +64,12 @@ class Transaction
     /**
      * @var array
      */
-    protected $metadatas;
+    protected $metadata;
+
+    /**
+     * @var array
+     */
+    protected $raw;
 
     /**
      * @var \DateTime
@@ -80,15 +95,17 @@ class Transaction
     {
         return [
             'id' => $this->id,
-            'gatewayConfigurationAlias' => $this->gatewayConfigurationAlias,
-            'itemId' => $this->itemId,
-            'customerId' => $this->customerId,
-            'customerEmail' => $this->customerEmail,
+            'gateway_configuration_alias' => $this->gatewayConfigurationAlias,
+            'payment_method' => $this->paymentMethod,
+            'item_id' => $this->itemId,
+            'customer_id' => $this->customerId,
+            'customer_email' => $this->customerEmail,
             'status' => $this->status,
             'amount' => $this->amount,
-            'currencyCode' => $this->currencyCode,
+            'currency_code' => $this->currencyCode,
             'description' => $this->description,
-            'metadatas' => $this->metadatas,
+            'metadata' => $this->metadata,
+            'raw' => $this->raw,
             'createdAt' => $this->createdAt,
             'updatedAt' => $this->updatedAt,
         ];
@@ -99,6 +116,25 @@ class Transaction
         return $this->id;
     }
 
+    public function setId(string $id): self
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    public function getNumber(): ?int
+    {
+        return $this->number;
+    }
+
+    public function setNumber(?int $number): self
+    {
+        $this->number = $number;
+
+        return $this;
+    }
+
     public function getGatewayConfigurationAlias(): string
     {
         return $this->gatewayConfigurationAlias;
@@ -107,6 +143,18 @@ class Transaction
     public function setGatewayConfigurationAlias(string $gatewayConfigurationAlias): self
     {
         $this->gatewayConfigurationAlias = $gatewayConfigurationAlias;
+
+        return $this;
+    }
+
+    public function getPaymentMethod(): ?string
+    {
+        return $this->paymentMethod;
+    }
+
+    public function setPaymentMethod(?string $paymentMethod): self
+    {
+        $this->paymentMethod = $paymentMethod;
 
         return $this;
     }
@@ -197,31 +245,42 @@ class Transaction
 
     public function hasMetadata(string $key)
     {
-        return isset($this->metadatas[$key]);
+        return isset($this->metadata[$key]);
     }
 
-    public function getMetadata(string $key)
+    public function getMetadata(?string $key = null)
     {
-        return $this->metadatas[$key];
+        if (null === $key) {
+            return $this->metadata;
+        }
+
+        return $this->hasMetadata($key) ? $this->metadata[$key] : null;
     }
 
     public function addMetadata(string $key, $value)
     {
-        $this->metadatas[$key] = $value;
+        $this->metadata[$key] = $value;
     }
 
-    public function getMetadatas(): ?array
+    public function setMetadata(array $metadata): self
     {
-        return $this->metadatas;
-    }
+        $this->metadata = [];
 
-    public function setMetadatas(array $metadatas): self
-    {
-        $this->metadatas = [];
-
-        foreach ($metadatas as $key => $value) {
+        foreach ($metadata as $key => $value) {
             $this->addMetadata($key, $value);
         }
+
+        return $this;
+    }
+
+    public function getRaw(): ?array
+    {
+        return $this->raw;
+    }
+
+    public function setRaw(?array $raw = []): self
+    {
+        $this->raw = $raw;
 
         return $this;
     }

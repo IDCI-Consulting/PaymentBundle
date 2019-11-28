@@ -6,10 +6,14 @@ TEST PARAMETERS FOR PAYMENT GATEWAYS
 ## Mercanet
 
 ```yaml
+# if you want to overide the host name used in mercanet gateway (already configured by default)
+parameters:
+    idci_payment.mercanet.server_host_name: payment-webinit.simu.mercanet.bnpparibas.net # prod: payment-webinit.mercanet.bnpparibas.net
+
 idci_payment:
     gateway_configurations:
         mercanet_post_test:
-            gateway_name: atos_sips_post
+            gateway_name: mercanet_post_atos_sips
             enabled: true
             parameters:
                 return_url: http://www.example.com/
@@ -26,10 +30,14 @@ idci_payment:
 ## Sogenactif
 
 ```yaml
+# if you want to overide the host name used in sogenactif gateway (already configured by default)
+parameters:
+    idci_payment.sogenactif.server_host_name: payment-webinit.simu.sips-atos.com # prod: payment-webinit-ws.sogenactif.com
+
 idci_payment:
     gateway_configurations:
         sogenactif_post_test:
-            gateway_name: atos_sips_post
+            gateway_name: sogenactif_post_atos_sips
             enabled: true
             parameters:
                 return_url: http://www.example.com/
@@ -47,10 +55,17 @@ idci_payment:
 ## Sogenactif
 
 ```yaml
+# if you want to overide parameters used in sogenactif gateway (already configured by default)
+parameters:
+    idci_payment.sogenactif_bin.pathfile_path: "%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/param/sogenactif/pathfile.sogenactif"
+    idci_payment.atos_sips_bin.request_bin_path: '%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/static/request'
+    idci_payment.atos_sips_bin.response_bin_path: '%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/static/response'
+
+
 idci_payment:
     gateway_configurations:
         sogenactif_bin_test:
-            gateway_name: atos_sips_bin
+            gateway_name: sogenactif_bin_atos_sips
             enabled: true
             parameters:
                 return_url: http://www.example.com/
@@ -63,10 +78,16 @@ idci_payment:
 ## Scellius
 
 ```yaml
+# if you want to overide parameters used in scellius gateway (already configured by default)
+parameters:
+    idci_payment.scellius_bin.pathfile_path: "%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/param/scellius/pathfile.scellius"
+    idci_payment.atos_sips_bin.request_bin_path: '%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/static/request'
+    idci_payment.atos_sips_bin.response_bin_path: '%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/static/response'
+
 idci_payment:
     gateway_configurations:
         scellius_bin_test:
-            gateway_name: atos_sips_bin
+            gateway_name: scellius_bin_atos_sips
             enabled: true
             parameters:
                 return_url: http://www.example.com/
@@ -76,15 +97,41 @@ idci_payment:
                 merchant_id: '011223344551111' # 3DSecure = 011223344551112
 ```
 
+## Mercanet
+
+```yaml
+# if you want to overide parameters used in mercanet gateway (already configured by default)
+parameters:
+    idci_payment.mercanet_bin.pathfile_path: "%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/param/mercanet/pathfile.mercanet"
+    idci_payment.atos_sips_bin.request_bin_path: '%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/static/request'
+    idci_payment.atos_sips_bin.response_bin_path: '%kernel.project_dir%/vendor/idci/payment-bundle/Resources/sips/atos/bin/static/response'
+
+idci_payment:
+    gateway_configurations:
+        mercanet_bin_test:
+            gateway_name: mercanet_bin_atos_sips
+            enabled: true
+            parameters:
+                return_url: http://www.example.com/
+                callback_url: http://[your server host]/payment-gateway/mercanet_bin_test/callback # must be public
+                capture_day: 0
+                capture_mode: 'AUTHOR_CAPTURE'
+                merchant_id: '082584341411111' # 3DSecure = 082584341411112
+```
+
 # Atos Sips JSON
 
 ## Mercanet
 
 ```yaml
+# if you want to overide the host name used in mercanet gateway (already configured by default)
+parameters:
+    idci_payment.mercanet.server_host_name: payment-webinit.simu.mercanet.bnpparibas.net # prod: payment-webinit.mercanet.bnpparibas.net
+
 idci_payment:
     gateway_configurations:
         mercanet_json_test:
-            gateway_name: atos_sips_json
+            gateway_name: mercanet_json_atos_sips
             enabled: true
             parameters:
                 return_url: http://www.example.com/
@@ -101,10 +148,14 @@ idci_payment:
 ## Sogenactif
 
 ```yaml
+# if you want to overide the host name used in sogenactif gateway (already configured by default)
+parameters:
+    idci_payment.sogenactif.server_host_name: payment-webinit.simu.sips-atos.com # prod: payment-webinit-ws.sogenactif.com
+
 idci_payment:
     gateway_configurations:
         sogenactif_json_test:
-            gateway_name: atos_sips_json
+            gateway_name: sogenactif_json_atos_sips
             enabled: true
             parameters:
                 return_url: http://www.example.com/
@@ -138,6 +189,31 @@ idci_payment:
 
 # Ogone (Unsupported yet)
 
+# SystemPay
+
+```yaml
+# if you want to overide the url used in systempay gateway (already configured by default)
+parameters:
+    idci_payment.systempay.server_url: https://paiement.systempay.fr/vads-payment/
+
+idci_payment:
+    gateway_configurations:
+        systempay_test:
+            gateway_name: systempay
+            enabled: true
+            parameters:
+                return_url: http://www.example.com/
+                callback_url: http://[your server host]/payment-gateway/systempay_test/callback # must be public
+                action_mode: INTERACTIVE
+                ctx_mode: TEST
+                page_action: PAYMENT
+                payment_config: SINGLE # MULTI
+                site_id: 12345678
+                site_key: 20170701130025
+                version: 'V2'
+                signature_algorithm: 'SHA-1' # HMAC-SHA-256
+```
+
 # PayPlug
 
 ```yaml
@@ -155,6 +231,12 @@ idci_payment:
 # PayBox
 
 ```yaml
+# if you want to overide the parameters name used in paybox gateway (already configured by default)
+parameters:
+    idci_payment.paybox.server_host_name: preprod-tpeweb.paybox.com # prod: tpeweb.paybox.com
+    idci_payment.paybox.key_path: /var/www/html/vendor/idci/payment-bundle/Resources/paybox/keys
+    idci_payment.paybox.public_key_url: http://www1.paybox.com/wp-content/uploads/2014/03/pubkey.pem
+
 idci_payment:
     gateway_configurations:
         paybox_test:
@@ -169,6 +251,7 @@ idci_payment:
 ```
 
 # Stripe
+
 ```yaml
 idci_payment:
     gateway_configurations:
@@ -180,4 +263,18 @@ idci_payment:
                 callback_url: http://[your server host]/stripe-payment-gateway/proxy/stripe_test/callback # must be public
                 public_key: [Available in your account]
                 secret_key: [Available in your account]
+```
+
+# Sofinco
+
+```yaml
+idci_payment:
+    gateway_configurations:
+        sofinco_test:
+            gateway_name: sofinco
+            enabled: true
+            parameters:
+                return_url: http://www.example.com/
+                callback_url: http://[your server host]/payment-gateway/sofinco_test/callback # must be public
+                site_id: [Given in the documentation]
 ```

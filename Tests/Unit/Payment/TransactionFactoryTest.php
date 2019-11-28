@@ -2,9 +2,9 @@
 
 namespace IDCI\Bundle\PaymentBundle\Test\Unit\Payment;
 
-use PHPUnit\Framework\TestCase;
-use IDCI\Bundle\PaymentBundle\Payment\TransactionFactory;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\Payment\TransactionFactory;
+use PHPUnit\Framework\TestCase;
 
 class TransactionFactoryTest extends TestCase
 {
@@ -21,7 +21,7 @@ class TransactionFactoryTest extends TestCase
             'amount' => 100,
             'currency_code' => 'wrong_currency_code',
             'description' => 'Dummy description',
-            'metadatas' => [],
+            'metadata' => [],
         ]);
     }
 
@@ -38,7 +38,7 @@ class TransactionFactoryTest extends TestCase
             'amount' => 'wrong_amount',
             'currency_code' => 'EUR',
             'description' => 'Dummy description',
-            'metadatas' => [],
+            'metadata' => [],
         ]);
     }
 
@@ -52,7 +52,7 @@ class TransactionFactoryTest extends TestCase
             'amount' => 10,
             'currency_code' => 'EUR',
             'description' => 'Dummy description',
-            'metadatas' => [],
+            'metadata' => [],
         ]);
 
         $this->assertInstanceOf(Transaction::class, $transaction);
@@ -63,7 +63,7 @@ class TransactionFactoryTest extends TestCase
         $this->assertEquals(10, $transaction->getAmount());
         $this->assertEquals('EUR', $transaction->getCurrencyCode());
         $this->assertEquals('Dummy description', $transaction->getDescription());
-        $this->assertInternalType('array', $transaction->getMetadatas());
-        $this->assertEquals(0, count($transaction->getMetadatas()));
+        $this->assertInternalType('array', $transaction->getMetadata());
+        $this->assertEquals(0, count($transaction->getMetadata()));
     }
 }

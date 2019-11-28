@@ -1,6 +1,6 @@
-<form method="POST" action="{{ initializationData.url }}">
+<form method="GET" action="{{ initializationData.url }}">
     {% for name, value in initializationData.options %}
         <input type="hidden" name="{{ name }}" value="{{ value }}" />
     {% endfor %}
-    <input type="submit"  name="payer" value="Payer">
+    <input type="submit" value="Payer">
 </form>
