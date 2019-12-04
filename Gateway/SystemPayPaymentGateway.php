@@ -68,7 +68,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
     ): string {
         $key = $paymentGatewayConfiguration->get('site_key');
         $rawSignature = mb_convert_encoding(implode('+', array_filter($options, function($value) {
-            return null !== $value;
+            return null !== $value || !empty($value);
         })).'+'.$key, 'UTF-8');
 
         if (self::SIGNATURE_ALGORITHM_SHA1 === $paymentGatewayConfiguration->get('signature_algorithm')) {
