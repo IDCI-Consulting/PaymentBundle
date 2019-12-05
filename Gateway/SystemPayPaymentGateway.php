@@ -35,21 +35,22 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
+        // Important: Options must be in alphabetical order.
         return [
             'vads_action_mode' => $paymentGatewayConfiguration->get('action_mode'),
             'vads_amount' => $transaction->getAmount(),
             'vads_ctx_mode' => $paymentGatewayConfiguration->get('ctx_mode'),
             'vads_currency' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
-            'vads_cust_id' => $transaction->getCustomerId(),
-            'vads_cust_email' => $transaction->getCustomerEmail(),
-            'vads_cust_first_name' => $transaction->getMetadata('vads_cust_first_name'),
-            'vads_cust_last_name' => $transaction->getMetadata('vads_cust_last_name'),
-            'vads_cust_phone' => $transaction->getMetadata('vads_cust_phone'),
-            'vads_cust_cell_phone' => $transaction->getMetadata('vads_cust_cell_phone'),
             'vads_cust_address' => $transaction->getMetadata('vads_cust_address'),
-            'vads_cust_zip' => $transaction->getMetadata('vads_cust_zip'),
+            'vads_cust_cell_phone' => $transaction->getMetadata('vads_cust_cell_phone'),
             'vads_cust_city' => $transaction->getMetadata('vads_cust_city'),
             'vads_cust_country' => $transaction->getMetadata('vads_cust_country'),
+            'vads_cust_email' => $transaction->getCustomerEmail(),
+            'vads_cust_first_name' => $transaction->getMetadata('vads_cust_first_name'),
+            'vads_cust_id' => $transaction->getCustomerId(),
+            'vads_cust_last_name' => $transaction->getMetadata('vads_cust_last_name'),
+            'vads_cust_phone' => $transaction->getMetadata('vads_cust_phone'),
+            'vads_cust_zip' => $transaction->getMetadata('vads_cust_zip'),
             'vads_order_id' => $transaction->getId(),
             'vads_page_action' => $paymentGatewayConfiguration->get('page_action'),
             'vads_payment_config' => $paymentGatewayConfiguration->get('payment_config'),
@@ -67,9 +68,11 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         array $options
     ): string {
         $key = $paymentGatewayConfiguration->get('site_key');
-        $rawSignature = mb_convert_encoding(implode('+', array_filter($options, function($value) {
-            return null !== $value || !empty($value);
-        })).'+'.$key, 'UTF-8');
+        $rawSignature = mb_convert_encoding(sprintf(
+            '%s+%s',
+            implode('+', $this->cleanOptions($options)),
+            $key
+        ), 'UTF-8');
 
         if (self::SIGNATURE_ALGORITHM_SHA1 === $paymentGatewayConfiguration->get('signature_algorithm')) {
             return sha1($rawSignature);
@@ -119,8 +122,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
             ->setPaymentMethod($requestData->get('vads_card_brand'))
-            ->setRaw($request->request->all())
-        ;
+            ->setRaw($request->request->all());
 
         if ($requestData->get('vads_ctx_mode') != $paymentGatewayConfiguration->get('ctx_mode')) {
             return $gatewayResponse->setMessage(
@@ -172,5 +174,16 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
                 'signature_algorithm',
             ]
         );
+    }
+
+    protected function cleanOptions(array $options = []): array
+    {
+        $cleanedOptions = array_filter($options, function ($value, $name) {
+            return substr($name, 0, 5) === 'vads_';
+        }, ARRAY_FILTER_USE_BOTH);
+
+        ksort($cleanedOptions);
+
+        return $cleanedOptions;
     }
 }
