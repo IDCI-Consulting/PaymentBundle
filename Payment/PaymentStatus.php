@@ -8,6 +8,8 @@ final class PaymentStatus
 
     const STATUS_FAILED = 'failed';
 
+    const STATUS_UNVERIFIED = 'unverified';
+
     const STATUS_APPROVED = 'approved';
 
     const STATUS_CANCELED = 'canceled';

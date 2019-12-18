@@ -91,6 +91,7 @@ class TransactionFactory
                 PaymentStatus::STATUS_CREATED,
                 PaymentStatus::STATUS_FAILED,
                 PaymentStatus::STATUS_PENDING,
+                PaymentStatus::STATUS_UNVERIFIED,
             ])
             ->setAllowedValues('currency_code', $alpha3CurrencyCodes)
             ->setNormalizer('amount', function (Options $options, $value) {

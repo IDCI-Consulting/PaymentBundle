@@ -23,6 +23,7 @@ class Configuration implements ConfigurationInterface
                                 ->scalarNode(PaymentStatus::STATUS_CREATED)->end()
                                 ->scalarNode(PaymentStatus::STATUS_FAILED)->end()
                                 ->scalarNode(PaymentStatus::STATUS_PENDING)->end()
+                                ->scalarNode(PaymentStatus::STATUS_UNVERIFIED)->end()
                             ->end()
                         ->end()
                     ->end()

@@ -122,7 +122,7 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
             ->setAmount($request->query->get('s3'))
         ;
 
-        return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
+        return $gatewayResponse->setStatus(PaymentStatus::STATUS_UNVERIFIED);
     }
 
     public static function getParameterNames(): ?array

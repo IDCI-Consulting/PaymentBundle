@@ -37,6 +37,9 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
             TransactionEvent::PENDING => [
                 ['pend', 0],
             ],
+            TransactionEvent::UNVERIFIED => [
+                ['unverify', 0],
+            ],
         ];
     }
 
@@ -83,5 +86,14 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
         }
 
         $this->logger->info('Transaction pending: '.$transactionEvent->getTransaction()->getId());
+    }
+
+    public function unverify(TransactionEvent $transactionEvent)
+    {
+        if (!$this->enabled) {
+            return;
+        }
+
+        $this->logger->info('Transaction unverified: '.$transactionEvent->getTransaction()->getId());
     }
 }

@@ -49,6 +49,7 @@ idci_payment:
             created: '@IDCIPaymentBundle/Resources/views/PaymentStep/created.html.twig'
             failed: '@IDCIPaymentBundle/Resources/views/PaymentStep/failed.html.twig'
             pending: '@IDCIPaymentBundle/Resources/views/PaymentStep/pending.html.twig'
+            unverified: '@IDCIPaymentBundle/Resources/views/PaymentStep/unverified.html.twig'
 ```
 
 You can now modify which views this bundle will use in case of payment step

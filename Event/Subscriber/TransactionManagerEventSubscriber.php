@@ -36,6 +36,9 @@ class TransactionManagerEventSubscriber implements EventSubscriberInterface
             TransactionEvent::PENDING => [
                 ['save', 0],
             ],
+            TransactionEvent::UNVERIFIED => [
+                ['save', 0],
+            ],
         ];
     }
 

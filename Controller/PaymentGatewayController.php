@@ -55,6 +55,7 @@ class PaymentGatewayController extends AbstractController
             PaymentStatus::STATUS_APPROVED => TransactionEvent::APPROVED,
             PaymentStatus::STATUS_CANCELED => TransactionEvent::CANCELED,
             PaymentStatus::STATUS_FAILED => TransactionEvent::FAILED,
+            PaymentStatus::STATUS_UNVERIFIED => TransactionEvent::UNVERIFIED,
         ];
 
         $dispatcher->dispatch($event[$transaction->getStatus()], new TransactionEvent($transaction));
