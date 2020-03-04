@@ -108,16 +108,24 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         );
     }
 
-    private function prepareInitializeTransaction(StepEventInterface $event, array $parameters = array())
+    private function prepareInitializeTransaction(StepEventInterface $event, array $parameters = [])
     {
         $paymentContext = $this->paymentManager->createPaymentContextByAlias(
             $parameters['payment_gateway_configuration_alias']
         );
 
-        if (isset($event->getStepEventData()['id'])) {
-            $transaction = $this->transactionManager->retrieveTransactionByUuid($event->getStepEventData()['id']);
-            $paymentContext->setTransaction($transaction);
-        } else {
+        try {
+            if (isset($event->getStepEventData()['id'])) {
+                $transaction = $this->transactionManager->retrieveTransactionByUuid($event->getStepEventData()['id']);
+                if (null !== $transaction && !in_array($transaction->getStatus(), [PaymentStatus::STATUS_FAILED, PaymentStatus::STATUS_CANCELED])) {
+                    $paymentContext->setTransaction($transaction);
+                }
+            }
+        } catch (\Exception $e) {
+            // In case retrieveTransactionByUuid return error
+        }
+
+        if (null === $paymentContext->getTransaction()) {
             $transaction = $paymentContext->createTransaction([
                 'item_id' => $parameters['item_id'],
                 'amount' => $parameters['amount'],
@@ -142,9 +150,9 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         }
 
         $options = $event->getNavigator()->getCurrentStep()->getOptions();
+        $options['prevent_previous'] = false;
         if ($parameters['allow_skip']) {
             $options['prevent_next'] = false;
-            $options['prevent_previous'] = false;
         }
 
         $options['transaction'] = $transaction;
@@ -163,7 +171,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         return $transaction->toArray();
     }
 
-    private function prepareReturnTransaction(StepEventInterface $event, array $parameters = array())
+    private function prepareReturnTransaction(StepEventInterface $event, array $parameters = [])
     {
         $request = $this->requestStack->getCurrentRequest();
         $paymentContext = $this->paymentManager->createPaymentContextByAlias(
@@ -181,14 +189,18 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         }
 
         $options = $event->getNavigator()->getCurrentStep()->getOptions();
+        $options['prevent_previous'] = false;
         if ($parameters['allow_skip']) {
             $options['prevent_next'] = false;
-            $options['prevent_previous'] = false;
         }
 
         if (PaymentStatus::STATUS_APPROVED === $transaction->getStatus()) {
             $options['prevent_next'] = false;
             $options['prevent_previous'] = true;
+        }
+
+        if (PaymentStatus::STATUS_CANCELED === $transaction->getStatus() || PaymentStatus::STATUS_FAILED === $transaction->getStatus()) {
+            $options['prevent_next'] = true;
         }
 
         $options['transaction'] = $transaction;
@@ -211,7 +223,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
     /**
      * {@inheritdoc}
      */
-    protected function doExecute(StepEventInterface $event, array $parameters = array())
+    protected function doExecute(StepEventInterface $event, array $parameters = [])
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -224,7 +236,12 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             !$request->query->has('transaction_id') &&
             (
                 null === $transaction ||
-                in_array($transaction->getStatus(), [PaymentStatus::STATUS_CREATED, PaymentStatus::STATUS_PENDING])
+                in_array($transaction->getStatus(), [
+                    PaymentStatus::STATUS_CREATED,
+                    PaymentStatus::STATUS_PENDING,
+                    PaymentStatus::STATUS_FAILED,
+                    PaymentStatus::STATUS_CANCELED,
+                ])
             )
         ) {
             return $this->prepareInitializeTransaction($event, $parameters);
@@ -255,7 +272,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
                 'error_message' => 'There was a problem with your transaction, please try again.',
                 'template_extra_vars' => [],
             ])
-            ->setAllowedTypes('allow_skip', array('bool', 'string'))
+            ->setAllowedTypes('allow_skip', ['bool', 'string'])
             ->setAllowedTypes('payment_gateway_configuration_alias', ['string'])
             ->setAllowedTypes('amount', ['integer', 'string'])
             ->setAllowedTypes('item_id', ['null', 'string'])
