@@ -55,7 +55,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
             'vads_page_action' => $paymentGatewayConfiguration->get('page_action'),
             'vads_payment_config' => $paymentGatewayConfiguration->get('payment_config'),
             'vads_site_id' => $paymentGatewayConfiguration->get('site_id'),
-            'vads_trans_date' => (new \DateTime())->format('YmdHis'),
+            'vads_trans_date' => (new \DateTime())->setTimezone(new \DateTimeZone('UTC'))->format('YmdHis'),
             'vads_trans_id' => sprintf('%06d', $transaction->getNumber()),
             'vads_url_check' => $paymentGatewayConfiguration->get('callback_url'),
             'vads_url_return' => $paymentGatewayConfiguration->get('return_url'),
@@ -179,7 +179,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
     protected function cleanOptions(array $options = []): array
     {
         $cleanedOptions = array_filter($options, function ($value, $name) {
-            return substr($name, 0, 5) === 'vads_';
+            return 'vads_' === substr($name, 0, 5);
         }, ARRAY_FILTER_USE_BOTH);
 
         ksort($cleanedOptions);
