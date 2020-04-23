@@ -14,6 +14,11 @@ use Symfony\Component\HttpFoundation\Request;
 
 class PaypalPaymentGateway extends AbstractPaymentGateway
 {
+    const PAYPAL_CHECKOUT_FLOW_TEMPLATE_MAPPING = [
+        'PAY_NOW' => 'paypal_pay_now.html.twig',
+        // 'SMART_BUTTON' => 'paypal_smart_button.html.twig',
+    ];
+
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -23,7 +28,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
             'transaction' => $transaction,
             'callbackUrl' => $paymentGatewayConfiguration->get('callback_url'),
             'returnUrl' => $paymentGatewayConfiguration->get('return_url'),
-            'environment' => $paymentGatewayConfiguration->get('environment'),
+            'mode' => $paymentGatewayConfiguration->get('mode'),
         ];
     }
 
@@ -33,9 +38,25 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paypal.html.twig', [
-            'initializationData' => $initializationData,
-        ]);
+        if (!array_key_exists($paymentGatewayConfiguration->get('checkout_flow'), self::PAYPAL_CHECKOUT_FLOW_TEMPLATE_MAPPING)) {
+            throw new \UnexpectedValueException(
+                sprintf(
+                    'The checkout flow "%s" is not yet implemented in %s',
+                    $paymentGatewayConfiguration->get('checkout_flow'),
+                    self::class
+                )
+            );
+        }
+
+        return $this->templating->render(
+            sprintf(
+                '@IDCIPaymentBundle/Resources/views/Gateway/%s',
+                self::PAYPAL_CHECKOUT_FLOW_TEMPLATE_MAPPING[$paymentGatewayConfiguration->get('checkout_flow')]
+            ),
+            [
+                'initializationData' => $initializationData,
+            ]
+        );
     }
 
     public function getResponse(
@@ -56,6 +77,10 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
             $paymentGatewayConfiguration->get('client_id'),
             $paymentGatewayConfiguration->get('client_secret')
         ));
+
+        $apiContext->setConfig([
+            'mode' => $paymentGatewayConfiguration->get('mode'),
+        ]);
 
         $paypalPayment = PaypalPayment::get($request->get('paymentID'), $apiContext);
 
@@ -88,7 +113,8 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
             [
                 'client_id',
                 'client_secret',
-                'environment',
+                'mode',
+                'checkout_flow',
             ]
         );
     }
