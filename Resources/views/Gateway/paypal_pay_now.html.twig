@@ -8,7 +8,7 @@
 
     paypal.Button.render({
 
-        env: '{{ initializationData.environment == 'live' ? 'production' : initializationData.environment }}',
+        env: '{{ initializationData.mode == 'live' ? 'production' : initializationData.mode }}',
 
         client: {
             sandbox:    '{{ initializationData.clientId }}',
@@ -37,6 +37,10 @@
             }).then(function() {
                 location.href = RETURN_PAYMENT_URL;
             });
+        }
+
+        onError: function (err) {
+            console.error(err);
         }
 
     }, '#paypal-button');
