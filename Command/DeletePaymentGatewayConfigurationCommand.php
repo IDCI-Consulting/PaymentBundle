@@ -4,13 +4,13 @@ namespace IDCI\Bundle\PaymentBundle\Command;
 
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
 use IDCI\Bundle\PaymentBundle\Exception\NoPaymentGatewayConfigurationFoundException;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
-class DeletePaymentGatewayConfigurationCommand extends ContainerAwareCommand
+class DeletePaymentGatewayConfigurationCommand extends Command
 {
     public function __construct()
     {
@@ -28,7 +28,7 @@ class DeletePaymentGatewayConfigurationCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $om = $this->getContainer()->get('doctrine')->getManager();
+        $om = $this->getApplication()->getKernel()->getContainer()->get('doctrine')->getManager();
         $helper = $this->getHelper('question');
 
         $paymentGatewayRepository = $om->getRepository(PaymentGatewayConfiguration::class);
