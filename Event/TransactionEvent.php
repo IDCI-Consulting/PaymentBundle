@@ -3,7 +3,7 @@
 namespace IDCI\Bundle\PaymentBundle\Event;
 
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class TransactionEvent extends Event
 {
