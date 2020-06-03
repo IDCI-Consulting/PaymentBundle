@@ -8,7 +8,7 @@ use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class PaymentContext implements PaymentContextInterface
@@ -55,7 +55,7 @@ class PaymentContext implements PaymentContextInterface
 
         $this->transaction = TransactionFactory::getInstance()->create($parameters);
 
-        $this->dispatcher->dispatch(TransactionEvent::CREATED, new TransactionEvent($this->transaction));
+        $this->dispatcher->dispatch(new TransactionEvent($this->transaction), TransactionEvent::CREATED);
 
         return $this->transaction;
     }

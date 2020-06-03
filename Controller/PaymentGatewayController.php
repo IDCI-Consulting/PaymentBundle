@@ -7,7 +7,7 @@ use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -58,7 +58,7 @@ class PaymentGatewayController extends AbstractController
             PaymentStatus::STATUS_UNVERIFIED => TransactionEvent::UNVERIFIED,
         ];
 
-        $dispatcher->dispatch($event[$transaction->getStatus()], new TransactionEvent($transaction));
+        $dispatcher->dispatch(new TransactionEvent($transaction), $event[$transaction->getStatus()]);
 
         return new JsonResponse($transaction->toArray());
     }
