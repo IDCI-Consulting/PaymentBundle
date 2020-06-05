@@ -173,7 +173,7 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/atos_sips_bin.html.twig', [
+        return $this->templating->render('@IDCIPayment/Gateway/atos_sips_bin.html.twig', [
             'initializationData' => $initializationData,
         ]);
     }

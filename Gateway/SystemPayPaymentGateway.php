@@ -100,7 +100,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/systempay.html.twig', [
+        return $this->templating->render('@IDCIPayment/Gateway/systempay.html.twig', [
             'initializationData' => $initializationData,
         ]);
     }

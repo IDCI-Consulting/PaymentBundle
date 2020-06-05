@@ -65,7 +65,7 @@ class OgonePaymentGateway extends AbstractPaymentGateway
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/ogone.html.twig', [
+        return $this->templating->render('@IDCIPayment/Gateway/ogone.html.twig', [
             'initializationData' => $initializationData,
         ]);
     }

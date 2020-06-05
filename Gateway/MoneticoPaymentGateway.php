@@ -81,7 +81,7 @@ class MoneticoPaymentGateway extends AbstractPaymentGateway
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/monetico.html.twig', [
+        return $this->templating->render('@IDCIPayment/Gateway/monetico.html.twig', [
             'initializationData' => $initializationData,
         ]);
     }

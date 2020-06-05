@@ -48,7 +48,7 @@ class StripePaymentGateway extends AbstractPaymentGateway
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/stripe.html.twig', [
+        return $this->templating->render('@IDCIPayment/Gateway/stripe.html.twig', [
             'initializationData' => $initializationData,
         ]);
     }

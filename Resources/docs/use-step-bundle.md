@@ -13,9 +13,9 @@ Add this to your ```config.yml``` file:
 
 ```yaml
 imports:
-    - {resource: '@IDCIPaymentBundle/Resources/config/step_types.yml'}
-    - {resource: '@IDCIPaymentBundle/Resources/config/event_actions.yml'}
-    - {resource: '@IDCIPaymentBundle/Resources/config/step_templates.yml'}
+    - {resource: '@IDCIPayment/Resources/config/step_types.yml'}
+    - {resource: '@IDCIPayment/Resources/config/event_actions.yml'}
+    - {resource: '@IDCIPayment/Resources/config/step_templates.yml'}
 ```
 
 And this in your ```services.yml``` file:
@@ -44,12 +44,12 @@ if you want to override default step twig template, add this to your configurati
 idci_payment:
     templates:
         step:
-            approved: '@IDCIPaymentBundle/Resources/views/PaymentStep/approved.html.twig'
-            canceled: '@IDCIPaymentBundle/Resources/views/PaymentStep/canceled.html.twig'
-            created: '@IDCIPaymentBundle/Resources/views/PaymentStep/created.html.twig'
-            failed: '@IDCIPaymentBundle/Resources/views/PaymentStep/failed.html.twig'
-            pending: '@IDCIPaymentBundle/Resources/views/PaymentStep/pending.html.twig'
-            unverified: '@IDCIPaymentBundle/Resources/views/PaymentStep/unverified.html.twig'
+            approved: '@IDCIPayment/PaymentStep/approved.html.twig'
+            canceled: '@IDCIPayment/PaymentStep/canceled.html.twig'
+            created: '@IDCIPayment/PaymentStep/created.html.twig'
+            failed: '@IDCIPayment/PaymentStep/failed.html.twig'
+            pending: '@IDCIPayment/PaymentStep/pending.html.twig'
+            unverified: '@IDCIPayment/PaymentStep/unverified.html.twig'
 ```
 
 You can now modify which views this bundle will use in case of payment step

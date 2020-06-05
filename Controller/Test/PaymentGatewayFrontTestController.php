@@ -53,7 +53,7 @@ class PaymentGatewayFrontTestController extends AbstractController
             $this->addFlash('error', 'flash.invalid_form');
         }
 
-        return $this->render('@IDCIPaymentBundle/Resources/views/Test/select.html.twig', [
+        return $this->render('@IDCIPayment/Test/select.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -88,7 +88,7 @@ class PaymentGatewayFrontTestController extends AbstractController
             $this->addFlash('error', 'flash.invalid_form');
         }
 
-        return $this->render('@IDCIPaymentBundle/Resources/views/Test/configuration.html.twig', [
+        return $this->render('@IDCIPayment/Test/configuration.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -102,7 +102,7 @@ class PaymentGatewayFrontTestController extends AbstractController
 
         $transaction = $paymentContext->createTransaction($request->query->all());
 
-        return $this->render('@IDCIPaymentBundle/Resources/views/Test/create.html.twig', [
+        return $this->render('@IDCIPayment/Test/create.html.twig', [
             'view' => $paymentContext->buildHTMLView(),
             'transaction' => $transaction,
         ]);
@@ -113,11 +113,11 @@ class PaymentGatewayFrontTestController extends AbstractController
      */
     public function doneAction(Request $request, $configuration_alias)
     {
-        return $this->render('@IDCIPaymentBundle/Resources/views/Test/done.html.twig');
+        return $this->render('@IDCIPayment/Test/done.html.twig');
     }
 
     public function cancelAction(Request $request, $configuration_alias)
     {
-        return $this->render('@IDCIPaymentBundle/Resources/views/Test/cancel.html.twig');
+        return $this->render('@IDCIPayment/Test/cancel.html.twig');
     }
 }

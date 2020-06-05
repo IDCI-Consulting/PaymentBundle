@@ -95,7 +95,7 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/sofinco.html.twig', [
+        return $this->templating->render('@IDCIPayment/Gateway/sofinco.html.twig', [
             'initializationData' => $initializationData,
         ]);
     }

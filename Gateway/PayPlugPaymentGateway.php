@@ -47,7 +47,7 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/payplug.html.twig', [
+        return $this->templating->render('@IDCIPayment/Gateway/payplug.html.twig', [
             'initializationData' => $initializationData,
         ]);
     }

@@ -1,9 +1,9 @@
 idci_payment:
     templates:
         step:
-            approved: '@IDCIPaymentBundle/Resources/views/PaymentStep/approved.html.twig'
-            canceled: '@IDCIPaymentBundle/Resources/views/PaymentStep/canceled.html.twig'
-            created: '@IDCIPaymentBundle/Resources/views/PaymentStep/created.html.twig'
-            failed: '@IDCIPaymentBundle/Resources/views/PaymentStep/failed.html.twig'
-            pending: '@IDCIPaymentBundle/Resources/views/PaymentStep/pending.html.twig'
-            unverified: '@IDCIPaymentBundle/Resources/views/PaymentStep/unverified.html.twig'
+            approved: '@IDCIPayment/PaymentStep/approved.html.twig'
+            canceled: '@IDCIPayment/PaymentStep/canceled.html.twig'
+            created: '@IDCIPayment/PaymentStep/created.html.twig'
+            failed: '@IDCIPayment/PaymentStep/failed.html.twig'
+            pending: '@IDCIPayment/PaymentStep/pending.html.twig'
+            unverified: '@IDCIPayment/PaymentStep/unverified.html.twig'

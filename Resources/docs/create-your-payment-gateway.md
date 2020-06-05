@@ -48,7 +48,7 @@ class ExemplePaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): string {
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paypal.html.twig', [
+        return $this->templating->render('@IDCIPayment/Gateway/paypal.html.twig', [
             'initializationData' => $this->initialize($paymentGatewayConfiguration, $transaction),
         ]);
     }

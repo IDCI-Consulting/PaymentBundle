@@ -133,7 +133,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
-        return $this->templating->render('@IDCIPaymentBundle/Resources/views/Gateway/paybox.html.twig', [
+        return $this->templating->render('@IDCIPayment/Gateway/paybox.html.twig', [
             'initializationData' => $initializationData,
         ]);
     }

@@ -50,7 +50,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
 
         return $this->templating->render(
             sprintf(
-                '@IDCIPaymentBundle/Resources/views/Gateway/%s',
+                '@IDCIPayment/Gateway/%s',
                 self::PAYPAL_CHECKOUT_FLOW_TEMPLATE_MAPPING[$paymentGatewayConfiguration->get('checkout_flow')]
             ),
             [

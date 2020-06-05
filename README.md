@@ -15,7 +15,7 @@ $payment = $paymentContext->createPayment([
     'currency_code' => 'EUR',
 ]);
 
-return $this->render('@IDCIPaymentBundle/Resources/views/payment.html.twig', [
+return $this->render('@IDCIPayment/payment.html.twig', [
     'view' => $paymentContext->buildHTMLView(),
 ]);
 ```
