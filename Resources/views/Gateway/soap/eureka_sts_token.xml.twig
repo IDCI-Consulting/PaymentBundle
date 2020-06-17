@@ -1,0 +1,14 @@
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:cdis="http://www.cdiscount.com/">
+    <soapenv:Header />
+    <soapenv:Body>
+        <cdis:Issue>
+            <cdis:username>{{ username }}</cdis:username>
+            <cdis:password>{{ password }}</cdis:password>
+            <cdis:realm>
+                {{ merchant_url }}
+            </cdis:realm>
+        </cdis:Issue>
+    </soapenv:Body>
+</soapenv:Envelope>
