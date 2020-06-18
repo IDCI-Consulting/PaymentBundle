@@ -3,13 +3,14 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use GuzzleHttp\Client;
+use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\EurekaStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\DomCrawler\Crawler;
-use  Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Request;
 
 class EurekaPaymentGateway extends AbstractPaymentGateway
 {
@@ -77,6 +78,9 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
     const WHITELIST_STATUS_TRUSTED = 'TRUSTED';
     const WHITELIST_STATUS_WHITELIST = 'WHITELIST';
 
+    const HMAC_TYPE_ENTRY = 'in';
+    const HMAC_TYPE_OUT = 'out';
+
     /**
      * @var string
      */
@@ -112,19 +116,33 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return sprintf('https://%s/CclFrontService.svc', $this->serverHostName);
     }
 
+    private function getPaymentFormUrl(): string
+    {
+        return sprintf('https://%s/V4/GenericRD/Redirect.aspx', $this->serverHostName);
+    }
+
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
+        foreach ($this->getRequiredTransactionMetadata() as $requiredTransactionMetadata) {
+            if (!$transaction->hasMetadata($requiredTransactionMetadata)) {
+                throw new \UnexpectedValueException(
+                    sprintf('The transaction metadata "%s" must be set', $requiredTransactionMetadata)
+                );
+            }
+        }
+
         return [
             'version' => $paymentGatewayConfiguration->get('version'),
             'merchantID' => $paymentGatewayConfiguration->get('merchant_id'),
             'merchantSiteID' => $paymentGatewayConfiguration->get('merchant_site_id'),
+            'secretKey' => $paymentGatewayConfiguration->get('secret_key'),
             'paymentOptionRef' => $paymentGatewayConfiguration->get('payment_option_reference'),
             'orderRef' => $transaction->getId(),
-            'decimalPosition' => '2',
+            'decimalPosition' => 2,
             'currency' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
-            'country' => 'FR',
+            'country' => $transaction->getMetadata('order.country'),
             'customerRef' => $transaction->getCustomerId(),
             'date' => (new \DateTime('now'))->format('Ymd'),
             'amount' => $transaction->getAmount(),
@@ -165,7 +183,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         }
 
         $data = $this->templating->render(
-            sprintf('@IDCIPayment/Gateway/soap/eureka_score_%s.xml.twig', $type),
+            '@IDCIPayment/Gateway/soap/eureka_score.xml.twig',
             $this->resolveContextOptions([
                 'version' => $paymentGatewayConfiguration->get('version'),
                 'merchant_id' => $paymentGatewayConfiguration->get('merchant_id'),
@@ -180,7 +198,8 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     'birth_date' => $transaction->getMetadata('customer.birth_date'),
                     'birth_zip_code' => $transaction->getMetadata('customer.birth_zip_code'),
                     'email' => $transaction->getCustomerEmail(),
-                    'phone_number' => $transaction->getMetadata('customer.phone_numberss'),
+                    'phone_number' => $transaction->getMetadata('customer.phone_number'),
+                    'cell_phone_number' => $transaction->getMetadata('customer.cell_phone_number'),
                     'country' => $transaction->getMetadata('customer.country'),
                     'city' => $transaction->getMetadata('customer.city'),
                     'zip_code' => $transaction->getMetadata('customer.zip_code'),
@@ -189,22 +208,49 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 'order' => [
                     'id' => $transaction->getItemId(),
                     'item_count' => $transaction->getMetadata('order.item_count'),
-                    'country' => 'FR',
+                    'country' => $transaction->getMetadata('order.country'),
                     'amount' => $transaction->getAmount(),
                     'decimal_position' => 2,
                     'currency' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
-                    'sale_channel' => $transaction->getMetadata('customer.sale_channel'),
-                    'shipping_method' => $transaction->getMetadata('customer.shipping_method'),
+                    'sale_channel' => $transaction->getMetadata('order.sale_channel'),
+                    'shipping_method' => $transaction->getMetadata('order.shipping_method'),
                     'date' => (new \DateTime('now'))->format('Y-m-d'),
                 ],
             ])
         );
+
+        $response = $this->client->request(
+            'POST',
+            $type === self::SCORE_V3 ? $this->getScoreV3Url() : $this->getScoreCclUrl(),
+            [
+                'timeout' => 10, // TEMP: for dev purpose only
+                'body' => $data,
+                'headers' => [
+                    'Content-Type' => 'text/xml',
+                ],
+            ]
+        );
+
+        $crawler = (new Crawler($response->getBody()));
+
+        if ('Success' !== $crawler->filter('ResponseCode') || !$crawler->filter('PaymentAgreement')) {
+            throw new \UnexpectedValueException('The scoring token request failed');
+        }
+
+        return $crawler->filter('ScoringToken');
     }
 
-    private function buildHmac(array $options): string
+    private function buildHmac(array $options, string $hmacType): string
     {
-        // version*merchantID*merchantSiteID*paymentOptionRef*orderRef*freeText*decimalPosition*currency*country*invoiceID*customerRef*date*amount*merchantHomeUrl*merchantBackUrl* merchantReturnUrl*merchantNotifyUrl*
-        return hash('sha256', mb_convert_encoding($options['build'].$options['secret'], 'UTF-8'));
+        $hmacData = '';
+
+        foreach ($this->getHmacBuildParameters($hmacType) as $parameterName) {
+            if (isset($options[$parameterName])) {
+                $hmacData = sprintf('%s*', $options[$parameterName]);
+            }
+        }
+
+        return hash_hmac('sha1', utf8_encode($hmacData), $options['secretKey']);
     }
 
     public function initialize(
@@ -214,7 +260,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
         return array_merge($options, [
-            'hmac' => $this->buildOptions($options),
+            'hmac' => $this->buildHmac($options, self::HMAC_TYPE_ENTRY),
         ]);
     }
 
@@ -225,6 +271,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPayment/Gateway/eureka.html.twig', [
+            'url' => $this->getPaymentFormUrl(),
             'initializationData' => $initializationData,
         ]);
     }
@@ -240,7 +287,35 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
+            ->setRaw($request->request->all())
         ;
+
+        if (!$request->request->has('hmac')) {
+            return $gatewayResponse->setMessage('The request do not contains "hmac"');
+        }
+
+        $hmac = $this->buildHmac($request->request->all(), self::HMAC_TYPE_OUT);
+
+        if ($request->request->get('hmac') !== $hmac) {
+            return $gatewayResponse->setMessage('Hmac check failed');
+        }
+
+
+        $gatewayResponse
+            ->setTransactionUuid($request->request->get('orderRef'))
+            ->setAmount($request->request->get('amount'))
+            ->setCurrencyCode((new ISO4217())->findByNumeric($request->request->get('currency'))->getAlpha3())
+        ;
+
+        if ('0' !== $request->request->get('returnCode')) {
+            $gatewayResponse->setMessage(EurekaStatusCode::getStatusMessage($returnParams['responseCode']));
+
+            if ('6' === $returnParams['responseCode']) {
+                $gatewayResponse->setStatus(PaymentStatus::STATUS_CANCELED);
+            }
+
+            return $gatewayResponse;
+        }
 
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
@@ -257,8 +332,86 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 'score_type',
                 'username',
                 'password',
+                'secret_key',
             ]
         );
+    }
+
+    private function getHmacBuildParameters(string $hmacType): array
+    {
+        if (self::HMAC_TYPE_OUT === $hmacType) {
+            return [
+                'version',
+                'merchantID',
+                'merchantSiteID',
+                'paymentOptionRef',
+                'orderRef',
+                'freeText',
+                'decimalPosition',
+                'currency',
+                'country',
+                'invoiceID',
+                'customerRef',
+                'date',
+                'amount',
+                'returnCode',
+                'merchantAccountRef',
+                'reportDelayInDays',
+            ];
+        }
+
+        return [
+            'version',
+            'merchantID',
+            'merchantSiteID',
+            'paymentOptionRef',
+            'orderRef',
+            'freeText',
+            'decimalPosition',
+            'currency',
+            'country',
+            'invoiceID',
+            'customerRef',
+            'date',
+            'amount',
+            'orderRowsAmount',
+            'orderFeesAmount',
+            'orderDiscountAmount',
+            'orderShippingCost',
+            'allowCardStorage',
+            'passwordRequired',
+            'merchantAuthenticateUrl',
+            'storedCardID1',
+            'storedCardLabel1',
+            'storedCardIDN',
+            'storedCardLabelN',
+            'merchantHomeUrl',
+            'merchantBackUrl',
+            'merchantReturnUrl',
+            'merchantNotifyUrl',
+        ];
+    }
+
+    private function getRequiredTransactionMetadata(): array
+    {
+        return [
+            'customer.civility',
+            'customer.first_name',
+            'customer.last_name',
+            'customer.maiden_name',
+            'customer.birth_date',
+            'customer.birth_zip_code',
+            'customer.phone_number',
+            'customer.cell_phone_number',
+            'customer.country',
+            'customer.city',
+            'customer.zip_code',
+            'customer.address',
+            'order.country',
+            'order.item_count',
+            'order.sale_channel',
+            'order.shipping_method',
+        ];
     }
 
     private function resolveContextOptions(array $contextOptions): array

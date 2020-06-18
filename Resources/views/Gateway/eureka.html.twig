@@ -1,33 +1,5 @@
-<form method="post" name="PaymentForm" action="https://[url plateforme paiement]">
-  <input type="hidden" name="version" value="1.0"/>
-  <input type="hidden" name="merchantID" value="11"/>
-  <input type="hidden" name="merchantSiteID" value="100"/>
-  <input type="hidden" name="paymentOptionRef" value="62"/>
-  <input type="hidden" name="orderRef" value="0907061128WLK0G"/>
-  <input type="hidden" name="orderTag" value="v2"/>
-  <input type="hidden" name="freeText" value=""/>
-  <input type="hidden" name="decimalPosition" value="2"/>
-  <input type="hidden" name="currency" value="EUR"/>
-  <input type="hidden" name="country" value="FR"/>
-  <input type="hidden" name="invoiceID" value="115224183"/>
-  <input type="hidden" name="customerRef" value="000000091XLW"/>
-  <input type="hidden" name="date" value="20090706"/>
-  <input type="hidden" name="amount" value="15000"/>
-  <input type="hidden" name="orderRowsAmount" value="10000"/>
-  <input type="hidden" name="orderFeesAmount" value="3000"/>
-  <input type="hidden" name="orderDiscountAmount" value="1000"/>
-  <input type="hidden" name="orderShippingCost" value="3000"/>
-  <input type="hidden" name="allowCardStorage" value="1"/>
-  <input type="hidden" name="passwordRequired" value="2"/>
-  <input type="hidden" name="merchantAuthenticateUrl" value=" http://www.merchant.com/CheckPassword.mvc"/>
-  <input type="hidden" name="storedCardID1" value="8AF4E795-AD0C-40A4-B57F-2B304317A9FD"/>
-  <input type="hidden" name="storedCardLabel1" value="Mathieu CUNIN"/>
-  <input type="hidden" name="storedCardID2" value=" 5B2648A1-CD75-4661-AFF6-2B3046C6BCDF"/>
-  <input type="hidden" name="storedCardLabel2" value=" Mathieu CUNIN & company family"/>
-  <input type="hidden" name="merchantHomeUrl" value="http://www.merchant.com"/>
-  <input type="hidden" name="merchantBackUrl" value="http://www.merchant.com/order/payment_choice.aspx"/>
-  <input type="hidden" name="merchantReturnUrl" value="http://www.merchant.com/order/payment_return.aspx"/>
-  <input type="hidden" name="merchantNotifyUrl" value="http://www.merchant.com/order/payment_notify.ashx"/>
-  <input type="hidden" name="scoringToken" value="00000000-0000-0000-0000-000000000000"/>
-  <input type="hidden" name="hmac" value="66F36A5FD022B920941F213FAE7AE95E7C97EEB7"/>
+<form method="post" name="PaymentForm" action="{{ url }}">
+    {% for fieldName, fieldValue in initializationData %}
+        <input type="hidden" name="{{ fieldName }}" value="{{ fieldValue }}"/>
+    {% endfor %}
 </form>

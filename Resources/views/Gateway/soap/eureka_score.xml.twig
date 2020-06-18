@@ -35,7 +35,7 @@
                     <sch:Address4 xsi:nil="true"/>
                     <sch:BirthDate>{{ customer.birth_date }}</sch:BirthDate>
                     <sch:BirthZipCode>{{ customer.birth_zip_code }}</sch:BirthZipCode>
-                    <sch:CellPhoneNumber/>
+                    {% if customer.cell_phone_number is not defined or customer.cell_phone_number is null %}<sch:CellPhoneNumber/>{% else %}<sch:CellPhoneNumber>{{ customer.cell_phone_number }}</sch:CellPhoneNumber>{% endif %}
                     <sch:City>{{ customer.city }}</sch:City>
                     <sch:Civility>{{ customer.civility }}</sch:Civility>
                     <sch:Country>{{ customer.country }}</sch:Country>
