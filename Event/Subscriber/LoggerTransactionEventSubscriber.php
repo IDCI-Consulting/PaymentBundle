@@ -49,7 +49,7 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->logger->info('Transaction approved: '.$transactionEvent->getTransaction()->getId());
+        $this->log('Transaction approved: '.$transactionEvent->getTransaction()->getId());
     }
 
     public function cancel(TransactionEvent $transactionEvent)
@@ -58,7 +58,7 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->logger->info('Transaction canceled: '.$transactionEvent->getTransaction()->getId());
+        $this->log('Transaction canceled: '.$transactionEvent->getTransaction()->getId());
     }
 
     public function create(TransactionEvent $transactionEvent)
@@ -67,7 +67,7 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->logger->info('Transaction created: '.$transactionEvent->getTransaction()->getId());
+        $this->log('Transaction created: '.$transactionEvent->getTransaction()->getId());
     }
 
     public function fail(TransactionEvent $transactionEvent)
@@ -76,7 +76,7 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->logger->info('Transaction failed: '.$transactionEvent->getTransaction()->getId());
+        $this->log('Transaction failed: '.$transactionEvent->getTransaction()->getId());
     }
 
     public function pend(TransactionEvent $transactionEvent)
@@ -85,7 +85,7 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->logger->info('Transaction pending: '.$transactionEvent->getTransaction()->getId());
+        $this->log('Transaction pending: '.$transactionEvent->getTransaction()->getId());
     }
 
     public function unverify(TransactionEvent $transactionEvent)
@@ -94,6 +94,12 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->logger->info('Transaction unverified: '.$transactionEvent->getTransaction()->getId());
+        $this->log('Transaction unverified: '.$transactionEvent->getTransaction()->getId());
+    }
+
+    private function log(string $message) {
+        try {
+            $this->logger->info($message);
+        } catch (\Exception $e) {}
     }
 }

@@ -88,9 +88,11 @@ class PaymentContext implements PaymentContextInterface
         }
 
         if ($this->logger) {
-            $this->logger->info('Gateway response: ', [
-                'response' => json_encode($gatewayResponse->toArray()),
-            ]);
+            try {
+                $this->logger->info('Gateway response: ', [
+                    'response' => json_encode($gatewayResponse->toArray()),
+                ]);
+            } catch (\Exception $e) {}
         }
 
         return $transaction

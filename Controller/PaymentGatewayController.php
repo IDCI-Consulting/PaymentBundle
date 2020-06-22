@@ -35,14 +35,16 @@ class PaymentGatewayController extends AbstractController
     {
         $data = $request->isMethod(Request::METHOD_POST) ? $request->request->all() : $request->query->all();
 
-        $this->logger->info(
-            sprintf(
-                '[gateway configuration alias: %s, data: %s, ip: %s]',
-                $configuration_alias,
-                json_encode($data),
-                json_encode($request->getClientIps())
-            )
-        );
+        try {
+            $this->logger->info(
+                sprintf(
+                    '[gateway configuration alias: %s, data: %s, ip: %s]',
+                    $configuration_alias,
+                    json_encode($data),
+                    json_encode($request->getClientIps())
+                )
+            );
+        } catch (\Exception $e) {}
 
         $paymentContext = $this
             ->paymentManager
