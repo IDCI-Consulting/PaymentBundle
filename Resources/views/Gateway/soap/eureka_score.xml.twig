@@ -7,57 +7,44 @@
     <soapenv:Body>
         <cb4x:Score>
             <cb4x:header>
-                <cb4x:Version>{{ version }}</cb4x:Version>
                 <cb4x:Context>
-                    <cb4x:MerchantId>{{ merchant_id }}</cb4x:MerchantId>
-                    <cb4x:MerchantSiteId>{{ merchant_site_id }}</cb4x:MerchantSiteId>
+                    <cb4x:MerchantId>{{ Header.Context.MerchantId }}</cb4x:MerchantId>
+                    <cb4x:MerchantSiteId>{{ Header.Context.MerchantSiteId }}</cb4x:MerchantSiteId>
                 </cb4x:Context>
                 <cb4x:Localization>
-                    <cb4x:Country>{{ order.country }}</cb4x:Country>
-                    <cb4x:Currency>{{ order.currency }}</cb4x:Currency>
-                    <cb4x:DecimalPosition>{{ order.decimal_position }}</cb4x:DecimalPosition>
-                    <cb4x:Language>{{ order.country }}</cb4x:Language>
+                    <cb4x:Country>{{ Header.Localization.Country }}</cb4x:Country>
+                    <cb4x:Currency>{{ Header.Localization.Currency }}</cb4x:Currency>
+                    <cb4x:DecimalPosition>{{ Header.Localization.DecimalPosition }}</cb4x:DecimalPosition>
+                    <cb4x:Language>{{ Header.Localization.Language }}</cb4x:Language>
                 </cb4x:Localization>
                 <cb4x:SecurityContext>
                     <cb4x:DomainRightsList/>
                     <cb4x:IssuerID xsi:nil="true"/>
                     <cb4x:SessionID xsi:nil="true"/>
                     <cb4x:SubjectLocality/>
-                    <cb4x:TokenId>{{ header_token }}</cb4x:TokenId>
+                    <cb4x:TokenId>{{ Header.SecurityContext.TokenId }}</cb4x:TokenId>
                     <cb4x:UserName xsi:nil="true"/>
                 </cb4x:SecurityContext>
+                <cb4x:Version>{{ Header.Version }}</cb4x:Version>
             </cb4x:header>
             <cb4x:request>
-                <cb4x:Customer>
-                    <sch:Address1>{{ customer.address }}</sch:Address1>
-                    <sch:Address2 xsi:nil="true"/>
-                    <sch:Address3 xsi:nil="true"/>
-                    <sch:Address4 xsi:nil="true"/>
-                    <sch:BirthDate>{{ customer.birth_date }}</sch:BirthDate>
-                    <sch:BirthZipCode>{{ customer.birth_zip_code }}</sch:BirthZipCode>
-                    {% if customer.cell_phone_number is not defined or customer.cell_phone_number is null %}<sch:CellPhoneNumber/>{% else %}<sch:CellPhoneNumber>{{ customer.cell_phone_number }}</sch:CellPhoneNumber>{% endif %}
-                    <sch:City>{{ customer.city }}</sch:City>
-                    <sch:Civility>{{ customer.civility }}</sch:Civility>
-                    <sch:Country>{{ customer.country }}</sch:Country>
-                    <sch:CustomerRef>{{ customer.id }}</sch:CustomerRef>
-                    <sch:Email>{{ customer.email }}</sch:Email>
-                    <sch:FirstName>{{ customer.first_name }}</sch:FirstName>
-                    <sch:LastName>{{ customer.last_name }}</sch:LastName>
-                    {% if customer.maiden_name is not defined or customer.maiden_name is null %}<sch:MaidenName xsi:nil="true"/>{% else %}<sch:MaidenName>{{ customer.maiden_name }}</sch:MaidenName>{% endif %}
-                    <sch:PhoneNumber>{{ customer.phone_number }}</sch:PhoneNumber>
-                    <sch:ZipCode>{{ customer.zip_code }}</sch:ZipCode>
-                    {% if customer.nationality is not defined or customer.nationality is null %}<sch:Nationality/>{% else %}<sch:Nationality>{{ customer.nationality }}</sch:Nationality>{% endif %}
-                    {% if customer.ip_address is not defined or customer.ip_address is null %}<sch:IpAddress/>{% else %}<sch:IpAddress>{{ customer.ip_address }}</sch:IpAddress>{% endif %}
-                    {% if customer.white_list is not defined or customer.white_list is null %}<sch:WhiteList/>{% else %}<sch:WhiteList>{{ customer.white_list }}</sch:WhiteList>{% endif %}
-                </cb4x:Customer>
-                <cb4x:Order>
-                    <sch:OrderDate>{{ order.date }}</sch:OrderDate>
-                    <sch:SaleChannel>{{ order.sale_channel }}</sch:SaleChannel>
-                    <sch:ShippingMethod>{{ order.shipping_method }}</sch:ShippingMethod>
-                    <sch:ShoppingCartItemCount>{{ order.item_count }}</sch:ShoppingCartItemCount>
-                    <sch:ShoppingCartRef>{{ order.id }}</sch:ShoppingCartRef>
-                    <sch:TotalAmount>{{ order.amount }}</sch:TotalAmount>
-                </cb4x:Order>
+                {% for request_key, request_value in Request %}
+                {% if request_value is not null or (request_value is iterable and request_value is not empty) %}
+                <cb4x:{{ request_key }}>
+                    {% for field_key, field_value in request_value %}
+                        {% if field_value is iterable %}
+                            {% for sub_field_key, sub_field_value in field_value %}
+                        {% if sub_field_value is null %}<sch:{{ sub_field_key }} xsi:nil="true"/>{% else %}<sch:{{ sub_field_key }}>{{ sub_field_value }}</sch:{{ sub_field_key }}>{% endif %}
+                            {% endfor %}
+                        {% elseif field_value is null %}
+                        <sch:{{ field_key }} xsi:nil="true"/>
+                        {% else %}
+                        <sch:{{ field_key }}>{{ field_value }}</sch:{{ field_key }}>
+                        {% endif %}
+                    {% endfor %}
+                </cb4x:{{ request_key }}>
+                {% endif %}
+                {% endfor %}
             </cb4x:request>
         </cb4x:Score>
     </soapenv:Body>

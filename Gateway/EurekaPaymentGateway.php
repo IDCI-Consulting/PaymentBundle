@@ -78,6 +78,18 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
     const WHITELIST_STATUS_TRUSTED = 'TRUSTED';
     const WHITELIST_STATUS_WHITELIST = 'WHITELIST';
 
+    const UNKNOWN_TRAVEL_TYPE = 'Unknown';
+    const ONE_WAY_TRAVEL_TYPE = 'OneWay';
+    const TWO_WAY_TRAVEL_TYPE = 'TwoWay';
+    const MULTIPLE_TRAVEL_TYPE = 'Multiple';
+
+    const UNKNOWN_TRAVEL_CLASS = 'Unknown';
+    const ECONOMY_TRAVEL_CLASS = 'Economy';
+    const PREMIUM_ECONOMY_TRAVEL_CLASS = 'PremiumEconomy';
+    const BUSINESS_TRAVEL_CLASS = 'Business';
+    const FIRST_TRAVEL_CLASS = 'First';
+    const OTHER_TRAVEL_CLASS = 'Other';
+
     const HMAC_TYPE_ENTRY = 'in';
     const HMAC_TYPE_OUT = 'out';
 
@@ -184,37 +196,111 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
 
         $data = $this->templating->render(
             '@IDCIPayment/Gateway/soap/eureka_score.xml.twig',
-            $this->resolveContextOptions([
-                'version' => $paymentGatewayConfiguration->get('version'),
-                'merchant_id' => $paymentGatewayConfiguration->get('merchant_id'),
-                'merchant_site_id' => $paymentGatewayConfiguration->get('merchant_site_id'),
-                'header_token' => $this->requestHeaderToken($paymentGatewayConfiguration),
-                'customer' => [
-                    'id' => $transaction->getCustomerId(),
-                    'civility' => $transaction->getMetadata('customer.civility'),
-                    'first_name' => $transaction->getMetadata('customer.first_name'),
-                    'last_name' => $transaction->getMetadata('customer.last_name'),
-                    'maiden_name' => $transaction->getMetadata('customer.maiden_name'),
-                    'birth_date' => $transaction->getMetadata('customer.birth_date'),
-                    'birth_zip_code' => $transaction->getMetadata('customer.birth_zip_code'),
-                    'email' => $transaction->getCustomerEmail(),
-                    'phone_number' => $transaction->getMetadata('customer.phone_number'),
-                    'cell_phone_number' => $transaction->getMetadata('customer.cell_phone_number'),
-                    'country' => $transaction->getMetadata('customer.country'),
-                    'city' => $transaction->getMetadata('customer.city'),
-                    'zip_code' => $transaction->getMetadata('customer.zip_code'),
-                    'address' => $transaction->getMetadata('customer.address'),
+            $this->resolveScoreOptions([
+                'Header' => [
+                    'Context' => [
+                        'MerchantId' => $paymentGatewayConfiguration->get('merchant_id')
+                        'MerchantSiteId' => $paymentGatewayConfiguration->get('merchant_site_id')
+                    ],
+                    'Localization' => [
+                        'Country' => $transaction->getMetadata('Customer.Country'),
+                        'Currency' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
+                        'DecimalPosition' => $transaction->getMetadata('Order.DecimalPosition'),
+                        'Language' => $transaction->getMetadata('Customer.Country'),
+                    ],
+                    'SecurityContext' => [
+                        'TokenId' => $this->requestHeaderToken($paymentGatewayConfiguration)
+                    ],
+                    'Version' => $paymentGatewayConfiguration->get('version'),
                 ],
-                'order' => [
-                    'id' => $transaction->getItemId(),
-                    'item_count' => $transaction->getMetadata('order.item_count'),
-                    'country' => $transaction->getMetadata('order.country'),
-                    'amount' => $transaction->getAmount(),
-                    'decimal_position' => 2,
-                    'currency' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
-                    'sale_channel' => $transaction->getMetadata('order.sale_channel'),
-                    'shipping_method' => $transaction->getMetadata('order.shipping_method'),
-                    'date' => (new \DateTime('now'))->format('Y-m-d'),
+                'Request' => [
+                    'Customer' => [
+                        'CustomerRef' => $transaction->getCustomerId(),
+                        'LastName' => $transaction->getMetadata('Customer.LastName'),
+                        'FirstName' => $transaction->getMetadata('Customer.FirstName'),
+                        'Civility' => $transaction->getMetadata('Customer.Civility'),
+                        'MaidenName' => $transaction->getMetadata('Customer.MaidenName'),
+                        'BirthDate' => $transaction->getMetadata('Customer.BirthDate'),
+                        'BirthZipCode' => $transaction->getMetadata('Customer.BirthZipCode'),
+                        'PhoneNumber' => $transaction->getMetadata('Customer.PhoneNumber'),
+                        'CellPhoneNumber' => $transaction->getMetadata('Customer.CellPhoneNumber'),
+                        'Email' => $transaction->getCustomerEmail(),
+                        'Address1' => $transaction->getMetadata('Customer.Address1'),
+                        'Address2' => $transaction->getMetadata('Customer.Address2'),
+                        'Address3' => $transaction->getMetadata('Customer.Address3'),
+                        'Address4' => $transaction->getMetadata('Customer.Address4'),
+                        'ZipCode' => $transaction->getMetadata('Customer.ZipCode'),
+                        'City' => $transaction->getMetadata('Customer.City'),
+                        'Country' => $transaction->getMetadata('Customer.Country'),
+                        'Nationality' => $transaction->getMetadata('Customer.Nationality'),
+                        'IpAddress' => $transaction->getMetadata('Customer.IpAddress'),
+                        'WhiteList' => $transaction->getMetadata('Customer.WhiteList'),
+                    ],
+                    'Order' => [
+                        'OrderDate' => (new \DateTime('now'))->format('Y-m-d'),
+                        'SaleChannel' => $transaction->getMetadata('Order.SaleChannel'),
+                        'ShippingMethod' => $transaction->getMetadata('Order.ShippingMethod'),
+                        'ShoppingCartItemCount' => $transaction->getMetadata('Order.ShoppingCartItemCount'),
+                        'ShoppingCartRef' => $transaction->getItemId(),
+                        'TotalAmount' => $transaction->getAmount(),
+                    ],
+                    'OptionalCustomerHistory' => [
+                        'CanceledOrderAmount' => $transaction->getMetadata('OptionalCustomerHistory.CanceledOrderAmount'),
+                        'CanceledOrderCount' => $transaction->getMetadata('OptionalCustomerHistory.CanceledOrderCount'),
+                        'FirstOrderDate' => $transaction->getMetadata('OptionalCustomerHistory.FirstOrderDate'),
+                        'FraudAlertCount' => $transaction->getMetadata('OptionalCustomerHistory.FraudAlertCount'),
+                        'LastOrderDate' => $transaction->getMetadata('OptionalCustomerHistory.LastOrderDate'),
+                        'PaymentIncidentCount' => $transaction->getMetadata('OptionalCustomerHistory.PaymentIncidentCount'),
+                        'RefusedManyTimesOrderCount' => $transaction->getMetadata('OptionalCustomerHistory.RefusedManyTimesOrderCount'),
+                        'UnvalidatedOrderCount' => $transaction->getMetadata('OptionalCustomerHistory.UnvalidatedOrderCount'),
+                        'ValidatedOneTimeOrderCount' => $transaction->getMetadata('OptionalCustomerHistory.ValidatedOneTimeOrderCount'),
+                        'ValidatedOrderCount' => $transaction->getMetadata('OptionalCustomerHistory.ValidatedOrderCount'),
+                        'ClientIpAddressRecurrence' => $transaction->getMetadata('OptionalCustomerHistory.ClientIpAddressRecurrence'),
+                        'OngoingLitigationOrderAmount' => $transaction->getMetadata('OptionalCustomerHistory.OngoingLitigationOrderAmount'),
+                        'PaidLitigationOrderAmount24Month' => $transaction->getMetadata('OptionalCustomerHistory.PaidLitigationOrderAmount24Months'),
+                        'ScoreSimulationCount7Days' => $transaction->getMetadata('OptionalCustomerHistory.ScoreSimulationCount7Days'),
+                    ],
+                    'OptionalTravelDetails' => [
+                        'Insurance' => $transaction->getMetadata('OptionalTravelDetails.Insurance'),
+                        'Type' => $transaction->getMetadata('OptionalTravelDetails.Type'),
+                        'DepartureDate' => $transaction->getMetadata('OptionalTravelDetails.DepartureDate'),
+                        'ReturnDate' => $transaction->getMetadata('OptionalTravelDetails.ReturnDate'),
+                        'DestinationCountry' => $transaction->getMetadata('OptionalTravelDetails.DestinationCountry'),
+                        'TicketCount' => $transaction->getMetadata('OptionalTravelDetails.TicketCount'),
+                        'TravellerCount' => $transaction->getMetadata('OptionalTravelDetails.TravellerCount'),
+                        'Class' => $transaction->getMetadata('OptionalTravelDetails.Class'),
+                        'OwnTicket' => $transaction->getMetadata('OptionalTravelDetails.OwnTicket'),
+                        'MainDepartureCompany' => $transaction->getMetadata('OptionalTravelDetails.MainDepartureCompany'),
+                        'DepartureAirport' => $transaction->getMetadata('OptionalTravelDetails.DepartureAirport'),
+                        'ArrivalAirport' => $transaction->getMetadata('OptionalTravelDetails.ArrivalAirport'),
+                        'DiscountCode' => $transaction->getMetadata('OptionalTravelDetails.DiscountCode'),
+                        'LuggageSupplement' => $transaction->getMetadata('OptionalTravelDetails.LuggageSupplement'),
+                        'ModificationAnnulation' => $transaction->getMetadata('OptionalTravelDetails.ModificationAnnulation'),
+                        'TravellerPassportList' => $transaction->getMetadata('OptionalTravelDetails.TravellerPassportList'),
+                    ],
+                    'OptionalStayDetails' => [
+                        'Company' => $transaction->getMetadata('OptionalStayDetails.Company'),
+                        'Destination' => $transaction->getMetadata('OptionalStayDetails.Destination'),
+                        'NightNumber' => $transaction->getMetadata('OptionalStayDetails.NightNumber'),
+                        'RoomRange' => $transaction->getMetadata('OptionalStayDetails.RoomRange'),
+                    ],
+                    'OptionalProductDetails' => [
+                        'Categorie1' => $transaction->getMetadata('OptionalProductDetails.Categorie1'),
+                        'Categorie2' => $transaction->getMetadata('OptionalProductDetails.Categorie2'),
+                        'Categorie3' => $transaction->getMetadata('OptionalProductDetails.Categorie3'),
+                    ],
+                    'PreScoreInformation' => [
+                        'RequestID' => $transaction->getMetadata('PreScoreInformation.RequestID')
+                    ],
+                    'AdditionalNumericFieldList' => $transaction->getMetadata('AdditionalNumericFieldList'),
+                    'AdditionalTextFieldList' => $transaction->getMetadata('AdditionalTextFieldList'),
+                    'OptionalShippingDetails' => [
+                        'ShippingAdress1' => $transaction->getMetadata('OptionalShippingDetails.ShippingAdress1'),
+                        'ShippingAdress2' => $transaction->getMetadata('OptionalShippingDetails.ShippingAdress2'),
+                        'ShippingAdressCity' => $transaction->getMetadata('OptionalShippingDetails.ShippingAdressCity'),
+                        'ShippingAdressZip' => $transaction->getMetadata('OptionalShippingDetails.ShippingAdressZip'),
+                        'ShippingAdressCountry' => $transaction->getMetadata('OptionalShippingDetails.ShippingAdressCountry'),
+                    ],
                 ],
             ])
         );
@@ -395,47 +481,172 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
     private function getRequiredTransactionMetadata(): array
     {
         return [
-            'customer.civility',
-            'customer.first_name',
-            'customer.last_name',
-            'customer.maiden_name',
-            'customer.birth_date',
-            'customer.birth_zip_code',
-            'customer.phone_number',
-            'customer.cell_phone_number',
-            'customer.country',
-            'customer.city',
-            'customer.zip_code',
-            'customer.address',
-            'order.country',
-            'order.item_count',
-            'order.sale_channel',
-            'order.shipping_method',
+            'Customer.LastName',
+            'Customer.FirstName',
+            'Customer.Civility',
+            'Customer.BirthDate',
+            'Customer.BirthZipCode',
+            'Customer.PhoneNumber',
+            'Customer.Address1',
+            'Customer.ZipCode',
+            'Customer.City',
+            'Customer.Country',
+            'Order.SaleChannel',
+            'Order.ShippingMethod',
         ];
     }
 
-    private function resolveContextOptions(array $contextOptions): array
+    private function resolveScoreOptions(array $scoreOptions): array
+    {
+        $scoreResolver = (new OptionsResolver())
+            ->setRequired([
+                'Header',
+                'Request',
+            ])
+            ->setAllowedTypes('Header', ['array'])
+                ->setNormalizer('Header', function (Options $options, $value) {
+                    return $this->resolveHeaderOptions($value);
+                })
+            ->setAllowedTypes('Request', ['array'])
+                ->setNormalizer('Request', function (Options $options, $value) {
+                    return $this->resolveRequestOptions($value);
+                })
+        ;
+
+        return $scoreResolver->resolve($scoreOptions);
+    }
+
+    private resolveHeaderOptions(array $headerOptions): array
+    {
+        $scoreResolver = (new OptionsResolver())
+            ->setRequired([
+                'Context',
+                'Localization',
+                'SecurityContext',
+                'Version',
+            ])
+            ->setAllowedTypes('Context', ['array'])
+                ->setNormalizer('Context', function (Options $options, $value) {
+                    return $this->resolveContextOptions($value);
+                })
+            ->setAllowedTypes('Localization', ['array'])
+                ->setNormalizer('Localization', function (Options $options, $value) {
+                    return $this->resolveLocalizationOptions($value);
+                })
+            ->setAllowedTypes('SecurityContext', ['array'])
+                ->setNormalizer('SecurityContext', function (Options $options, $value) {
+                    return $this->resolveSecurityContextOptions($value);
+                })
+            ->setAllowedTypes('Version', ['int', 'string'])
+        ;
+
+        return $scoreResolver->resolve($scoreOptions);
+    }
+
+    private function resolveContextOptions($contextOptions): array
     {
         $contextResolver = (new OptionsResolver())
             ->setRequired([
-                'version',
-                'merchant_id',
-                'merchant_site_id',
-                'header_token',
-                'customer',
-                'order',
+                'MerchantId',
+                'MerchantSiteId',
             ])
-            ->setAllowedTypes('version', ['int', 'string'])
-            ->setAllowedTypes('merchant_id', ['int', 'string'])
-            ->setAllowedTypes('merchant_site_id', ['int', 'string'])
-            ->setAllowedTypes('header_token', ['string'])
-            ->setAllowedTypes('customer', ['array'])
-                ->setNormalizer('customer', function (Options $options, $value) {
+            ->setAllowedTypes('MerchantId', ['int', 'string'])
+            ->setAllowedTypes('MerchantSiteId', ['int', 'string'])
+        ;
+
+        return $contextResolver->resolve($contextOptions);
+    }
+
+    private function resolveLocalizationOptions($localizationOptions): array
+    {
+        $localizationResolver = (new OptionsResolver())
+            ->setRequired([
+                'Country',
+                'Currency',
+                'DecimalPosition',
+                'Language',
+            ])
+            ->setAllowedTypes('Country', ['string'])
+            ->setAllowedTypes('Currency', ['string'])
+                ->setAllowedValues('currency', array_map(function ($currency) {
+                    return $currency->getAlpha3();
+                }, (new ISO4217())->findAll()))
+            ->setAllowedTypes('DecimalPosition', ['int'])
+            ->setAllowedTypes('Language', ['string'])
+        ;
+
+        return $localizationResolver->resolve($localizationOptions);
+    }
+
+    private function resolveSecurityContextOptions($securityContextOptions): array
+    {
+        $securityContextResolver = (new OptionsResolver())
+            ->setRequired([
+                'TokenId',
+            ])
+            ->setAllowedTypes('TokenId', ['string'])
+        ;
+
+        return $securityContextResolver->resolve($securityContextOptions);
+    }
+
+    private function resolveRequestOptions(array $contextOptions): array
+    {
+        $contextResolver = (new OptionsResolver())
+            ->setRequired([
+                'Context',
+                'Customer',
+                'Order',
+            ])
+            ->setDefaults([
+                'OptionalCustomerHistory' => [],
+                'OptionalTravelDetails' => [],
+                'OptionalStayDetails' => [],
+                'OptionalProductDetails' => [],
+                'PreScoreInformation' => [],
+                'AdditionalNumericFieldList' => [],
+                'AdditionalTextFieldList' => [],
+                'OptionalShippingDetails' => [],
+            ])
+            ->setAllowedTypes('Customer', ['array'])
+                ->setNormalizer('Customer', function (Options $options, $value) {
                     return $this->resolveCustomerOptions($value);
                 })
-            ->setAllowedTypes('order', ['array'])
-                ->setNormalizer('order', function (Options $options, $value) {
+            ->setAllowedTypes('Order', ['array'])
+                ->setNormalizer('Order', function (Options $options, $value) {
                     return $this->resolveOrderOptions($value);
+                })
+            ->setAllowedTypes('OptionalCustomerHistory', ['array'])
+                ->setNormalizer('OptionalCustomerHistory', function (Options $options, $value) {
+                    return $this->resolveOptionalCustomerDetailsOptions($value);
+                })
+            ->setAllowedTypes('OptionalTravelDetails', ['array'])
+                ->setNormalizer('OptionalTravelDetails', function (Options $options, $value) {
+                    return $this->resolveOptionalTravelDetailsOptions($value);
+                })
+            ->setAllowedTypes('OptionalStayDetails', ['array'])
+                ->setNormalizer('OptionalStayDetails', function (Options $options, $value) {
+                    return $this->resolveOptionalStayDetailsOptions($value);
+                })
+            ->setAllowedTypes('OptionalProductDetails', ['array'])
+                ->setNormalizer('OptionalProductDetails', function (Options $options, $value) {
+                    return $this->resolveOptionalProductDetailsOptions($value);
+                })
+            ->setAllowedTypes('PreScoreInformation', ['array'])
+                ->setNormalizer('PreScoreInformation', function (Options $options, $value) {
+                    return $this->resolvePreScoreInformationOptions($value);
+                })
+            ->setAllowedTypes('AdditionalNumericFieldList', ['array'])
+                ->setNormalizer('AdditionalNumericFieldList', function (Options $options, $value) {
+                    return $this->resolveAdditionalFieldListOptions($value);
+                })
+            ->setAllowedTypes('AdditionalTextFieldList', ['array'])
+                ->setNormalizer('AdditionalTextFieldList', function (Options $options, $value) {
+                    return $this->resolveAdditionalFieldListOptions($value);
+                })
+            ->setAllowedTypes('OptionalShippingDetails', ['array'])
+                ->setNormalizer('OptionalShippingDetails', function (Options $options, $value) {
+                    return $this->resolveOptionalShippingDetailsOptions($value);
                 })
         ;
 
@@ -446,63 +657,216 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
     {
         $customerResolver = (new OptionsResolver())
             ->setRequired([
-                'id',
-                'civility',
-                'first_name',
-                'last_name',
-                'birth_date',
-                'birth_zip_code',
-                'email',
-                'phone_number',
-                'country',
-                'city',
-                'zip_code',
-                'address',
+                'CustomerRef',
+                'LastName',
+                'FirstName',
+                'Civility',
+                'BirthDate',
+                'BirthZipCode',
+                'PhoneNumber',
+                'CellPhoneNumber',
+                'Email',
+                'Address1',
+                'ZipCode',
+                'City',
+                'Country',
             ])
             ->setDefault([
-                'maiden_name' => null,
+                'MaidenName' => null,
+                'Address2' => null,
+                'Address3' => null,
+                'Address4' => null,
+                'Nationality' => null,
+                'IpAddress' => null,
+                'WhiteList' => null,
             ])
-            ->setDefined([
-                'nationality',
-                'ip_address',
-                'white_list',
-            ])
-            ->setAllowedTypes('id', ['int', 'string'])
-            ->setAllowedTypes('civility', ['string'])
-                ->setAllowedValues('civility', [
+            ->setAllowedTypes('CustomerRef', ['int', 'string'])
+                ->setNormalizer('CustomerRef', function (Options $options, $value) {
+                    if(strlen((string) $value) > 30) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "Customer.CustomerRef" max length is 30, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('LastName', ['string'])
+                ->setNormalizer('LastName', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 64) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "Customer.LastName" max length is 64, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('FirstName', ['string'])
+                ->setNormalizer('FirstName', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 64) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "Customer.FirstName" max length is 64, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('Civility', ['string'])
+                ->setAllowedValues('Civility', [
                     self::CIVILITY_MISTER,
                     self::CIVILITY_MISS,
                     self::CIVILITY_MISSTRESS,
                 ])
-            ->setAllowedTypes('first_name', ['string'])
-            ->setAllowedTypes('last_name', ['string'])
-            ->setAllowedTypes('maiden_name', ['null', 'string'])
-                ->setNormalizer('maiden_name', function (Options $options, $value) {
-                    if (self::CIVILITY_MISSTRESS === $options['civility'] && null === $value) {
+            ->setAllowedTypes('MaidenName', ['null', 'string'])
+                ->setNormalizer('MaidenName', function (Options $options, $value) {
+                    if (self::CIVILITY_MISSTRESS === $options['Civility'] && null === $value) {
                         throw new \UnexpectedValueException(
-                            sprintf('As the field "civility" of the customer equal to "%s", "maiden_name" mustn\'t be null.', self::CIVILITY_MISSTRESS)
+                            sprintf(
+                                'As the field "Customer.Civility" of the customer equal to "%s", "Customer.MaidenName" mustn\'t be null.',
+                                self::CIVILITY_MISSTRESS
+                            )
                         );
                     }
 
                     return $value;
                 })
-            ->setAllowedTypes('birth_date', ['string'])
-            ->setAllowedTypes('birth_zip_code', ['string'])
-            ->setAllowedTypes('email', ['string'])
-            ->setAllowedTypes('phone_number', ['string'])
-            ->setAllowedTypes('country', ['string'])
-            ->setAllowedTypes('city', ['string'])
-            ->setAllowedTypes('zip_code', ['string'])
-            ->setAllowedTypes('address', ['string'])
-            ->setAllowedTypes('nationality', ['null', 'string'])
-                ->setAllowedValues('nationality', [
+            ->setAllowedTypes('BirthDate', ['string', \DateTime::class])
+                ->setNormalizer('BirthDate', function (Options $options, $value) {
+                    if ($value instanceof \DateTime) {
+                        $value = $value->format('Y-m-d');
+                    }
+
+                    if (1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/')) {
+                        throw new \InvalidArgumentException(
+                            'The "Customer.BirthDate" must be formatted as described in documentation "YYYY-MM-DD"'
+                        );
+                    }
+
+                    return $value;
+                })
+
+            ->setAllowedTypes('BirthZipCode', ['string'])
+                ->setNormalizer('BirthZipCode', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 5) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "Customer.BirthZipCode" max length is 5, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('PhoneNumber', ['string'])
+                ->setNormalizer('PhoneNumber', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 13) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "Customer.PhoneNumber" max length is 13, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('CellPhoneNumber', ['string'])
+                ->setNormalizer('CellPhoneNumber', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 13) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "Customer.CellPhoneNumber" max length is 13, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('Email', ['string'])
+                ->setNormalizer('Email', function (Options $options, $value) {
+                    if(strlen($value) > 60) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "Customer.Email" max length is 60, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The parameter given in "Customer.Email" is not a valid email (%s).', $value)
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('Address1', ['string'])
+                ->setNormalizer('Address1', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 32) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "Customer.Address1" max length is 32, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('Address2', ['null', 'string'])
+                ->setNormalizer('Address2', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 32) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "Customer.Address2" max length is 32, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('Address3', ['null', 'string'])
+                ->setNormalizer('Address3', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 32) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "Customer.Address3" max length is 32, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('Address4', ['null', 'string'])
+                ->setNormalizer('Address4', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 32) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "Customer.Address4" max length is 32, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('ZipCode', ['string'])
+                ->setNormalizer('ZipCode', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 5) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "Customer.ZipCode" max length is 5, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('City', ['string'])
+                ->setNormalizer('City', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 50) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "Customer.City" max length is 50, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('Country', ['string'])
+            ->setAllowedTypes('Nationality', ['null', 'string'])
+                ->setAllowedValues('Nationality', [
                     self::NATIONALITY_FRANCE,
                     self::NATIONALITY_EUROPEAN_UNION,
                     self::NATIONALITY_OTHER,
                 ])
-            ->setAllowedTypes('ip_address', ['null', 'string'])
-            ->setAllowedTypes('whitelist', ['null', 'string'])
-                ->setAllowedValues('whitelist', [
+            ->setAllowedTypes('IpAddress', ['null', 'string'])
+                ->setNormalizer('IpAddress', function (Options $options, $value) {
+                    if (is_string($value) && !filter_var($value, FILTER_VALIDATE_IP)) {
+                        sprintf('The parameter given in "Customer.IpAddress" is not a IPv4 (%s).', $value)
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('Whitelist', ['null', 'string'])
+                ->setAllowedValues('Whitelist', [
                     self::WHITELIST_STATUS_BLACKLIST,
                     self::WHITELIST_STATUS_UNKNOWN,
                     self::WHITELIST_STATUS_TRUSTED,
@@ -517,27 +881,16 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
     {
         $orderResolver = (new OptionsResolver())
             ->setRequired([
-                'id',
-                'item_count',
-                'country',
-                'amount',
-                'decimal_position',
-                'currency',
-                'sale_channel',
-                'shipping_method',
-                'date',
+                'OrderDate',
+                'SaleChannel',
+                'ShippingMethod',
+                'ShoppingCartItemCount',
+                'ShoppingCartRef',
+                'TotalAmount',
             ])
-            ->setAllowedTypes('id', ['int', 'string'])
-            ->setAllowedTypes('item_count', ['int'])
-            ->setAllowedTypes('country', ['string'])
-            ->setAllowedTypes('amount', ['int'])
-            ->setAllowedTypes('decimal_position', ['int'])
-            ->setAllowedTypes('currency', ['string'])
-                ->setAllowedValues('currency', array_map(function ($currency) {
-                    return $currency->getAlpha3();
-                }, (new ISO4217())->findAll()))
-            ->setAllowedTypes('sale_channel', ['string'])
-                ->setAllowedValues('sale_channel', [
+            ->setAllowedTypes('OrderDate', ['string'])
+            ->setAllowedTypes('SaleChannel', ['string'])
+                ->setAllowedValues('SaleChannel', [
                     self::SALE_CHANNEL_DESKTOP,
                     self::SALE_CHANNEL_TABLET,
                     self::SALE_CHANNEL_TABLED_IPAD,
@@ -545,8 +898,8 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     self::SALE_CHANNEL_SMARTPHONE_ANDROID,
                     self::SALE_CHANNEL_SMARTPHONE_IPHONE,
                 ])
-            ->setAllowedTypes('shipping_method', ['string'])
-                ->setAllowedValues('sale_channel', [
+            ->setAllowedTypes('ShippingMethod', ['string'])
+                ->setAllowedValues('ShippingMethod', [
                     self::SHIPPING_METHOD_COLISSIMO_DIRECT,
                     self::SHIPPING_METHOD_CHRONOPOST,
                     self::SHIPPING_METHOD_COLISSIMO,
@@ -588,9 +941,489 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     self::SHIPPING_METHOD_EMPORTE_CHRONOPOST_RELAI,
                     self::SHIPPING_METHOD_EMPORTE_CHRONOPOST_CONSIGNE,
                 ])
-            ->setAllowedTypes('date', ['string'])
+            ->setAllowedTypes('ShoppingCartItemCount', ['int'])
+            ->setAllowedTypes('ShoppingCartRef', ['int', 'string'])
+            ->setAllowedTypes('TotalAmount', ['int'])
         ;
 
         return $orderResolver->resolve($orderOptions);
+    }
+
+    public function resolveOptionalCustomerHistoryOptions(array $optionalCustomerHistory): array
+    {
+        $optionalCustomerHistoryResolver = (new OptionsResolver())
+            ->setRequired([
+                'CanceledOrderAmount',
+                'CanceledOrderCount',
+                'FirstOrderDate',
+                'FraudAlertCount',
+                'LastOrderDate',
+                'PaymentIncidentCount',
+                'RefusedManyTimesOrderCount',
+                'UnvalidatedOrderCount',
+                'ValidatedOneTimeOrderCount',
+                'ValidatedOrderCount',
+                'ClientIpAddressRecurrence',
+                'OngoingLitigationOrderAmount',
+                'PaidLitigationOrderAmount24Month',
+                'ScoreSimulationCount7Days',
+            ])
+            ->setAllowedTypes('CanceledOrderAmount', ['null', 'int'])
+            ->setAllowedTypes('CanceledOrderCount', ['null', 'int'])
+            ->setAllowedTypes('FirstOrderDate', ['null', 'string', \DateTime::class])
+                ->setNormalizer('FirstOrderDate', function (Options $options, $value) {
+                    if (null === $value) {
+                        return $value;
+                    }
+
+                    if ($value instanceof \DateTime) {
+                        $value = $value->format('Y-m-d');
+                    }
+
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/')) {
+                        throw new \InvalidArgumentException(
+                            'The "OptionalCustomerHistory.FirstOrderDate" must be formatted as described in documentation "YYYY-MM-DD"'
+                        );
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('FraudAlertCount', ['null', 'int'])
+            ->setAllowedTypes('LastOrderDate', ['null', 'string', \DateTime::class])
+                ->setNormalizer('LastOrderDate', function (Options $options, $value) {
+                    if (null === $value) {
+                        return $value;
+                    }
+
+                    if ($value instanceof \DateTime) {
+                        $value = $value->format('Y-m-d');
+                    }
+
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/')) {
+                        throw new \InvalidArgumentException(
+                            'The "OptionalCustomerHistory.LastOrderDate" must be formatted as described in documentation "YYYY-MM-DD"'
+                        );
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('PaymentIncidentCount', ['null', 'int'])
+            ->setAllowedTypes('RefusedManyTimesOrderCount', ['null', 'int'])
+            ->setAllowedTypes('UnvalidatedOrderCount', ['null', 'int'])
+            ->setAllowedTypes('ValidatedOneTimeOrderCount', ['null', 'int'])
+            ->setAllowedTypes('ValidatedOrderCount', ['null', 'int'])
+            ->setAllowedTypes('ClientIpAddressRecurrence', ['null', 'int'])
+            ->setAllowedTypes('OngoingLitigationOrderAmount', ['null', 'int'])
+            ->setAllowedTypes('PaidLitigationOrderAmount24Month', ['null', 'int'])
+            ->setAllowedTypes('ScoreSimulationCount7Days', ['null', 'int'])
+        ;
+
+        if (empty(array_diff(array_values($optionalCustomerHistory), ['null']))) {
+            return null;
+        }
+
+        return $optionalCustomerHistoryResolver->resolve($optionalCustomerHistory);
+    }
+
+    public function resolveOptionalTravelDetailsOptions(array $optionalTravelDetails): array
+    {
+        $optionalTravelDetailsResolver = (new OptionsResolver())
+            ->setRequired([
+                'Insurance',
+                'Type',
+                'DepartureDate',
+                'ReturnDate',
+                'DestinationCountry',
+                'TicketCount',
+                'TravellerCount',
+                'Class',
+                'OwnTicket',
+                'MainDepartureCompany',
+                'DepartureAirport',
+                'ArrivalAirport',
+                'DiscountCode',
+                'LuggageSupplement',
+                'ModificationAnnulation',
+                'TravellerPassportList',
+            ])
+            ->setAllowedTypes('Insurance', ['null', 'string'])
+                ->setNormalizer('Insurance', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 30) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OptionalTravelDetails.Insurance" max length is 30, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('Type', ['null', 'string'])
+                ->setAllowedValues('Type', [
+                    self::UNKNOWN_TRAVEL_TYPE,
+                    self::ONE_WAY_TRAVEL_TYPE,
+                    self::TWO_WAY_TRAVEL_TYPE,
+                    self::MULTIPLE_TRAVEL_TYPE,
+                ])
+            ->setAllowedTypes('DepartureDate', ['null', 'string', \DateTime::class])
+                ->setNormalizer('DepartureDate', function (Options $options, $value) {
+                    if (null === $value) {
+                        return $value;
+                    }
+
+                    if ($value instanceof \DateTime) {
+                        $value = $value->format('Y-m-d');
+                    }
+
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/')) {
+                        throw new \InvalidArgumentException(
+                            'The "OptionalTravelDetails.DepartureDate" must be formatted as described in documentation "YYYY-MM-DD"'
+                        );
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('ReturnDate', ['null', 'string', \DateTime::class])
+                ->setNormalizer('ReturnDate', function (Options $options, $value) {
+                    if (null === $value) {
+                        return $value;
+                    }
+
+                    if ($value instanceof \DateTime) {
+                        $value = $value->format('Y-m-d');
+                    }
+
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/')) {
+                        throw new \InvalidArgumentException(
+                            'The "OptionalTravelDetails.ReturnDate" must be formatted as described in documentation "YYYY-MM-DD"'
+                        );
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('DestinationCountry', ['null', 'string'])
+                ->setNormalizer('DestinationCountry', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 2) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OptionalTravelDetails.DestinationCountry" max length is 2, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('TicketCount', ['null', 'int'])
+            ->setAllowedTypes('TravellerCount', ['null', 'int'])
+            ->setAllowedTypes('Class', ['null', 'string'])
+                ->setAllowedValues('Class', [
+                    self::UNKNOWN_TRAVEL_CLASS,
+                    self::ECONOMY_TRAVEL_CLASS,
+                    self::PREMIUM_ECONOMY_TRAVEL_CLASS,
+                    self::BUSINESS_TRAVEL_CLASS,
+                    self::FIRST_TRAVEL_CLASS,
+                    self::OTHER_TRAVEL_CLASS,
+                ])
+            ->setAllowedTypes('OwnTicket', ['null', 'bool'])
+            ->setAllowedTypes('MainDepartureCompany', ['null', 'string'])
+                ->setNormalizer('MainDepartureCompany', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 3) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OptionalTravelDetails.MainDepartureCompany" max length is 3, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('DepartureAirport', ['null', 'string'])
+                ->setNormalizer('DepartureAirport', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 3) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OptionalTravelDetails.DepartureAirport" max length is 3, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('ArrivalAirport', ['null', 'string'])
+                ->setNormalizer('ArrivalAirport', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 3) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OptionalTravelDetails.ArrivalAirport" max length is 3, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('DiscountCode', ['null', 'string'])
+                ->setNormalizer('DiscountCode', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 30) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OptionalTravelDetails.DiscountCode" max length is 30, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('LuggageSupplement', ['null', 'string'])
+                ->setNormalizer('LuggageSupplement', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 30) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OptionalTravelDetails.LuggageSupplement" max length is 30, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('ModificationAnnulation', ['null', 'bool'])
+            ->setAllowedTypes('TravellerPassportList', ['null', 'array'])
+                ->setNormalizer('TravellerPassportList', function (Options $options, $value) {
+                    return $this->resolveTravellerPassportListOptions($value);
+                })
+        ;
+
+        if (empty(array_diff(array_values($optionalTravelDetails), ['null']))) {
+            return null;
+        }
+
+        return $optionalTravelDetailsResolver->resolve($optionalTravelDetails);
+    }
+
+    public function resolveTravellerPassportListOptions(?array $travellerPassportList): array
+    {
+        if (null === $value || empty($value)) {
+            return null;
+        }
+
+        $travellerPassportListResolver = (new OptionsResolver())
+            ->setRequired([
+                'ExpirationDate',
+                'IssuanceCountry',
+            ])
+            >setAllowedTypes('ExpirationDate', ['null', 'string', \DateTime::class])
+                ->setNormalizer('ExpirationDate', function (Options $options, $value) {
+                    if (null === $value) {
+                        return $value;
+                    }
+
+                    if ($value instanceof \DateTime) {
+                        $value = $value->format('Y-m-d');
+                    }
+
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/')) {
+                        throw new \InvalidArgumentException(
+                            'The "OptionalTravelDetails.TravellerPassportList[].ExpirationDate" must be formatted as described in documentation "YYYY-MM-DD"'
+                        );
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('IssuanceCountry', ['null', 'string'])
+                ->setNormalizer('IssuanceCountry', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 2) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OptionalTravelDetails.TravellerPassportList[]IssuanceCountry" max length is 2, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+        ;
+
+        $resolvedTravellerPassportList = [];
+        foreach ($value as $travellerPassport) {
+            $resolvedTravellerPassportList[] = $travellerPassportListResolver->resolve($travellerPassport);
+        }
+
+        return $resolvedTravellerPassportList;
+    }
+
+    public function resolveOptionalStayDetailsOptions(array $optionalStayDetails): array
+    {
+        $optionalTravelDetailsResolver = (new OptionsResolver())
+            ->setRequired([
+                'Company',
+                'Destination',
+                'NightNumber',
+                'RoomRange',
+            ])
+            ->setAllowedTypes('Company', ['null', 'string'])
+                ->setNormalizer('Company', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 50) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OptionalStayDetails.Company" max length is 50, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('Destination', ['null', 'string'])
+                ->setNormalizer('Destination', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 50) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OptionalStayDetails.Destination" max length is 50, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('NightNumber', ['null', 'int'])
+            ->setAllowedTypes('RoomRange', ['null', 'int'])
+        ;
+
+        if (empty(array_diff(array_values($optionalStayDetails), ['null']))) {
+            return null;
+        }
+
+        return $optionalStayDetailsResolver->resolve($optionalStayDetails);
+    }
+
+    public function resolveOptionalProductDetailsOptions(array $optionalStayDetails): array
+    {
+        $optionalTravelDetailsResolver = (new OptionsResolver())
+            ->setRequired([
+                'Categorie1',
+                'Categorie2',
+                'Categorie3',
+            ])
+            ->setAllowedTypes('Categorie1', ['null', 'string'])
+                ->setNormalizer('Categorie1', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 30) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OptionalProductDetails.Categorie1" max length is 30, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('Categorie2', ['null', 'string'])
+                ->setNormalizer('Categorie2', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 30) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OptionalProductDetails.Categorie2" max length is 30, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('Categorie3', ['null', 'string'])
+                ->setNormalizer('Categorie3', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 30) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OptionalProductDetails.Categorie3" max length is 30, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+        ;
+
+        if (empty(array_diff(array_values($optionalStayDetails), ['null']))) {
+            return null;
+        }
+
+        return $optionalStayDetailsResolver->resolve($optionalStayDetails);
+    }
+
+    public function resolvePreScoreInformationOptions(array $preScoreInformation): array
+    {
+        $preScoreInformationResolver = (new OptionsResolver())
+            ->setRequired([
+                'RequestID',
+            ])
+            ->setAllowedTypes('RequestID', ['null', 'string'])
+        ;
+
+        if (empty(array_diff(array_values($preScoreInformation), ['null']))) {
+            return null;
+        }
+
+        return $preScoreInformationResolver->resolve($preScoreInformation);
+    }
+
+    private function resolveAdditionalFieldListOptions(?array $additionalFieldList)
+    {
+        if(null === $additionalFieldList || empty($additionalFieldList)) {
+            return null;
+        }
+
+        $additionalNumericFieldListResolver = (new OptionsResolver())
+            ->setRequired([
+                'Index',
+                'Value',
+            ])
+        ;
+
+        $additionalNumericFieldList = [];
+        foreach ($additionalFieldList as $additionalNumericField) {
+            $additionalNumericFieldList[] = $additionalNumericFieldListResolver->resolve($additionalNumericField);
+        }
+
+        return $additionalNumericFieldList;
+    }
+
+    public function resolveOptionalShippingDetailsOptions(array $orderShippingDetails): array
+    {
+        $orderShippingDetailsResolver = (new OptionsResolver())
+            ->setRequired([
+                'ShippingAdress1',
+                'ShippingAdress2',
+                'ShippingAdressCity',
+                'shipping_address_zip',
+                'shipping_address_country',
+            ])
+            ->setAllowedTypes('ShippingAdress1', ['null', 'string'])
+                ->setNormalizer('ShippingAdress1', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 100) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OrderShippingDetails.ShippingAdress1" max length is 100, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('ShippingAdress2', ['null', 'string'])
+                ->setNormalizer('ShippingAdress2', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 100) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OrderShippingDetails.ShippingAdress2" max length is 100, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('ShippingAdressCity', ['null', 'string'])
+                ->setNormalizer('ShippingAdressCity', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 100) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OrderShippingDetails.ShippingAdressCity" max length is 100, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('ShippingAdressZip', ['null', 'string'])
+                ->setNormalizer('ShippingAdressZip', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 5) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OrderShippingDetails.ShippingAdressZip" max length is 5, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+            ->setAllowedTypes('ShippingAdressCountry', ['null', 'string'])
+                ->setNormalizer('ShippingAdressCountry', function (Options $options, $value) {
+                    if(is_string($value) && strlen($value) > 2) {
+                        throw new \InvalidArgumentException(
+                            sprintf('The "OrderShippingDetails.ShippingAdressCountry" max length is 2, current size given: %s', strlen($value))
+                        )
+                    }
+
+                    return $value;
+                })
+        ;
+
+        if (empty(array_diff(array_values($orderShippingDetails), ['null']))) {
+            return null;
+        }
+
+        return $orderShippingDetailsResolver->resolve($orderShippingDetails);
     }
 }
