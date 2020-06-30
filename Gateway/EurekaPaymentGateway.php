@@ -199,8 +199,8 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             $this->resolveScoreOptions([
                 'Header' => [
                     'Context' => [
-                        'MerchantId' => $paymentGatewayConfiguration->get('merchant_id')
-                        'MerchantSiteId' => $paymentGatewayConfiguration->get('merchant_site_id')
+                        'MerchantId' => $paymentGatewayConfiguration->get('merchant_id'),
+                        'MerchantSiteId' => $paymentGatewayConfiguration->get('merchant_site_id'),
                     ],
                     'Localization' => [
                         'Country' => $transaction->getMetadata('Customer.Country'),
@@ -209,7 +209,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                         'Language' => $transaction->getMetadata('Customer.Country'),
                     ],
                     'SecurityContext' => [
-                        'TokenId' => $this->requestHeaderToken($paymentGatewayConfiguration)
+                        'TokenId' => $this->requestHeaderToken($paymentGatewayConfiguration),
                     ],
                     'Version' => $paymentGatewayConfiguration->get('version'),
                 ],
@@ -516,7 +516,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return $scoreResolver->resolve($scoreOptions);
     }
 
-    private resolveHeaderOptions(array $headerOptions): array
+    private function resolveHeaderOptions(array $headerOptions): array
     {
         $scoreResolver = (new OptionsResolver())
             ->setRequired([
@@ -685,7 +685,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(strlen((string) $value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.CustomerRef" max length is 30, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -695,7 +695,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 64) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.LastName" max length is 64, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -705,7 +705,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 64) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.FirstName" max length is 64, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -749,7 +749,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 5) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.BirthZipCode" max length is 5, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -759,7 +759,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 13) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.PhoneNumber" max length is 13, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -769,7 +769,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 13) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.CellPhoneNumber" max length is 13, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -779,13 +779,13 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(strlen($value) > 60) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.Email" max length is 60, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
                         throw new \InvalidArgumentException(
                             sprintf('The parameter given in "Customer.Email" is not a valid email (%s).', $value)
-                        )
+                        );
                     }
 
                     return $value;
@@ -795,7 +795,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 32) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.Address1" max length is 32, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -805,7 +805,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 32) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.Address2" max length is 32, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -815,7 +815,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 32) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.Address3" max length is 32, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -825,7 +825,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 32) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.Address4" max length is 32, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -835,7 +835,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 5) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.ZipCode" max length is 5, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -845,7 +845,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 50) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.City" max length is 50, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -860,7 +860,9 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ->setAllowedTypes('IpAddress', ['null', 'string'])
                 ->setNormalizer('IpAddress', function (Options $options, $value) {
                     if (is_string($value) && !filter_var($value, FILTER_VALIDATE_IP)) {
-                        sprintf('The parameter given in "Customer.IpAddress" is not a IPv4 (%s).', $value)
+                        throw new \InvalidArgumentException(
+                            sprintf('The parameter given in "Customer.IpAddress" is not a IPv4 (%s).', $value)
+                        );
                     }
 
                     return $value;
@@ -949,7 +951,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return $orderResolver->resolve($orderOptions);
     }
 
-    public function resolveOptionalCustomerHistoryOptions(array $optionalCustomerHistory): array
+    private function resolveOptionalCustomerHistoryOptions(array $optionalCustomerHistory): array
     {
         $optionalCustomerHistoryResolver = (new OptionsResolver())
             ->setRequired([
@@ -1025,7 +1027,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return $optionalCustomerHistoryResolver->resolve($optionalCustomerHistory);
     }
 
-    public function resolveOptionalTravelDetailsOptions(array $optionalTravelDetails): array
+    private function resolveOptionalTravelDetailsOptions(array $optionalTravelDetails): array
     {
         $optionalTravelDetailsResolver = (new OptionsResolver())
             ->setRequired([
@@ -1051,7 +1053,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.Insurance" max length is 30, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1104,7 +1106,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 2) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.DestinationCountry" max length is 2, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1126,7 +1128,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 3) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.MainDepartureCompany" max length is 3, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1136,7 +1138,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 3) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.DepartureAirport" max length is 3, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1146,7 +1148,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 3) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.ArrivalAirport" max length is 3, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1156,7 +1158,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.DiscountCode" max length is 30, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1166,7 +1168,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.LuggageSupplement" max length is 30, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1185,7 +1187,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return $optionalTravelDetailsResolver->resolve($optionalTravelDetails);
     }
 
-    public function resolveTravellerPassportListOptions(?array $travellerPassportList): array
+    private function resolveTravellerPassportListOptions(?array $travellerPassportList): array
     {
         if (null === $value || empty($value)) {
             return null;
@@ -1219,7 +1221,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 2) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.TravellerPassportList[]IssuanceCountry" max length is 2, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1234,7 +1236,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return $resolvedTravellerPassportList;
     }
 
-    public function resolveOptionalStayDetailsOptions(array $optionalStayDetails): array
+    private function resolveOptionalStayDetailsOptions(array $optionalStayDetails): array
     {
         $optionalTravelDetailsResolver = (new OptionsResolver())
             ->setRequired([
@@ -1248,7 +1250,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 50) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalStayDetails.Company" max length is 50, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1258,7 +1260,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 50) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalStayDetails.Destination" max length is 50, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1274,7 +1276,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return $optionalStayDetailsResolver->resolve($optionalStayDetails);
     }
 
-    public function resolveOptionalProductDetailsOptions(array $optionalStayDetails): array
+    private function resolveOptionalProductDetailsOptions(array $optionalStayDetails): array
     {
         $optionalTravelDetailsResolver = (new OptionsResolver())
             ->setRequired([
@@ -1287,7 +1289,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalProductDetails.Categorie1" max length is 30, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1297,7 +1299,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalProductDetails.Categorie2" max length is 30, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1307,7 +1309,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalProductDetails.Categorie3" max length is 30, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1321,7 +1323,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return $optionalStayDetailsResolver->resolve($optionalStayDetails);
     }
 
-    public function resolvePreScoreInformationOptions(array $preScoreInformation): array
+    private function resolvePreScoreInformationOptions(array $preScoreInformation): array
     {
         $preScoreInformationResolver = (new OptionsResolver())
             ->setRequired([
@@ -1358,7 +1360,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return $additionalNumericFieldList;
     }
 
-    public function resolveOptionalShippingDetailsOptions(array $orderShippingDetails): array
+    private function resolveOptionalShippingDetailsOptions(array $orderShippingDetails): array
     {
         $orderShippingDetailsResolver = (new OptionsResolver())
             ->setRequired([
@@ -1373,7 +1375,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 100) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OrderShippingDetails.ShippingAdress1" max length is 100, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1383,7 +1385,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 100) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OrderShippingDetails.ShippingAdress2" max length is 100, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1393,7 +1395,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 100) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OrderShippingDetails.ShippingAdressCity" max length is 100, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1403,7 +1405,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 5) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OrderShippingDetails.ShippingAdressZip" max length is 5, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
@@ -1413,7 +1415,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     if(is_string($value) && strlen($value) > 2) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OrderShippingDetails.ShippingAdressCountry" max length is 2, current size given: %s', strlen($value))
-                        )
+                        );
                     }
 
                     return $value;
