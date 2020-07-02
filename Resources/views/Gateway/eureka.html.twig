@@ -1,5 +1,8 @@
 <form method="post" name="PaymentForm" action="{{ url }}">
     {% for fieldName, fieldValue in initializationData %}
+        {% if fieldName != 'secretKey' %}
         <input type="hidden" name="{{ fieldName }}" value="{{ fieldValue }}"/>
+        {% endif %}
     {% endfor %}
+    <input type="submit" value="Payer" />
 </form>

@@ -11,6 +11,8 @@ use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\OptionsResolver\Options;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class EurekaPaymentGateway extends AbstractPaymentGateway
 {
@@ -105,32 +107,32 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         parent::__construct($templating);
 
         $this->serverHostName = $serverHostName;
-        $this->client = new Client(['defaults' => ['verify' => false]]);
+        $this->client = new Client(['defaults' => ['verify' => false, 'timeout' => 5]]);
     }
 
     private function getSTSConnectionUrl(): string
     {
-        return sprintf('https://%s/Users/soapIssue.svc', $this->serverHostName);
+        return sprintf('https://paymentsts.%s/Users/soapIssue.svc', $this->serverHostName);
     }
 
     private function getMerchantUrl(): string
     {
-        return sprintf('https://%s/MerchantGatewayFrontService.svc', $this->serverHostName);
+        return sprintf('https://paymentservices.%s/MerchantGatewayFrontService.svc', $this->serverHostName);
     }
 
     private function getScoreV3Url(): string
     {
-        return sprintf('https://%s/Cb4xFrontService.svc', $this->serverHostName);
+        return sprintf('https://services.%s/Cb4xFrontService.svc', $this->serverHostName);
     }
 
     private function getScoreCclUrl(): string
     {
-        return sprintf('https://%s/CclFrontService.svc', $this->serverHostName);
+        return sprintf('https://services.%s/CclFrontService.svc', $this->serverHostName);
     }
 
     private function getPaymentFormUrl(): string
     {
-        return sprintf('https://%s/V4/GenericRD/Redirect.aspx', $this->serverHostName);
+        return sprintf('https://payment.%s/V4/GenericRD/Redirect.aspx', $this->serverHostName);
     }
 
     private function buildOptions(
@@ -153,8 +155,8 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             'paymentOptionRef' => $paymentGatewayConfiguration->get('payment_option_reference'),
             'orderRef' => $transaction->getId(),
             'decimalPosition' => 2,
-            'currency' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
-            'country' => $transaction->getMetadata('order.country'),
+            'currency' => $transaction->getCurrencyCode(),
+            'country' => $transaction->getMetadata('Customer.Country'),
             'customerRef' => $transaction->getCustomerId(),
             'date' => (new \DateTime('now'))->format('Ymd'),
             'amount' => $transaction->getAmount(),
@@ -165,10 +167,15 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    private function requestHeaderToken(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration)
+    private function requestSTSToken(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration)
     {
+        $wsdl = $this->client->request('GET', sprintf('%s?singleWsdl', $this->getSTSConnectionUrl()));
+        $soapAction = (new Crawler((string) $wsdl->getBody()))
+            ->filterXPath('//wsdl:operation[@name="Issue"]//soap:operation')
+            ->attr('soapAction')
+        ;
+
         $response = $this->client->request('POST', $this->getSTSConnectionUrl(), [
-            'timeout' => 10, // TEMP: for dev purpose only
             'body' => $this->templating->render('@IDCIPayment/Gateway/soap/eureka_sts_token.xml.twig', [
                 'username' => $paymentGatewayConfiguration->get('username'),
                 'password' => $paymentGatewayConfiguration->get('password'),
@@ -176,10 +183,11 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ]),
             'headers' => [
                 'Content-Type' => 'text/xml',
+                'SOAPAction' => $soapAction,
             ],
         ]);
 
-        return (new Crawler($response->getBody()))->filter('IssueResult');
+        return (new Crawler((string) $response->getBody()))->filterXPath('//issueresult')->text();
     }
 
     private function requestScoringToken(
@@ -204,12 +212,12 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     ],
                     'Localization' => [
                         'Country' => $transaction->getMetadata('Customer.Country'),
-                        'Currency' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
+                        'Currency' => $transaction->getCurrencyCode(),
                         'DecimalPosition' => $transaction->getMetadata('Order.DecimalPosition'),
                         'Language' => $transaction->getMetadata('Customer.Country'),
                     ],
                     'SecurityContext' => [
-                        'TokenId' => $this->requestHeaderToken($paymentGatewayConfiguration),
+                        'TokenId' => $this->requestSTSToken($paymentGatewayConfiguration),
                     ],
                     'Version' => $paymentGatewayConfiguration->get('version'),
                 ],
@@ -241,7 +249,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                         'SaleChannel' => $transaction->getMetadata('Order.SaleChannel'),
                         'ShippingMethod' => $transaction->getMetadata('Order.ShippingMethod'),
                         'ShoppingCartItemCount' => $transaction->getMetadata('Order.ShoppingCartItemCount'),
-                        'ShoppingCartRef' => $transaction->getItemId(),
+                        'ShoppingCartRef' => $transaction->getId(),
                         'TotalAmount' => $transaction->getAmount(),
                     ],
                     'OptionalCustomerHistory' => [
@@ -289,8 +297,8 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                         'Categorie2' => $transaction->getMetadata('OptionalProductDetails.Categorie2'),
                         'Categorie3' => $transaction->getMetadata('OptionalProductDetails.Categorie3'),
                     ],
-                    'PreScoreInformation' => [
-                        'RequestID' => $transaction->getMetadata('PreScoreInformation.RequestID')
+                    'OptionalPreScoreInformation' => [
+                        'RequestID' => $transaction->getMetadata('PreScoreInformation.RequestID'),
                     ],
                     'AdditionalNumericFieldList' => $transaction->getMetadata('AdditionalNumericFieldList'),
                     'AdditionalTextFieldList' => $transaction->getMetadata('AdditionalTextFieldList'),
@@ -305,25 +313,37 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ])
         );
 
+        $wsdl = $this->client->request('GET', sprintf('%s?singleWsdl', self::SCORE_V3 === $type ? $this->getScoreV3Url() : $this->getScoreCclUrl()));
+        $soapAction = (new Crawler((string) $wsdl->getBody()))
+            ->filterXPath('//wsdl:operation[@name="Score"]//soap:operation')
+            ->attr('soapAction')
+        ;
+
         $response = $this->client->request(
             'POST',
-            $type === self::SCORE_V3 ? $this->getScoreV3Url() : $this->getScoreCclUrl(),
+            self::SCORE_V3 === $type ? $this->getScoreV3Url() : $this->getScoreCclUrl(),
             [
-                'timeout' => 10, // TEMP: for dev purpose only
                 'body' => $data,
                 'headers' => [
                     'Content-Type' => 'text/xml',
+                    'SoapAction' => $soapAction,
                 ],
             ]
         );
 
-        $crawler = (new Crawler($response->getBody()));
+        $crawler = (new Crawler((string) $response->getBody()));
 
-        if ('Success' !== $crawler->filter('ResponseCode') || !$crawler->filter('PaymentAgreement')) {
-            throw new \UnexpectedValueException('The scoring token request failed');
+        if ('false' === $crawler->filterXPath('//paymentagreement')->text()) {
+            throw new \UnexpectedValueException(
+                sprintf('The scoring token request failed: %s', $crawler->filterXPath('//responsemessage')->text())
+            );
         }
 
-        return $crawler->filter('ScoringToken');
+        $scoringToken = $crawler->filterXPath('//scoringtoken')->text();
+
+        $transaction->addMetadata('scoring_token', $scoringToken);
+
+        return $scoringToken;
     }
 
     private function buildHmac(array $options, string $hmacType): string
@@ -331,12 +351,12 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         $hmacData = '';
 
         foreach ($this->getHmacBuildParameters($hmacType) as $parameterName) {
-            if (isset($options[$parameterName])) {
-                $hmacData = sprintf('%s*', $options[$parameterName]);
+            if ('?' !== $parameterName[0] || isset($options[$parameterName])) {
+                $hmacData = sprintf('%s*%s', $hmacData, isset($options[$parameterName]) ? $options[$parameterName] : '');
             }
         }
 
-        return hash_hmac('sha1', utf8_encode($hmacData), $options['secretKey']);
+        return hash_hmac('sha1', utf8_encode(sprintf('%s*', substr($hmacData, 1))), $options['secretKey']);
     }
 
     public function initialize(
@@ -386,11 +406,10 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             return $gatewayResponse->setMessage('Hmac check failed');
         }
 
-
         $gatewayResponse
             ->setTransactionUuid($request->request->get('orderRef'))
             ->setAmount($request->request->get('amount'))
-            ->setCurrencyCode((new ISO4217())->findByNumeric($request->request->get('currency'))->getAlpha3())
+            ->setCurrencyCode($request->request->get('currency'))
         ;
 
         if ('0' !== $request->request->get('returnCode')) {
@@ -464,13 +483,11 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             'orderFeesAmount',
             'orderDiscountAmount',
             'orderShippingCost',
-            'allowCardStorage',
-            'passwordRequired',
-            'merchantAuthenticateUrl',
-            'storedCardID1',
-            'storedCardLabel1',
-            'storedCardIDN',
-            'storedCardLabelN',
+            '?allowCardStorage',
+            '?passwordRequired',
+            '?merchantAuthenticateUrl',
+            '?storedCardID1',
+            '?storedCardLabel1',
             'merchantHomeUrl',
             'merchantBackUrl',
             'merchantReturnUrl',
@@ -518,7 +535,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
 
     private function resolveHeaderOptions(array $headerOptions): array
     {
-        $scoreResolver = (new OptionsResolver())
+        $headerResolver = (new OptionsResolver())
             ->setRequired([
                 'Context',
                 'Localization',
@@ -540,7 +557,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ->setAllowedTypes('Version', ['int', 'string'])
         ;
 
-        return $scoreResolver->resolve($scoreOptions);
+        return $headerResolver->resolve($headerOptions);
     }
 
     private function resolveContextOptions($contextOptions): array
@@ -568,7 +585,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ])
             ->setAllowedTypes('Country', ['string'])
             ->setAllowedTypes('Currency', ['string'])
-                ->setAllowedValues('currency', array_map(function ($currency) {
+                ->setAllowedValues('Currency', array_map(function ($currency) {
                     return $currency->getAlpha3();
                 }, (new ISO4217())->findAll()))
             ->setAllowedTypes('DecimalPosition', ['int'])
@@ -592,9 +609,9 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
 
     private function resolveRequestOptions(array $contextOptions): array
     {
+        // TODO: Resolve CclInformation & MerchantUrls in case of CCL Score
         $contextResolver = (new OptionsResolver())
             ->setRequired([
-                'Context',
                 'Customer',
                 'Order',
             ])
@@ -603,7 +620,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 'OptionalTravelDetails' => [],
                 'OptionalStayDetails' => [],
                 'OptionalProductDetails' => [],
-                'PreScoreInformation' => [],
+                'OptionalPreScoreInformation' => [],
                 'AdditionalNumericFieldList' => [],
                 'AdditionalTextFieldList' => [],
                 'OptionalShippingDetails' => [],
@@ -618,7 +635,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('OptionalCustomerHistory', ['array'])
                 ->setNormalizer('OptionalCustomerHistory', function (Options $options, $value) {
-                    return $this->resolveOptionalCustomerDetailsOptions($value);
+                    return $this->resolveOptionalCustomerHistoryOptions($value);
                 })
             ->setAllowedTypes('OptionalTravelDetails', ['array'])
                 ->setNormalizer('OptionalTravelDetails', function (Options $options, $value) {
@@ -632,15 +649,15 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 ->setNormalizer('OptionalProductDetails', function (Options $options, $value) {
                     return $this->resolveOptionalProductDetailsOptions($value);
                 })
-            ->setAllowedTypes('PreScoreInformation', ['array'])
-                ->setNormalizer('PreScoreInformation', function (Options $options, $value) {
-                    return $this->resolvePreScoreInformationOptions($value);
+            ->setAllowedTypes('OptionalPreScoreInformation', ['array'])
+                ->setNormalizer('OptionalPreScoreInformation', function (Options $options, $value) {
+                    return $this->resolveOptionalPreScoreInformationOptions($value);
                 })
-            ->setAllowedTypes('AdditionalNumericFieldList', ['array'])
+            ->setAllowedTypes('AdditionalNumericFieldList', ['null', 'array'])
                 ->setNormalizer('AdditionalNumericFieldList', function (Options $options, $value) {
                     return $this->resolveAdditionalFieldListOptions($value);
                 })
-            ->setAllowedTypes('AdditionalTextFieldList', ['array'])
+            ->setAllowedTypes('AdditionalTextFieldList', ['null', 'array'])
                 ->setNormalizer('AdditionalTextFieldList', function (Options $options, $value) {
                     return $this->resolveAdditionalFieldListOptions($value);
                 })
@@ -671,7 +688,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 'City',
                 'Country',
             ])
-            ->setDefault([
+            ->setDefaults([
                 'MaidenName' => null,
                 'Address2' => null,
                 'Address3' => null,
@@ -682,7 +699,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ])
             ->setAllowedTypes('CustomerRef', ['int', 'string'])
                 ->setNormalizer('CustomerRef', function (Options $options, $value) {
-                    if(strlen((string) $value) > 30) {
+                    if (strlen((string) $value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.CustomerRef" max length is 30, current size given: %s', strlen($value))
                         );
@@ -692,7 +709,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('LastName', ['string'])
                 ->setNormalizer('LastName', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 64) {
+                    if (is_string($value) && strlen($value) > 64) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.LastName" max length is 64, current size given: %s', strlen($value))
                         );
@@ -702,7 +719,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('FirstName', ['string'])
                 ->setNormalizer('FirstName', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 64) {
+                    if (is_string($value) && strlen($value) > 64) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.FirstName" max length is 64, current size given: %s', strlen($value))
                         );
@@ -715,7 +732,13 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     self::CIVILITY_MISTER,
                     self::CIVILITY_MISS,
                     self::CIVILITY_MISSTRESS,
+                    strtolower(self::CIVILITY_MISTER),
+                    strtolower(self::CIVILITY_MISS),
+                    strtolower(self::CIVILITY_MISSTRESS),
                 ])
+                ->setNormalizer('Civility', function (Options $options, $value) {
+                    return ucfirst($value);
+                })
             ->setAllowedTypes('MaidenName', ['null', 'string'])
                 ->setNormalizer('MaidenName', function (Options $options, $value) {
                     if (self::CIVILITY_MISSTRESS === $options['Civility'] && null === $value) {
@@ -735,7 +758,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                         $value = $value->format('Y-m-d');
                     }
 
-                    if (1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/')) {
+                    if (1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
                         throw new \InvalidArgumentException(
                             'The "Customer.BirthDate" must be formatted as described in documentation "YYYY-MM-DD"'
                         );
@@ -744,9 +767,9 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                     return $value;
                 })
 
-            ->setAllowedTypes('BirthZipCode', ['string'])
+            ->setAllowedTypes('BirthZipCode', ['int', 'string'])
                 ->setNormalizer('BirthZipCode', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 5) {
+                    if (is_string($value) && strlen($value) > 5) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.BirthZipCode" max length is 5, current size given: %s', strlen($value))
                         );
@@ -756,7 +779,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('PhoneNumber', ['string'])
                 ->setNormalizer('PhoneNumber', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 13) {
+                    if (is_string($value) && strlen($value) > 13) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.PhoneNumber" max length is 13, current size given: %s', strlen($value))
                         );
@@ -766,7 +789,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('CellPhoneNumber', ['string'])
                 ->setNormalizer('CellPhoneNumber', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 13) {
+                    if (is_string($value) && strlen($value) > 13) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.CellPhoneNumber" max length is 13, current size given: %s', strlen($value))
                         );
@@ -776,7 +799,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('Email', ['string'])
                 ->setNormalizer('Email', function (Options $options, $value) {
-                    if(strlen($value) > 60) {
+                    if (strlen($value) > 60) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.Email" max length is 60, current size given: %s', strlen($value))
                         );
@@ -792,7 +815,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('Address1', ['string'])
                 ->setNormalizer('Address1', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 32) {
+                    if (is_string($value) && strlen($value) > 32) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.Address1" max length is 32, current size given: %s', strlen($value))
                         );
@@ -802,7 +825,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('Address2', ['null', 'string'])
                 ->setNormalizer('Address2', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 32) {
+                    if (is_string($value) && strlen($value) > 32) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.Address2" max length is 32, current size given: %s', strlen($value))
                         );
@@ -812,7 +835,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('Address3', ['null', 'string'])
                 ->setNormalizer('Address3', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 32) {
+                    if (is_string($value) && strlen($value) > 32) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.Address3" max length is 32, current size given: %s', strlen($value))
                         );
@@ -822,7 +845,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('Address4', ['null', 'string'])
                 ->setNormalizer('Address4', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 32) {
+                    if (is_string($value) && strlen($value) > 32) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.Address4" max length is 32, current size given: %s', strlen($value))
                         );
@@ -830,9 +853,9 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
 
                     return $value;
                 })
-            ->setAllowedTypes('ZipCode', ['string'])
+            ->setAllowedTypes('ZipCode', ['int', 'string'])
                 ->setNormalizer('ZipCode', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 5) {
+                    if (is_string($value) && strlen($value) > 5) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.ZipCode" max length is 5, current size given: %s', strlen($value))
                         );
@@ -842,7 +865,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('City', ['string'])
                 ->setNormalizer('City', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 50) {
+                    if (is_string($value) && strlen($value) > 50) {
                         throw new \InvalidArgumentException(
                             sprintf('The "Customer.City" max length is 50, current size given: %s', strlen($value))
                         );
@@ -853,6 +876,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ->setAllowedTypes('Country', ['string'])
             ->setAllowedTypes('Nationality', ['null', 'string'])
                 ->setAllowedValues('Nationality', [
+                    null,
                     self::NATIONALITY_FRANCE,
                     self::NATIONALITY_EUROPEAN_UNION,
                     self::NATIONALITY_OTHER,
@@ -867,8 +891,9 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
 
                     return $value;
                 })
-            ->setAllowedTypes('Whitelist', ['null', 'string'])
-                ->setAllowedValues('Whitelist', [
+            ->setAllowedTypes('WhiteList', ['null', 'string'])
+                ->setAllowedValues('WhiteList', [
+                    null,
                     self::WHITELIST_STATUS_BLACKLIST,
                     self::WHITELIST_STATUS_UNKNOWN,
                     self::WHITELIST_STATUS_TRUSTED,
@@ -982,7 +1007,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                         $value = $value->format('Y-m-d');
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/')) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
                         throw new \InvalidArgumentException(
                             'The "OptionalCustomerHistory.FirstOrderDate" must be formatted as described in documentation "YYYY-MM-DD"'
                         );
@@ -1001,7 +1026,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                         $value = $value->format('Y-m-d');
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/')) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
                         throw new \InvalidArgumentException(
                             'The "OptionalCustomerHistory.LastOrderDate" must be formatted as described in documentation "YYYY-MM-DD"'
                         );
@@ -1020,11 +1045,12 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ->setAllowedTypes('ScoreSimulationCount7Days', ['null', 'int'])
         ;
 
-        if (empty(array_diff(array_values($optionalCustomerHistory), ['null']))) {
-            return null;
+        $optionalCustomerHistory = $optionalCustomerHistoryResolver->resolve($optionalCustomerHistory);
+        if (empty(array_filter($optionalCustomerHistory, function ($a) { return null !== $a; }))) {
+            return [];
         }
 
-        return $optionalCustomerHistoryResolver->resolve($optionalCustomerHistory);
+        return $optionalCustomerHistory;
     }
 
     private function resolveOptionalTravelDetailsOptions(array $optionalTravelDetails): array
@@ -1050,7 +1076,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ])
             ->setAllowedTypes('Insurance', ['null', 'string'])
                 ->setNormalizer('Insurance', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 30) {
+                    if (is_string($value) && strlen($value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.Insurance" max length is 30, current size given: %s', strlen($value))
                         );
@@ -1060,6 +1086,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('Type', ['null', 'string'])
                 ->setAllowedValues('Type', [
+                    null,
                     self::UNKNOWN_TRAVEL_TYPE,
                     self::ONE_WAY_TRAVEL_TYPE,
                     self::TWO_WAY_TRAVEL_TYPE,
@@ -1075,7 +1102,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                         $value = $value->format('Y-m-d');
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/')) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
                         throw new \InvalidArgumentException(
                             'The "OptionalTravelDetails.DepartureDate" must be formatted as described in documentation "YYYY-MM-DD"'
                         );
@@ -1093,7 +1120,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                         $value = $value->format('Y-m-d');
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/')) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
                         throw new \InvalidArgumentException(
                             'The "OptionalTravelDetails.ReturnDate" must be formatted as described in documentation "YYYY-MM-DD"'
                         );
@@ -1103,7 +1130,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('DestinationCountry', ['null', 'string'])
                 ->setNormalizer('DestinationCountry', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 2) {
+                    if (is_string($value) && strlen($value) > 2) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.DestinationCountry" max length is 2, current size given: %s', strlen($value))
                         );
@@ -1115,6 +1142,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ->setAllowedTypes('TravellerCount', ['null', 'int'])
             ->setAllowedTypes('Class', ['null', 'string'])
                 ->setAllowedValues('Class', [
+                    null,
                     self::UNKNOWN_TRAVEL_CLASS,
                     self::ECONOMY_TRAVEL_CLASS,
                     self::PREMIUM_ECONOMY_TRAVEL_CLASS,
@@ -1125,7 +1153,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ->setAllowedTypes('OwnTicket', ['null', 'bool'])
             ->setAllowedTypes('MainDepartureCompany', ['null', 'string'])
                 ->setNormalizer('MainDepartureCompany', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 3) {
+                    if (is_string($value) && strlen($value) > 3) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.MainDepartureCompany" max length is 3, current size given: %s', strlen($value))
                         );
@@ -1135,7 +1163,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('DepartureAirport', ['null', 'string'])
                 ->setNormalizer('DepartureAirport', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 3) {
+                    if (is_string($value) && strlen($value) > 3) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.DepartureAirport" max length is 3, current size given: %s', strlen($value))
                         );
@@ -1145,7 +1173,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('ArrivalAirport', ['null', 'string'])
                 ->setNormalizer('ArrivalAirport', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 3) {
+                    if (is_string($value) && strlen($value) > 3) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.ArrivalAirport" max length is 3, current size given: %s', strlen($value))
                         );
@@ -1155,7 +1183,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('DiscountCode', ['null', 'string'])
                 ->setNormalizer('DiscountCode', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 30) {
+                    if (is_string($value) && strlen($value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.DiscountCode" max length is 30, current size given: %s', strlen($value))
                         );
@@ -1165,7 +1193,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('LuggageSupplement', ['null', 'string'])
                 ->setNormalizer('LuggageSupplement', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 30) {
+                    if (is_string($value) && strlen($value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.LuggageSupplement" max length is 30, current size given: %s', strlen($value))
                         );
@@ -1180,17 +1208,18 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
         ;
 
-        if (empty(array_diff(array_values($optionalTravelDetails), ['null']))) {
-            return null;
+        $optionalTravelDetails = $optionalTravelDetailsResolver->resolve($optionalTravelDetails);
+        if (empty(array_filter($optionalTravelDetails, function ($a) { return null !== $a && (is_array($a) && !empty($a)); }))) {
+            return [];
         }
 
-        return $optionalTravelDetailsResolver->resolve($optionalTravelDetails);
+        return $optionalTravelDetails;
     }
 
     private function resolveTravellerPassportListOptions(?array $travellerPassportList): array
     {
-        if (null === $value || empty($value)) {
-            return null;
+        if (null === $travellerPassportList || empty($travellerPassportList)) {
+            return [];
         }
 
         $travellerPassportListResolver = (new OptionsResolver())
@@ -1198,7 +1227,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 'ExpirationDate',
                 'IssuanceCountry',
             ])
-            >setAllowedTypes('ExpirationDate', ['null', 'string', \DateTime::class])
+            > setAllowedTypes('ExpirationDate', ['null', 'string', \DateTime::class])
                 ->setNormalizer('ExpirationDate', function (Options $options, $value) {
                     if (null === $value) {
                         return $value;
@@ -1208,7 +1237,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                         $value = $value->format('Y-m-d');
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/')) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
                         throw new \InvalidArgumentException(
                             'The "OptionalTravelDetails.TravellerPassportList[].ExpirationDate" must be formatted as described in documentation "YYYY-MM-DD"'
                         );
@@ -1218,7 +1247,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('IssuanceCountry', ['null', 'string'])
                 ->setNormalizer('IssuanceCountry', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 2) {
+                    if (is_string($value) && strlen($value) > 2) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalTravelDetails.TravellerPassportList[]IssuanceCountry" max length is 2, current size given: %s', strlen($value))
                         );
@@ -1233,12 +1262,12 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             $resolvedTravellerPassportList[] = $travellerPassportListResolver->resolve($travellerPassport);
         }
 
-        return $resolvedTravellerPassportList;
+        return !empty($resolvedTravellerPassportList) ? $resolvedTravellerPassportList : [];
     }
 
     private function resolveOptionalStayDetailsOptions(array $optionalStayDetails): array
     {
-        $optionalTravelDetailsResolver = (new OptionsResolver())
+        $optionalStayDetailsResolver = (new OptionsResolver())
             ->setRequired([
                 'Company',
                 'Destination',
@@ -1247,7 +1276,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ])
             ->setAllowedTypes('Company', ['null', 'string'])
                 ->setNormalizer('Company', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 50) {
+                    if (is_string($value) && strlen($value) > 50) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalStayDetails.Company" max length is 50, current size given: %s', strlen($value))
                         );
@@ -1257,7 +1286,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('Destination', ['null', 'string'])
                 ->setNormalizer('Destination', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 50) {
+                    if (is_string($value) && strlen($value) > 50) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalStayDetails.Destination" max length is 50, current size given: %s', strlen($value))
                         );
@@ -1269,16 +1298,17 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ->setAllowedTypes('RoomRange', ['null', 'int'])
         ;
 
-        if (empty(array_diff(array_values($optionalStayDetails), ['null']))) {
-            return null;
+        $optionalStayDetails = $optionalStayDetailsResolver->resolve($optionalStayDetails);
+        if (empty(array_filter($optionalStayDetails, function ($a) { return null !== $a; }))) {
+            return [];
         }
 
-        return $optionalStayDetailsResolver->resolve($optionalStayDetails);
+        return $optionalStayDetails;
     }
 
-    private function resolveOptionalProductDetailsOptions(array $optionalStayDetails): array
+    private function resolveOptionalProductDetailsOptions(array $optionalProductDetails): array
     {
-        $optionalTravelDetailsResolver = (new OptionsResolver())
+        $optionalProductDetailsResolver = (new OptionsResolver())
             ->setRequired([
                 'Categorie1',
                 'Categorie2',
@@ -1286,7 +1316,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             ])
             ->setAllowedTypes('Categorie1', ['null', 'string'])
                 ->setNormalizer('Categorie1', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 30) {
+                    if (is_string($value) && strlen($value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalProductDetails.Categorie1" max length is 30, current size given: %s', strlen($value))
                         );
@@ -1296,7 +1326,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('Categorie2', ['null', 'string'])
                 ->setNormalizer('Categorie2', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 30) {
+                    if (is_string($value) && strlen($value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalProductDetails.Categorie2" max length is 30, current size given: %s', strlen($value))
                         );
@@ -1306,7 +1336,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('Categorie3', ['null', 'string'])
                 ->setNormalizer('Categorie3', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 30) {
+                    if (is_string($value) && strlen($value) > 30) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OptionalProductDetails.Categorie3" max length is 30, current size given: %s', strlen($value))
                         );
@@ -1316,33 +1346,35 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
         ;
 
-        if (empty(array_diff(array_values($optionalStayDetails), ['null']))) {
-            return null;
+        $optionalProductDetails = $optionalProductDetailsResolver->resolve($optionalProductDetails);
+        if (empty(array_filter($optionalProductDetails, function ($a) { return null !== $a; }))) {
+            return [];
         }
 
-        return $optionalStayDetailsResolver->resolve($optionalStayDetails);
+        return $optionalProductDetails;
     }
 
-    private function resolvePreScoreInformationOptions(array $preScoreInformation): array
+    private function resolveOptionalPreScoreInformationOptions(array $optionalPreScoreInformation): array
     {
-        $preScoreInformationResolver = (new OptionsResolver())
+        $optionalPreScoreInformationResolver = (new OptionsResolver())
             ->setRequired([
                 'RequestID',
             ])
             ->setAllowedTypes('RequestID', ['null', 'string'])
         ;
 
-        if (empty(array_diff(array_values($preScoreInformation), ['null']))) {
-            return null;
+        $optionalPreScoreInformation = $optionalPreScoreInformationResolver->resolve($optionalPreScoreInformation);
+        if (empty(array_filter($optionalPreScoreInformation, function ($a) { return null !== $a; }))) {
+            return [];
         }
 
-        return $preScoreInformationResolver->resolve($preScoreInformation);
+        return $optionalPreScoreInformation;
     }
 
-    private function resolveAdditionalFieldListOptions(?array $additionalFieldList)
+    private function resolveAdditionalFieldListOptions(?array $additionalFieldList): array
     {
-        if(null === $additionalFieldList || empty($additionalFieldList)) {
-            return null;
+        if (null === $additionalFieldList || empty($additionalFieldList)) {
+            return [];
         }
 
         $additionalNumericFieldListResolver = (new OptionsResolver())
@@ -1357,7 +1389,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             $additionalNumericFieldList[] = $additionalNumericFieldListResolver->resolve($additionalNumericField);
         }
 
-        return $additionalNumericFieldList;
+        return !empty($additionalNumericFieldList) ? $additionalNumericFieldList : [];
     }
 
     private function resolveOptionalShippingDetailsOptions(array $orderShippingDetails): array
@@ -1367,12 +1399,12 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 'ShippingAdress1',
                 'ShippingAdress2',
                 'ShippingAdressCity',
-                'shipping_address_zip',
-                'shipping_address_country',
+                'ShippingAdressZip',
+                'ShippingAdressCountry',
             ])
             ->setAllowedTypes('ShippingAdress1', ['null', 'string'])
                 ->setNormalizer('ShippingAdress1', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 100) {
+                    if (is_string($value) && strlen($value) > 100) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OrderShippingDetails.ShippingAdress1" max length is 100, current size given: %s', strlen($value))
                         );
@@ -1382,7 +1414,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('ShippingAdress2', ['null', 'string'])
                 ->setNormalizer('ShippingAdress2', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 100) {
+                    if (is_string($value) && strlen($value) > 100) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OrderShippingDetails.ShippingAdress2" max length is 100, current size given: %s', strlen($value))
                         );
@@ -1392,7 +1424,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('ShippingAdressCity', ['null', 'string'])
                 ->setNormalizer('ShippingAdressCity', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 100) {
+                    if (is_string($value) && strlen($value) > 100) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OrderShippingDetails.ShippingAdressCity" max length is 100, current size given: %s', strlen($value))
                         );
@@ -1402,7 +1434,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('ShippingAdressZip', ['null', 'string'])
                 ->setNormalizer('ShippingAdressZip', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 5) {
+                    if (is_string($value) && strlen($value) > 5) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OrderShippingDetails.ShippingAdressZip" max length is 5, current size given: %s', strlen($value))
                         );
@@ -1412,7 +1444,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
             ->setAllowedTypes('ShippingAdressCountry', ['null', 'string'])
                 ->setNormalizer('ShippingAdressCountry', function (Options $options, $value) {
-                    if(is_string($value) && strlen($value) > 2) {
+                    if (is_string($value) && strlen($value) > 2) {
                         throw new \InvalidArgumentException(
                             sprintf('The "OrderShippingDetails.ShippingAdressCountry" max length is 2, current size given: %s', strlen($value))
                         );
@@ -1422,10 +1454,11 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 })
         ;
 
-        if (empty(array_diff(array_values($orderShippingDetails), ['null']))) {
-            return null;
+        $orderShippingDetails = $orderShippingDetailsResolver->resolve($orderShippingDetails);
+        if (empty(array_filter($orderShippingDetails, function ($a) { return null !== $a; }))) {
+            return [];
         }
 
-        return $orderShippingDetailsResolver->resolve($orderShippingDetails);
+        return $orderShippingDetails;
     }
 }
