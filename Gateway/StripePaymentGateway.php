@@ -6,9 +6,9 @@ use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
-use Stripe;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class StripePaymentGateway extends AbstractPaymentGateway
 {
@@ -17,9 +17,12 @@ class StripePaymentGateway extends AbstractPaymentGateway
      */
     private $router;
 
-    public function __construct(\Twig_Environment $templating, UrlGeneratorInterface $router)
-    {
-        parent::__construct($templating);
+    public function __construct(
+        \Twig_Environment $templating,
+        EventDispatcherInterface $dispatcher,
+        UrlGeneratorInterface $router
+    ) {
+        parent::__construct($templating, $dispatcher);
 
         $this->router = $router;
     }

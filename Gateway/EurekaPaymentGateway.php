@@ -3,6 +3,7 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use GuzzleHttp\Client;
+use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\EurekaStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
@@ -13,6 +14,7 @@ use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class EurekaPaymentGateway extends AbstractPaymentGateway
 {
@@ -102,9 +104,10 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
 
     public function __construct(
         \Twig_Environment $templating,
+        EventDispatcherInterface $dispatcher,
         string $serverHostName
     ) {
-        parent::__construct($templating);
+        parent::__construct($templating, $dispatcher);
 
         $this->serverHostName = $serverHostName;
         $this->client = new Client(['defaults' => ['verify' => false, 'timeout' => 5]]);
@@ -343,6 +346,8 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
 
         $transaction->addMetadata('scoring_token', $scoringToken);
 
+        $this->dispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
+
         return $scoringToken;
     }
 
@@ -351,8 +356,9 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         $hmacData = '';
 
         foreach ($this->getHmacBuildParameters($hmacType) as $parameterName) {
-            if ('?' !== $parameterName[0] || isset($options[$parameterName])) {
-                $hmacData = sprintf('%s*%s', $hmacData, isset($options[$parameterName]) ? $options[$parameterName] : '');
+            $realParameterName = '?' !== $parameterName[0] ? $parameterName : substr($parameterName, 1);
+            if ('?' !== $parameterName[0] || isset($options[$realParameterName])) {
+                $hmacData = sprintf('%s*%s', $hmacData, isset($options[$realParameterName]) ? $options[$realParameterName] : '');
             }
         }
 
