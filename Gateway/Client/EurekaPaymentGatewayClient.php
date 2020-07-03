@@ -7,6 +7,7 @@ use Payum\ISO4217\ISO4217;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Twig\Environment;
 
 class EurekaPaymentGatewayClient
 {
@@ -96,8 +97,9 @@ class EurekaPaymentGatewayClient
      */
     private $serverHostName;
 
-    public function __construct(string $serverHostName)
+    public function __construct(Environment $templating, string $serverHostName)
     {
+        $this->templating = $templating;
         $this->client = new Client(['defaults' => ['verify' => false, 'timeout' => 5]]);
         $this->serverHostName = $serverHostName;
     }
