@@ -137,7 +137,11 @@ services:
             - { name: idci_payment.gateways, alias: sofinco }
 
     IDCI\Bundle\PaymentBundle\Gateway\EurekaPaymentGateway:
-        arguments:
-            $serverHostName: '%idci_payment.eureka.server_host_name%'
         tags:
             - { name: idci_payment.gateways, alias: eureka }
+
+    # Payment Gateway Clients
+
+    IDCI\Bundle\PaymentBundle\Gateway\Client\EurekaPaymentGatewayClient:
+        arguments:
+            $serverHostName: '%idci_payment.eureka.server_host_name%'
