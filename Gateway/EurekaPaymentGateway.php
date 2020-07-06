@@ -60,9 +60,9 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             'merchantHomeUrl' => $paymentGatewayConfiguration->get('return_url'),
             'merchantReturnUrl' => $paymentGatewayConfiguration->get('return_url'),
             'merchantNotifyUrl' => $paymentGatewayConfiguration->get('callback_url'),
-            'scoringToken' => $this->eurekaPaymentGatewayClient->getSTSToken(
-                $paymentGatewayConfiguration->get('username'),
-                $paymentGatewayConfiguration->get('password')
+            'scoringToken' => $this->requestScoringToken(
+                $paymentGatewayConfiguration,
+                $transaction
             ),
         ];
     }
@@ -197,13 +197,24 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         $hmacData = '';
 
         foreach ($this->getHmacBuildParameters($hmacType) as $parameterName) {
+            if (1 < count($parameterNames = explode('|', $parameterName))) {
+                $i = 0;
+                while (isset($options[sprintf('%s%s', $parameterNames[0], ++$i)])) {
+                    for ($j = 0; $j < count($parameterNames); ++$j) {
+                        $hmacData = sprintf('%s*%s', $hmacData, $options[sprintf('%s%s', $parameterNames[$j], $i)]);
+                    }
+                }
+
+                continue;
+            }
+
             $realParameterName = '?' !== $parameterName[0] ? $parameterName : substr($parameterName, 1);
             if ('?' !== $parameterName[0] || isset($options[$realParameterName])) {
                 $hmacData = sprintf('%s*%s', $hmacData, isset($options[$realParameterName]) ? $options[$realParameterName] : '');
             }
         }
 
-        return hash_hmac('sha1', utf8_encode(sprintf('%s*', substr($hmacData, 1))), $options['secretKey']);
+        return hash_hmac('sha1', utf8_encode(sprintf('%s*', substr($hmacData, 1))), utf8_encode($options['secretKey']));
     }
 
     public function initialize(
@@ -224,7 +235,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPayment/Gateway/eureka.html.twig', [
-            'url' => $this->getPaymentFormUrl(),
+            'url' => $this->eurekaPaymentGatewayClient->getPaymentFormUrl(),
             'initializationData' => $initializationData,
         ]);
     }
@@ -247,9 +258,12 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             return $gatewayResponse->setMessage('The request do not contains "hmac"');
         }
 
-        $hmac = $this->buildHmac($request->request->all(), self::HMAC_TYPE_OUT);
+        $hmac = $this->buildHmac(
+            array_merge($request->request->all(), ['secretKey' => $paymentGatewayConfiguration->get('secret_key')]),
+            self::HMAC_TYPE_OUT
+        );
 
-        if ($request->request->get('hmac') !== $hmac) {
+        if (strtolower($request->request->get('hmac')) !== strtolower($hmac)) {
             return $gatewayResponse->setMessage('Hmac check failed');
         }
 
@@ -308,7 +322,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                 'amount',
                 'returnCode',
                 'merchantAccountRef',
-                'reportDelayInDays',
+                'scheduleDate|scheduleAmount',
             ];
         }
 
@@ -333,8 +347,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
             '?allowCardStorage',
             '?passwordRequired',
             '?merchantAuthenticateUrl',
-            '?storedCardID1',
-            '?storedCardLabel1',
+            'storedCardID|storedCardLabel',
             'merchantHomeUrl',
             'merchantBackUrl',
             'merchantReturnUrl',

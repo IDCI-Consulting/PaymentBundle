@@ -317,7 +317,7 @@ class EurekaPaymentGatewayClient
                 ->setNormalizer('SecurityContext', function (Options $options, $value) {
                     return $this->resolveSecurityContextOptions($value);
                 })
-            ->setAllowedTypes('Version', ['int', 'string'])
+            ->setAllowedTypes('Version', ['int', 'string', 'float'])
         ;
 
         return $headerResolver->resolve($headerOptions);
@@ -490,10 +490,10 @@ class EurekaPaymentGatewayClient
                 'Country',
             ])
             ->setDefaults([
-                'MaidenName' => null,
                 'Address2' => null,
                 'Address3' => null,
                 'Address4' => null,
+                'MaidenName' => null,
                 'Nationality' => null,
                 'IpAddress' => null,
                 'WhiteList' => null,
@@ -542,6 +542,10 @@ class EurekaPaymentGatewayClient
                 })
             ->setAllowedTypes('MaidenName', ['null', 'string'])
                 ->setNormalizer('MaidenName', function (Options $options, $value) {
+                    if (self::CIVILITY_MISSTRESS !== $options['Civility']) {
+                        return null;
+                    }
+
                     if (self::CIVILITY_MISSTRESS === $options['Civility'] && null === $value) {
                         throw new \UnexpectedValueException(
                             sprintf(
