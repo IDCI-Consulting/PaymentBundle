@@ -202,34 +202,22 @@ class EurekaPaymentGatewayClient
 
     public function payOrderRank(array $options)
     {
-        $wsdl = $this->client->request('GET', sprintf('%s?singleWsdl', $this->getMerchantUrl()));
-        $soapAction = (new Crawler((string) $wsdl->getBody()))
-            ->filterXPath('//wsdl:operation[@name="Score"]//soap:operation')
-            ->attr('soapAction')
-        ;
-
-        $this->client->request('POST', $this->getMerchantUrl(), [
-            'body' => $twig->render('@IDCIPayment/Gateway/eureka/pay_order_rank.xml.twig', $this->resolvePayOrderRankOptions($options)),
+        return $this->client->request('POST', $this->getMerchantUrl(), [
+            'body' => $this->templating->render('@IDCIPayment/Gateway/eureka/pay_order_rank.xml.twig', $this->resolvePayOrderRankOptions($options)),
             'headers' => [
                 'Content-Type' => 'text/xml',
-                'SoapAction' => $soapAction,
+                'SoapAction' => 'PayOrderRank',
             ],
         ]);
     }
 
     public function updateOrder(array $options)
     {
-        $wsdl = $this->client->request('GET', sprintf('%s?singleWsdl', $this->getMerchantUrl()));
-        $soapAction = (new Crawler((string) $wsdl->getBody()))
-            ->filterXPath('//wsdl:operation[@name="Score"]//soap:operation')
-            ->attr('soapAction')
-        ;
-
-        $this->client->request('POST', $this->getMerchantUrl(), [
-            'body' => $twig->render('@IDCIPayment/Gateway/eureka/update_order.xml.twig', $this->resolveUpdateOrderOptions($options)),
+        return $this->client->request('POST', $this->getMerchantUrl(), [
+            'body' => $this->templating->render('@IDCIPayment/Gateway/eureka/update_order.xml.twig', $this->resolveUpdateOrderOptions($options)),
             'headers' => [
                 'Content-Type' => 'text/xml',
-                'SoapAction' => $soapAction,
+                'SoapAction' => 'UpdateOrder',
             ],
         ]);
     }
