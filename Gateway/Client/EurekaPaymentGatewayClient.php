@@ -4,6 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Gateway\Client;
 
 use GuzzleHttp\Client;
 use Payum\ISO4217\ISO4217;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -11,6 +12,8 @@ use Twig\Environment;
 
 class EurekaPaymentGatewayClient
 {
+    const TOKEN_STS_CACHE_TTL = 86400;
+
     const SCORE_V3 = 'v3'; // For 3x & 4x payment
     const SCORE_CCL = 'ccl'; // For 10x payment
 
@@ -88,9 +91,19 @@ class EurekaPaymentGatewayClient
     const OTHER_TRAVEL_CLASS = 'Other';
 
     /**
+     * @var Environment
+     */
+    private $templating;
+
+    /**
      * @var Client
      */
     private $client;
+
+    /**
+     * @var AdapterInterface
+     */
+    private $cache;
 
     /**
      * @var string
@@ -101,7 +114,25 @@ class EurekaPaymentGatewayClient
     {
         $this->templating = $templating;
         $this->client = new Client(['defaults' => ['verify' => false, 'timeout' => 5]]);
+        $this->cache = null;
         $this->serverHostName = $serverHostName;
+    }
+
+    public function setCache($cache)
+    {
+        if (null !== $cache) {
+            if (!interface_exists(AdapterInterface::class)) {
+                throw new \RuntimeException('ConfigurationFetcher cache requires "symfony/cache" package');
+            }
+
+            if (!$cache instanceof AdapterInterface) {
+                throw new \UnexpectedValueException(
+                    sprintf('The fetcher\'s cache adapter must implement %s.', AdapterInterface::class)
+                );
+            }
+
+            $this->cache = $cache;
+        }
     }
 
     public function getSTSConnectionUrl(): string
@@ -129,14 +160,13 @@ class EurekaPaymentGatewayClient
         return sprintf('https://payment.%s/V4/GenericRD/Redirect.aspx', $this->serverHostName);
     }
 
+    private function getSTSTokenHash(string $username)
+    {
+        return sprintf('idci_payment.eureka.sts_token.%s', md5($username));
+    }
+
     public function getSTSTokenResponse(string $username, string $password)
     {
-        $wsdl = $this->client->request('GET', sprintf('%s?singleWsdl', $this->getSTSConnectionUrl()));
-        $soapAction = (new Crawler((string) $wsdl->getBody()))
-            ->filterXPath('//wsdl:operation[@name="Issue"]//soap:operation')
-            ->attr('soapAction')
-        ;
-
         return $this->client->request('POST', $this->getSTSConnectionUrl(), [
             'body' => $this->templating->render('@IDCIPayment/Gateway/eureka/sts_token.xml.twig', [
                 'username' => $username,
@@ -145,14 +175,28 @@ class EurekaPaymentGatewayClient
             ]),
             'headers' => [
                 'Content-Type' => 'text/xml',
-                'SOAPAction' => $soapAction,
+                'SOAPAction' => 'http://www.cdiscount.com/SoapTokenServiceContract/Issue',
             ],
         ]);
     }
 
     public function getSTSToken(string $username, string $password)
     {
-        return (new Crawler((string) $this->getSTSTokenResponse($username, $password)->getBody()))->filterXPath('//issueresult')->text();
+        if (null !== $this->cache && $this->cache->hasItem($this->getSTSTokenHash($username))) {
+            return $this->cache->getItem($this->getSTSTokenHash($username))->get();
+        }
+
+        $token = (new Crawler((string) $this->getSTSTokenResponse($username, $password)->getBody()))->filterXPath('//issueresult')->text();
+
+        if (null !== $this->cache) {
+            $item = $this->cache->getItem($this->getSTSTokenHash($username));
+            $item->set($token);
+            $item->expiresAfter(self::TOKEN_STS_CACHE_TTL);
+
+            $this->cache->save($item);
+        }
+
+        return $token;
     }
 
     public function getScoringTokenResponse(string $type, array $options)
@@ -162,12 +206,6 @@ class EurekaPaymentGatewayClient
                 sprintf('The scoring type "%s" is not supported. Supported values: %s, %s', $type, self::SCORE_V3, self::SCORE_CCL)
             );
         }
-
-        $wsdl = $this->client->request('GET', sprintf('%s?singleWsdl', self::SCORE_V3 === $type ? $this->getScoreV3Url() : $this->getScoreCclUrl()));
-        $soapAction = (new Crawler((string) $wsdl->getBody()))
-            ->filterXPath('//wsdl:operation[@name="Score"]//soap:operation')
-            ->attr('soapAction')
-        ;
 
         return $this->client->request(
             'POST',
@@ -179,7 +217,7 @@ class EurekaPaymentGatewayClient
                 ),
                 'headers' => [
                     'Content-Type' => 'text/xml',
-                    'SoapAction' => $soapAction,
+                    'SOAPAction' => 'http://www.cb4x.fr/ICb4xFrontService/Score',
                 ],
             ]
         );

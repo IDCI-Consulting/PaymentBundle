@@ -145,3 +145,5 @@ services:
     IDCI\Bundle\PaymentBundle\Gateway\Client\EurekaPaymentGatewayClient:
         arguments:
             $serverHostName: '%idci_payment.eureka.server_host_name%'
+        calls:
+            - [setCache, ['@?cache.idci_payment']]
