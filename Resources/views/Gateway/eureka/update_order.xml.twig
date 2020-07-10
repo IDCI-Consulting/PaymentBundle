@@ -4,33 +4,33 @@
    xmlns:cdis1="http://schemas.datacontract.org/2004/07/Cdiscount.PaymentService.Common.Message">
    <soapenv:Header/>
    <soapenv:Body>
-      <cdis:UpdateOrder>
-         <cdis:headerMessage>
-            <cdis1:Context>
-               <cdis1:MerchantId>{{ merchant_id }}</cdis1:MerchantId>
-               <cdis1:MerchantSiteId>{{ merchant_site_id }}</cdis1:MerchantSiteId>
-            </cdis1:Context>
-            <cdis1:Localization>
-               <cdis1:Country>FR</cdis1:Country>
-               <cdis1:Currency>EUR</cdis1:Currency>
-               <cdis1:DecimalPosition>2</cdis1:DecimalPosition>
-               <cdis1:Language>FR</cdis1:Language>
-            </cdis1:Localization>
-            <cdis1:SecurityContext>
-               <cdis1:DomainRightsList/>
-               <cdis1:IssuerID/>
-               <cdis1:SessionID/>
-               <cdis1:SubjectLocality/>
-               <cdis1:TokenId>{{ token_id }}</cdis1:TokenId>
-               <cdis1:UserName/>
-            </cdis1:SecurityContext>
-            <cdis1:Version>1</cdis1:Version>
-         </cdis:headerMessage>
-         <cdis:updateOrderRequestMessage>
-            <cdis:NewAmount>0</cdis:NewAmount>
-            <cdis:OrderRef>{{ transaction.id }}</cdis:OrderRef>
-            <cdis:ScoringToken>{{ transaction.metadata.scoring_token }}</cdis:ScoringToken>
-         </cdis:updateOrderRequestMessage>
-      </cdis:UpdateOrder>
-   </soapenv:Body>
+        <cdis:UpdateOrder>
+            <cdis:headerMessage>
+                <cdis1:Context>
+                    <cdis1:MerchantId>{{ Header.Context.MerchantId }}</cdis1:MerchantId>
+                    <cdis1:MerchantSiteId>{{ Header.Context.MerchantSiteId }}</cdis1:MerchantSiteId>
+                </cdis1:Context>
+                <cdis1:Localization>
+                    <cdis1:Country>{{ Header.Localization.Country }}</cdis1:Country>
+                    <cdis1:Currency>{{ Header.Localization.Currency }}</cdis1:Currency>
+                    <cdis1:DecimalPosition>{{ Header.Localization.DecimalPosition }}</cdis1:DecimalPosition>
+                    <cdis1:Language>{{ Header.Localization.Language }}</cdis1:Language>
+                </cdis1:Localization>
+                <cdis1:SecurityContext>
+                    <cdis1:DomainRightsList/>
+                    <cdis1:IssuerID/>
+                    <cdis1:SessionID/>
+                    <cdis1:SubjectLocality/>
+                    <cdis1:TokenId>{{ Header.SecurityContext.TokenId }}</cdis1:TokenId>
+                    <cdis1:UserName/>
+                </cdis1:SecurityContext>
+                <cdis1:Version>{{ Header.Version }}</cdis1:Version>
+            </cdis:headerMessage>
+            <cdis:updateOrderRequestMessage>
+                <cdis:NewAmount>{{ UpdateOrderRequestMessage.NewAmount }}</cdis:NewAmount>
+                <cdis:OrderRef>{{ UpdateOrderRequestMessage.OrderRef }}</cdis:OrderRef>
+                <cdis:ScoringToken>{{ UpdateOrderRequestMessage.ScoringToken }}</cdis:ScoringToken>
+            </cdis:updateOrderRequestMessage>
+        </cdis:UpdateOrder>
+    </soapenv:Body>
 </soapenv:Envelope>

@@ -436,7 +436,6 @@ class EurekaPaymentGatewayClient
 
     private function resolveRequestOptions(array $contextOptions): array
     {
-        // TODO: Resolve CclInformation & MerchantUrls in case of CCL Score
         $contextResolver = (new OptionsResolver())
             ->setRequired([
                 'Customer',
