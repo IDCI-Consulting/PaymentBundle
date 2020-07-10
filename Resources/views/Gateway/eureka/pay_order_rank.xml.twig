@@ -1,0 +1,37 @@
+<soapenv:Envelope
+   xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+   xmlns:cdis="http://www.cdiscount.com/"
+   xmlns:cdis1="http://schemas.datacontract.org/2004/07/Cdiscount.PaymentService.Common.Message">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <cdis:PayOrderRank>
+         <cdis:headerMessage>
+            <cdis1:Context>
+               <cdis1:MerchantId>{{ Header.Context.MerchantId }}</cdis1:MerchantId>
+               <cdis1:MerchantSiteId>{{ Header.Context.MerchantSiteId }}</cdis1:MerchantSiteId>
+            </cdis1:Context>
+            <cdis1:Localization>
+               <cdis1:Country>{{ Header.Localization.Country }}</cdis1:Country>
+               <cdis1:Currency>{{ Header.Localization.Currency }}</cdis1:Currency>
+               <cdis1:DecimalPosition>{{ Header.Localization.DecimalPosition }}</cdis1:DecimalPosition>
+               <cdis1:Language>{{ Header.Localization.Language }}</cdis1:Language>
+            </cdis1:Localization>
+            <cdis1:SecurityContext>
+               <cdis1:DomainRightsList/>
+               <cdis1:IssuerID/>
+               <cdis1:SessionID/>
+               <cdis1:SubjectLocality/>
+               <cdis1:TokenId>{{ Header.SecurityContext.TokenId }}</cdis1:TokenId>
+               <cdis1:UserName/>
+            </cdis1:SecurityContext>
+            <cdis1:Version>{{ Header.Version }}</cdis1:Version>
+         </cdis:headerMessage>
+         <cdis:payOrderRankRequestMessage>
+            <cdis:Amount>{{ PayOrderRankRequestMessage.Amount }}</cdis:Amount>
+            <cdis:Attempt>{{ PayOrderRankRequestMessage.Attempt }}</cdis:Attempt>
+            <cdis:OrderRef>{{ PayOrderRankRequestMessage.OrderRef }}</cdis:OrderRef>
+            <cdis:Rank>{{ PayOrderRankRequestMessage.Rank }}</cdis:Rank>
+         </cdis:payOrderRankRequestMessage>
+      </cdis:PayOrderRank>
+   </soapenv:Body>
+</soapenv:Envelope>

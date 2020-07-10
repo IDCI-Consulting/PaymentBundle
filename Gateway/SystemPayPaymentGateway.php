@@ -10,6 +10,7 @@ use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class SystemPayPaymentGateway extends AbstractPaymentGateway
 {
@@ -24,9 +25,10 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
 
     public function __construct(
         \Twig_Environment $templating,
+        EventDispatcherInterface $dispatcher,
         string $serverUrl
     ) {
-        parent::__construct($templating);
+        parent::__construct($templating, $dispatcher);
 
         $this->serverUrl = $serverUrl;
     }

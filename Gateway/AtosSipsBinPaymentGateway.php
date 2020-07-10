@@ -10,6 +10,7 @@ use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Process\Process;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
 {
@@ -30,11 +31,12 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
 
     public function __construct(
         \Twig_Environment $templating,
+        EventDispatcherInterface $dispatcher,
         string $pathfile,
         string $requestBinPath,
         string $responseBinPath
     ) {
-        parent::__construct($templating);
+        parent::__construct($templating, $dispatcher);
 
         $this->pathfile = $pathfile;
         $this->requestBinPath = $requestBinPath;

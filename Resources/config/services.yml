@@ -135,3 +135,15 @@ services:
             $serverUrl: '%idci_payment.sofinco.server_url%'
         tags:
             - { name: idci_payment.gateways, alias: sofinco }
+
+    IDCI\Bundle\PaymentBundle\Gateway\EurekaPaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: eureka }
+
+    # Payment Gateway Clients
+
+    IDCI\Bundle\PaymentBundle\Gateway\Client\EurekaPaymentGatewayClient:
+        arguments:
+            $serverHostName: '%idci_payment.eureka.server_host_name%'
+        calls:
+            - [setCache, ['@?cache.idci_payment']]

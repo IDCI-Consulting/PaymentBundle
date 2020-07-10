@@ -8,6 +8,7 @@ use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class SofincoPaymentGateway extends AbstractPaymentGateway
 {
@@ -24,9 +25,10 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
 
     public function __construct(
         \Twig_Environment $templating,
+        EventDispatcherInterface $dispatcher,
         string $serverUrl
     ) {
-        parent::__construct($templating);
+        parent::__construct($templating, $dispatcher);
 
         $this->serverUrl = $serverUrl;
     }

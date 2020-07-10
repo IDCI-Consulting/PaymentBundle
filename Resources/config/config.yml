@@ -29,5 +29,8 @@ parameters:
     # Sofinco default server url for test purposes
     idci_payment.sofinco.server_url: https://re7financement.transcred.com/sofgate.asp # prod ?
 
+    # Eureka default server url for test purposes
+    idci_payment.eureka.server_host_name: recette-cb4x.fr # prod: cb4x.fr
+
 monolog:
     channels: [payment]

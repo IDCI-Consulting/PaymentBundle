@@ -9,6 +9,7 @@ use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class PayboxPaymentGateway extends AbstractPaymentGateway
 {
@@ -19,11 +20,12 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
 
     public function __construct(
         \Twig_Environment $templating,
+        EventDispatcherInterface $dispatcher,
         string $serverHostName,
         string $keyPath,
         string $publicKeyUrl
     ) {
-        parent::__construct($templating);
+        parent::__construct($templating, $dispatcher);
 
         $this->serverHostName = $serverHostName;
         $this->keyPath = $keyPath;

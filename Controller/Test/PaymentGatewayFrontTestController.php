@@ -82,6 +82,7 @@ class PaymentGatewayFrontTestController extends AbstractController
                     'customer_id' => $transactionData['customer_id'],
                     'customer_email' => $transactionData['customer_email'],
                     'description' => $transactionData['description'],
+                    'metadata' => $transactionData['metadata'],
                 ]);
             }
 
