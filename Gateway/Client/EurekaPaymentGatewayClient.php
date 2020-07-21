@@ -3,7 +3,9 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway\Client;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use Payum\ISO4217\ISO4217;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\OptionsResolver\Options;
@@ -110,9 +112,10 @@ class EurekaPaymentGatewayClient
      */
     private $serverHostName;
 
-    public function __construct(Environment $templating, string $serverHostName)
+    public function __construct(Environment $templating, LoggerInterface $logger, string $serverHostName)
     {
         $this->templating = $templating;
+        $this->logger = $logger;
         $this->client = new Client(['defaults' => ['verify' => false, 'timeout' => 5]]);
         $this->cache = null;
         $this->serverHostName = $serverHostName;
@@ -167,17 +170,21 @@ class EurekaPaymentGatewayClient
 
     public function getSTSTokenResponse(string $username, string $password)
     {
-        return $this->client->request('POST', $this->getSTSConnectionUrl(), [
-            'body' => $this->templating->render('@IDCIPayment/Gateway/eureka/sts_token.xml.twig', [
-                'username' => $username,
-                'password' => $password,
-                'merchant_url' => $this->getMerchantUrl(),
-            ]),
-            'headers' => [
-                'Content-Type' => 'text/xml',
-                'SOAPAction' => 'http://www.cdiscount.com/SoapTokenServiceContract/Issue',
-            ],
-        ]);
+        try {
+            return $this->client->request('POST', $this->getSTSConnectionUrl(), [
+                'body' => $this->templating->render('@IDCIPayment/Gateway/eureka/sts_token.xml.twig', [
+                    'username' => $username,
+                    'password' => $password,
+                    'merchant_url' => $this->getMerchantUrl(),
+                ]),
+                'headers' => [
+                    'Content-Type' => 'text/xml',
+                    'SOAPAction' => 'http://www.cdiscount.com/SoapTokenServiceContract/Issue',
+                ],
+            ]);
+        } catch (RequestException $e) {
+            $this->logger->error((string) $e->getResponse()->getBody());
+        }
     }
 
     public function getSTSToken(string $username, string $password)
@@ -207,20 +214,24 @@ class EurekaPaymentGatewayClient
             );
         }
 
-        return $this->client->request(
-            'POST',
-            self::SCORE_V3 === $type ? $this->getScoreV3Url() : $this->getScoreCclUrl(),
-            [
-                'body' => $this->templating->render(
-                    '@IDCIPayment/Gateway/eureka/score.xml.twig',
-                    $this->resolveScoreOptions($options)
-                ),
-                'headers' => [
-                    'Content-Type' => 'text/xml',
-                    'SOAPAction' => 'http://www.cb4x.fr/ICb4xFrontService/Score',
-                ],
-            ]
-        );
+        try {
+            return $this->client->request(
+                'POST',
+                self::SCORE_V3 === $type ? $this->getScoreV3Url() : $this->getScoreCclUrl(),
+                [
+                    'body' => $this->templating->render(
+                        '@IDCIPayment/Gateway/eureka/score.xml.twig',
+                        $this->resolveScoreOptions($options)
+                    ),
+                    'headers' => [
+                        'Content-Type' => 'text/xml',
+                        'SOAPAction' => 'http://www.cb4x.fr/ICb4xFrontService/Score',
+                    ],
+                ]
+            );
+        } catch (RequestException $e) {
+            $this->logger->error((string) $e->getResponse()->getBody());
+        }
     }
 
     public function getScoringToken(string $type, array $options)
@@ -240,24 +251,32 @@ class EurekaPaymentGatewayClient
 
     public function payOrderRank(array $options)
     {
-        return $this->client->request('POST', $this->getMerchantUrl(), [
-            'body' => $this->templating->render('@IDCIPayment/Gateway/eureka/pay_order_rank.xml.twig', $this->resolvePayOrderRankOptions($options)),
-            'headers' => [
-                'Content-Type' => 'text/xml',
-                'SoapAction' => 'PayOrderRank',
-            ],
-        ]);
+        try {
+            return $this->client->request('POST', $this->getMerchantUrl(), [
+                'body' => $this->templating->render('@IDCIPayment/Gateway/eureka/pay_order_rank.xml.twig', $this->resolvePayOrderRankOptions($options)),
+                'headers' => [
+                    'Content-Type' => 'text/xml',
+                    'SoapAction' => 'PayOrderRank',
+                ],
+            ]);
+        } catch (RequestException $e) {
+            $this->logger->error((string) $e->getResponse()->getBody());
+        }
     }
 
     public function updateOrder(array $options)
     {
-        return $this->client->request('POST', $this->getMerchantUrl(), [
-            'body' => $this->templating->render('@IDCIPayment/Gateway/eureka/update_order.xml.twig', $this->resolveUpdateOrderOptions($options)),
-            'headers' => [
-                'Content-Type' => 'text/xml',
-                'SoapAction' => 'UpdateOrder',
-            ],
-        ]);
+        try {
+            return $this->client->request('POST', $this->getMerchantUrl(), [
+                'body' => $this->templating->render('@IDCIPayment/Gateway/eureka/update_order.xml.twig', $this->resolveUpdateOrderOptions($options)),
+                'headers' => [
+                    'Content-Type' => 'text/xml',
+                    'SoapAction' => 'UpdateOrder',
+                ],
+            ]);
+        } catch (RequestException $e) {
+            $this->logger->error((string) $e->getResponse()->getBody());
+        }
     }
 
     private function resolveScoreOptions(array $scoreOptions): array
