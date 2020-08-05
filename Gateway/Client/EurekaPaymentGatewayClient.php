@@ -145,7 +145,7 @@ class EurekaPaymentGatewayClient
 
     public function getMerchantUrl(): string
     {
-        return sprintf('https://paymentservices.%s/MerchantGatewayFrontService.svc', $this->serverHostName);
+        return sprintf('https://paymentservices.%s/MerchantGatewayFrontService.svc/soap', $this->serverHostName);
     }
 
     public function getScoreV3Url(): string
