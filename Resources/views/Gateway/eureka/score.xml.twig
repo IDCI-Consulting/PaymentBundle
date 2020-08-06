@@ -1,5 +1,5 @@
-{% macro display_field(name, value) %}
-    {% if value is not null and value is not empty %}<sch:{{ name }}>{{ value }}</sch:{{ name }}>{% else %}<sch:{{ name }} xsi:nil="true"/>{% endif %}
+{% macro display_field(name, value, tag = 'sch') %}
+    {% if value is not null and value is not empty %}<{{ tag }}:{{ name }}>{{ value }}</{{ tag }}:{{ name }}>{% else %}<{{ tag }}:{{ name }} xsi:nil="true"/>{% endif %}
 {% endmacro %}
 <soapenv:Envelope
     xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
@@ -72,10 +72,10 @@
                     {{ _self.display_field('RefusedManyTimesOrderCount', Request.OptionalCustomerHistory.RefusedManyTimesOrderCount) }}
                     {{ _self.display_field('ValidatedOneTimeOrderCount', Request.OptionalCustomerHistory.ValidatedOneTimeOrderCount) }}
                     {{ _self.display_field('ValidatedOrderCount', Request.OptionalCustomerHistory.ValidatedOrderCount) }}
-                    {{ _self.display_field('ClientIpAddressRecurrence', Request.OptionalCustomerHistory.ClientIpAddressRecurrence) }}
-                    {{ _self.display_field('OngoingLitigationOrderAmount', Request.OptionalCustomerHistory.OngoingLitigationOrderAmount) }}
-                    {{ _self.display_field('PaidLitigationOrderAmount24Month', Request.OptionalCustomerHistory.PaidLitigationOrderAmount24Month) }}
-                    {{ _self.display_field('ScoreSimulationCount7Days', Request.OptionalCustomerHistory.ScoreSimulationCount7Days) }}
+                    {{ _self.display_field('ClientIpAddressRecurrence', Request.OptionalCustomerHistory.ClientIpAddressRecurrence, 'cb4x') }}
+                    {{ _self.display_field('OngoingLitigationOrderAmount', Request.OptionalCustomerHistory.OngoingLitigationOrderAmount, 'cb4x') }}
+                    {{ _self.display_field('PaidLitigationOrderAmount24Month', Request.OptionalCustomerHistory.PaidLitigationOrderAmount24Month, 'cb4x') }}
+                    {{ _self.display_field('ScoreSimulationCount7Days', Request.OptionalCustomerHistory.ScoreSimulationCount7Days, 'cb4x') }}
                 </cb4x:OptionalCustomerHistory>
                 {% endif %}
                 {% if Request.OptionalTravelDetails is not empty %}
@@ -93,29 +93,29 @@
                     {{ _self.display_field('TravellerCount', Request.OptionalTravelDetails.TravellerCount) }}
                     {{ _self.display_field('TravellerPassportList', Request.OptionalTravelDetails.TravellerPassportList) }}
                     {{ _self.display_field('Type', Request.OptionalTravelDetails.Type) }}
-                    {{ _self.display_field('DiscountCode', Request.OptionalTravelDetails.DiscountCode) }}
-                    {{ _self.display_field('LuggageSupplement', Request.OptionalTravelDetails.LuggageSupplement) }}
-                    {{ _self.display_field('ModificationAnnulation', Request.OptionalTravelDetails.ModificationAnnulation) }}
+                    {{ _self.display_field('DiscountCode', Request.OptionalTravelDetails.DiscountCode, 'cb4x') }}
+                    {{ _self.display_field('LuggageSupplement', Request.OptionalTravelDetails.LuggageSupplement, 'cb4x') }}
+                    {{ _self.display_field('ModificationAnnulation', Request.OptionalTravelDetails.ModificationAnnulation, 'cb4x') }}
                 </cb4x:OptionalTravelDetails>
                 {% endif %}
                 {% if Request.OptionalStayDetails is not empty %}
                 <cb4x:OptionalStayDetails>
-                    {{ _self.display_field('Company', Request.OptionalStayDetails.Company) }}
-                    {{ _self.display_field('Destination', Request.OptionalStayDetails.Destination) }}
-                    {{ _self.display_field('NightNumber', Request.OptionalStayDetails.NightNumber) }}
-                    {{ _self.display_field('RoomRange', Request.OptionalStayDetails.RoomRange) }}
+                    {{ _self.display_field('Company', Request.OptionalStayDetails.Company, 'cb4x') }}
+                    {{ _self.display_field('Destination', Request.OptionalStayDetails.Destination, 'cb4x') }}
+                    {{ _self.display_field('NightNumber', Request.OptionalStayDetails.NightNumber, 'cb4x') }}
+                    {{ _self.display_field('RoomRange', Request.OptionalStayDetails.RoomRange, 'cb4x') }}
                 </cb4x:OptionalStayDetails>
                 {% endif %}
                 {% if Request.OptionalProductDetails is not empty %}
                 <cb4x:OptionalProductDetails>
-                    {{ _self.display_field('Categorie1', Request.OptionalProductDetails.Categorie1) }}
-                    {{ _self.display_field('Categorie2', Request.OptionalProductDetails.Categorie2) }}
-                    {{ _self.display_field('Categorie3', Request.OptionalProductDetails.Categorie3) }}
+                    {{ _self.display_field('Categorie1', Request.OptionalProductDetails.Categorie1, 'cb4x') }}
+                    {{ _self.display_field('Categorie2', Request.OptionalProductDetails.Categorie2, 'cb4x') }}
+                    {{ _self.display_field('Categorie3', Request.OptionalProductDetails.Categorie3, 'cb4x') }}
                 </cb4x:OptionalProductDetails>
                 {% endif %}
                 {% if Request.OptionalPreScoreInformation is not empty %}
                 <cb4x:OptionalPreScoreInformation>
-                    {{ _self.display_field('RequestID', Request.OptionalPreScoreInformation.RequestID) }}
+                    {{ _self.display_field('RequestID', Request.OptionalPreScoreInformation.RequestID, 'cb4x') }}
                 </cb4x:OptionalPreScoreInformation>
                 {% endif %}
                 {% if Request.AdditionalNumericFieldList is not empty %}
@@ -138,13 +138,13 @@
                     {% endfor %}
                 </cb4x:AdditionalTextFieldList>
                 {% endif %}
-                {% if Request.OptionalPreScoreInformation is not empty %}
+                {% if Request.OptionalShippingDetails is not empty %}
                 <cb4x:OptionalShippingDetails>
-                    {{ _self.display_field('Adress1', Request.OptionalPreScoreInformation.Adress1) }}
-                    {{ _self.display_field('Adress2', Request.OptionalPreScoreInformation.Adress2) }}
-                    {{ _self.display_field('AdressCity', Request.OptionalPreScoreInformation.AdressCity) }}
-                    {{ _self.display_field('AdressCountry', Request.OptionalPreScoreInformation.AdressCountry) }}
-                    {{ _self.display_field('AdressZip', Request.OptionalPreScoreInformation.AdressZip) }}
+                    {{ _self.display_field('Adress1', Request.OptionalShippingDetails.Adress1, 'cb4x') }}
+                    {{ _self.display_field('Adress2', Request.OptionalShippingDetails.Adress2, 'cb4x') }}
+                    {{ _self.display_field('AdressCity', Request.OptionalShippingDetails.AdressCity, 'cb4x') }}
+                    {{ _self.display_field('AdressCountry', Request.OptionalShippingDetails.AdressCountry, 'cb4x') }}
+                    {{ _self.display_field('AdressZip', Request.OptionalShippingDetails.AdressZip, 'cb4x') }}
                 </cb4x:OptionalShippingDetails>
                 {% endif %}
             </cb4x:request>
