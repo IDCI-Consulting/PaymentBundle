@@ -442,10 +442,12 @@ class EurekaPaymentGatewayClient
         $updateOrderRequestMessageResolver = (new OptionsResolver())
             ->setRequired([
                 'NewAmount',
+                'OldAmount',
                 'OrderRef',
                 'ScoringToken',
             ])
             ->setAllowedTypes('NewAmount', ['int'])
+            ->setAllowedTypes('OldAmount', ['int'])
             ->setAllowedTypes('OrderRef', ['string'])
             ->setAllowedTypes('ScoringToken', ['string'])
         ;
