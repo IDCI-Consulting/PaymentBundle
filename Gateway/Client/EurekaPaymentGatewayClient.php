@@ -193,7 +193,13 @@ class EurekaPaymentGatewayClient
             return $this->cache->getItem($this->getSTSTokenHash($username))->get();
         }
 
-        $token = (new Crawler((string) $this->getSTSTokenResponse($username, $password)->getBody()))->filterXPath('//issueresult')->text();
+        $tokenResponse = $this->getSTSTokenResponse($username, $password);
+
+        if (null === $tokenResponse) {
+            throw new \UnexpectedValueException('The STS token request failed.');
+        }
+
+        $token = (new Crawler((string) $tokenResponse))->filterXPath('//issueresult')->text();
 
         if (null !== $this->cache) {
             $item = $this->cache->getItem($this->getSTSTokenHash($username));
@@ -236,7 +242,13 @@ class EurekaPaymentGatewayClient
 
     public function getScoringToken(string $type, array $options)
     {
-        $crawler = (new Crawler((string) $this->getScoringTokenResponse($type, $options)->getBody()));
+        $tokenResponse = $this->getScoringTokenResponse($type, $options);
+
+        if (null === $tokenResponse) {
+            throw new \UnexpectedValueException('The scoring token request failed.');
+        }
+
+        $crawler = (new Crawler((string) $tokenResponse->getBody()));
 
         if ('false' === $crawler->filterXPath('//paymentagreement')->text()) {
             throw new \UnexpectedValueException(
