@@ -184,6 +184,10 @@ class EurekaPaymentGatewayClient
             ]);
         } catch (RequestException $e) {
             $this->logger->error((string) $e->getResponse()->getBody());
+
+            throw new \UnexpectedValueException(
+                sprintf('The STS token request failed: %s', (string) $e->getResponse()->getBody())
+            );
         }
     }
 
@@ -231,6 +235,10 @@ class EurekaPaymentGatewayClient
             );
         } catch (RequestException $e) {
             $this->logger->error((string) $e->getResponse()->getBody());
+
+            throw new \UnexpectedValueException(
+                sprintf('The scoring token request failed: %s', (string) $e->getResponse()->getBody())
+            );
         }
     }
 
@@ -261,6 +269,10 @@ class EurekaPaymentGatewayClient
             ]);
         } catch (RequestException $e) {
             $this->logger->error((string) $e->getResponse()->getBody());
+
+            throw new \UnexpectedValueException(
+                sprintf('The pay order rank request failed: %s', (string) $e->getResponse()->getBody())
+            );
         }
     }
 
@@ -276,6 +288,10 @@ class EurekaPaymentGatewayClient
             ]);
         } catch (RequestException $e) {
             $this->logger->error((string) $e->getResponse()->getBody());
+
+            throw new \UnexpectedValueException(
+                sprintf('The update order request failed: %s', (string) $e->getResponse()->getBody())
+            );
         }
     }
 
