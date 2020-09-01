@@ -83,7 +83,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
                         'Country' => $transaction->getMetadata('Customer.Country'),
                         'Currency' => $transaction->getCurrencyCode(),
                         'DecimalPosition' => $transaction->getMetadata('Order.DecimalPosition'),
-                        'Language' => $transaction->getMetadata('Customer.Country'),
+                        'Language' => $transaction->getMetadata('Customer.Language'),
                     ],
                     'SecurityContext' => [
                         'TokenId' => $this->eurekaPaymentGatewayClient->getSTSToken(

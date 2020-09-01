@@ -199,7 +199,7 @@ class EurekaPaymentGatewayClient
             throw new \UnexpectedValueException('The STS token request failed.');
         }
 
-        $token = (new Crawler((string) $tokenResponse))->filterXPath('//issueresult')->text();
+        $token = (new Crawler((string) $tokenResponse->getBody()))->filterXPath('//issueresult')->text();
 
         if (null !== $this->cache) {
             $item = $this->cache->getItem($this->getSTSTokenHash($username));
@@ -400,9 +400,9 @@ class EurekaPaymentGatewayClient
             ->setRequired([
                 'Country',
                 'Currency',
-                'Language',
             ])
             ->setDefaults([
+                'Language' => 'FR',
                 'DecimalPosition' => 2,
             ])
             ->setAllowedTypes('Country', ['string'])
