@@ -252,7 +252,7 @@ class EurekaPaymentGatewayClient
 
         if ('false' === $crawler->filterXPath('//paymentagreement')->text()) {
             throw new \UnexpectedValueException(
-                sprintf('The scoring token request failed: %s', $crawler->filterXPath('//responsemessage')->text())
+                sprintf('The scoring token request failed: %s. Scoring token response: %s', $crawler->filterXPath('//responsemessage')->text(), (string) $tokenResponse->getBody())
             );
         }
 
