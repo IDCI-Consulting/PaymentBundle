@@ -440,7 +440,7 @@ class EurekaPaymentGatewayClient
                 'Attempt' => 1,
                 'Rank' => 1,
             ])
-            ->setAllowedTypes('Amount', ['int'])
+            ->setAllowedTypes('Amount', ['int', 'float'])
             ->setAllowedTypes('OrderRef', ['string'])
             ->setAllowedTypes('Attempt', ['int'])
             ->setAllowedTypes('Rank', ['int'])
@@ -458,8 +458,8 @@ class EurekaPaymentGatewayClient
                 'OrderRef',
                 'ScoringToken',
             ])
-            ->setAllowedTypes('NewAmount', ['int'])
-            ->setAllowedTypes('OldAmount', ['int'])
+            ->setAllowedTypes('NewAmount', ['int', 'float'])
+            ->setAllowedTypes('OldAmount', ['int', 'float'])
             ->setAllowedTypes('OrderRef', ['string'])
             ->setAllowedTypes('ScoringToken', ['string'])
         ;
@@ -833,7 +833,7 @@ class EurekaPaymentGatewayClient
                 ])
             ->setAllowedTypes('ShoppingCartItemCount', ['int'])
             ->setAllowedTypes('ShoppingCartRef', ['int', 'string'])
-            ->setAllowedTypes('TotalAmount', ['int'])
+            ->setAllowedTypes('TotalAmount', ['int', 'float'])
         ;
 
         return $orderResolver->resolve($orderOptions);
@@ -858,7 +858,7 @@ class EurekaPaymentGatewayClient
                 'PaidLitigationOrderAmount24Month',
                 'ScoreSimulationCount7Days',
             ])
-            ->setAllowedTypes('CanceledOrderAmount', ['null', 'int'])
+            ->setAllowedTypes('CanceledOrderAmount', ['null', 'int', 'float'])
             ->setAllowedTypes('CanceledOrderCount', ['null', 'int'])
             ->setAllowedTypes('FirstOrderDate', ['null', 'string', \DateTime::class])
                 ->setNormalizer('FirstOrderDate', function (Options $options, $value) {
@@ -903,8 +903,8 @@ class EurekaPaymentGatewayClient
             ->setAllowedTypes('ValidatedOneTimeOrderCount', ['null', 'int'])
             ->setAllowedTypes('ValidatedOrderCount', ['null', 'int'])
             ->setAllowedTypes('ClientIpAddressRecurrence', ['null', 'int'])
-            ->setAllowedTypes('OngoingLitigationOrderAmount', ['null', 'int'])
-            ->setAllowedTypes('PaidLitigationOrderAmount24Month', ['null', 'int'])
+            ->setAllowedTypes('OngoingLitigationOrderAmount', ['null', 'int', 'float'])
+            ->setAllowedTypes('PaidLitigationOrderAmount24Month', ['null', 'int', 'float'])
             ->setAllowedTypes('ScoreSimulationCount7Days', ['null', 'int'])
         ;
 
