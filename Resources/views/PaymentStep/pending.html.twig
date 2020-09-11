@@ -16,7 +16,7 @@
                 }, 2000)
 
             } else {
-                document.querySelector('#statusContainer').innerText = '{{ errorMessage }}';
+                document.querySelector('#statusContainer').innerText = '{{ error_message }}';
             }
         }
 
@@ -30,7 +30,7 @@
                     callback();
                 } else {
                     // show success message
-                    document.querySelector('#statusContainer').innerText = '{{ successMessage }}';
+                    document.querySelector('#statusContainer').innerText = '{{ success_message }}';
                     nextBtn.hidden = false
                 }
             });

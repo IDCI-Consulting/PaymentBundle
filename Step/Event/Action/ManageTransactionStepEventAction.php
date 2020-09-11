@@ -3,6 +3,7 @@
 namespace IDCI\Bundle\PaymentBundle\Step\Event\Action;
 
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
+use IDCI\Bundle\PaymentBundle\Exception\Gateway\GatewayException;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfiguration;
@@ -10,11 +11,11 @@ use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use IDCI\Bundle\StepBundle\Step\Event\Action\AbstractStepEventAction;
 use IDCI\Bundle\StepBundle\Step\Event\StepEventInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class ManageTransactionStepEventAction extends AbstractStepEventAction
 {
@@ -156,16 +157,33 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         }
 
         $options['transaction'] = $transaction;
-        $options['pre_step_content'] = $this->templating->render(
-            $this->templates[PaymentStatus::STATUS_CREATED],
-            array_merge(
-                $parameters['template_extra_vars'],
-                [
-                    'view' => $paymentContext->buildHTMLView(),
-                    'transaction' => $transaction,
-                ]
-            )
-        );
+        try {
+            $options['pre_step_content'] = $this->templating->render(
+                $this->templates[PaymentStatus::STATUS_CREATED],
+                array_merge(
+                    $parameters['template_extra_vars'],
+                    [
+                        'view' => $paymentContext->buildHTMLView(),
+                        'transaction' => $transaction,
+                    ]
+                )
+            );
+        } catch (GatewayException $e) {
+            $transaction->setStatus(PaymentStatus::STATUS_FAILED)->addMetadata('gateway_exception', $e->getMessage());
+            $this->dispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::FAILED);
+
+            $options['pre_step_content'] = $this->templating->render(
+                $this->templates[PaymentStatus::STATUS_FAILED],
+                array_merge(
+                    $parameters['template_extra_vars'],
+                    [
+                        'gateway_exception' => $e,
+                        'error_message' => $e->getMessage(),
+                    ]
+                )
+            );
+        }
+
         $event->getNavigator()->getCurrentStep()->setOptions($options);
 
         return $transaction->toArray();
@@ -210,8 +228,8 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
                 $parameters['template_extra_vars'],
                 [
                     'transaction' => $transaction,
-                    'successMessage' => $parameters['success_message'],
-                    'errorMessage' => $parameters['error_message'],
+                    'success_message' => $parameters['success_message'],
+                    'error_message' => $parameters['error_message'],
                 ]
             )
         );
