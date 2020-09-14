@@ -9,11 +9,28 @@ use Symfony\Component\HttpFoundation\Request;
 
 class MoneticoPaymentGateway extends AbstractPaymentGateway
 {
+    /**
+     * Get Monetico server url.
+     *
+     * @method getServerUrl
+     *
+     * @return string
+     */
     private function getServerUrl(): string
     {
         return 'https://p.monetico-services.com/test/paiement.cgi'; //raw
     }
 
+    /**
+     * Build payment gateway options.
+     *
+     * @method buildOptions
+     *
+     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+     * @param Transaction                          $transaction
+     *
+     * @return array
+     */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -34,6 +51,16 @@ class MoneticoPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * Build payment gateway HMAC signature.
+     *
+     * @method buildMAC
+     *
+     * @param array  $options   [description]
+     * @param string $secretKey [description]
+     *
+     * @return [type] [description]
+     */
     private function buildMAC(array $options, string $secretKey)
     {
         $hexStrKey = substr($secretKey, 0, 38);
@@ -62,6 +89,9 @@ class MoneticoPaymentGateway extends AbstractPaymentGateway
         return strtolower(hash_hmac('sha1', $sData, $usableKey));
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -75,6 +105,9 @@ class MoneticoPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -86,6 +119,9 @@ class MoneticoPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
@@ -93,6 +129,9 @@ class MoneticoPaymentGateway extends AbstractPaymentGateway
         return null;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

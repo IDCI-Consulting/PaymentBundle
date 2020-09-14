@@ -4,6 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Gateway\Client;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Psr7\Response;
 use IDCI\Bundle\PaymentBundle\Exception\Gateway\Eureka\NotEligibleCustomerException;
 use Payum\ISO4217\ISO4217;
 use Psr\Log\LoggerInterface;
@@ -99,6 +100,11 @@ class EurekaPaymentGatewayClient
     private $templating;
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @var Client
      */
     private $client;
@@ -122,6 +128,16 @@ class EurekaPaymentGatewayClient
         $this->serverHostName = $serverHostName;
     }
 
+    /**
+     * Set the cache adapter.
+     *
+     * @method setCache
+     *
+     * @param AdapterInterface|null $cache
+     *
+     * @throws \RuntimeException         If the symfony/cache package is not installed
+     * @throws \UnexpectedValueException If the cache doesn't implement AdapterInterface
+     */
     public function setCache($cache)
     {
         if (null !== $cache) {
@@ -131,7 +147,7 @@ class EurekaPaymentGatewayClient
 
             if (!$cache instanceof AdapterInterface) {
                 throw new \UnexpectedValueException(
-                    sprintf('The fetcher\'s cache adapter must implement %s.', AdapterInterface::class)
+                    sprintf('The client\'s cache must implement %s.', AdapterInterface::class)
                 );
             }
 
@@ -139,37 +155,91 @@ class EurekaPaymentGatewayClient
         }
     }
 
+    /**
+     * Get STS connection url.
+     *
+     * @method getSTSConnectionUrl
+     *
+     * @return string
+     */
     public function getSTSConnectionUrl(): string
     {
         return sprintf('https://paymentsts.%s/Users/soapIssue.svc', $this->serverHostName);
     }
 
+    /**
+     * Get Merchant url.
+     *
+     * @method getMerchantUrl
+     *
+     * @return string
+     */
     public function getMerchantUrl(): string
     {
         return sprintf('https://paymentservices.%s/MerchantGatewayFrontService.svc/soap', $this->serverHostName);
     }
 
+    /**
+     * Get score V3 url.
+     *
+     * @method getScoreV3Url
+     *
+     * @return string
+     */
     public function getScoreV3Url(): string
     {
         return sprintf('https://services.%s/Cb4xFrontService.svc', $this->serverHostName);
     }
 
+    /**
+     * Get score CCL url.
+     *
+     * @method getScoreCclUrl
+     *
+     * @return string
+     */
     public function getScoreCclUrl(): string
     {
         return sprintf('https://services.%s/CclFrontService.svc', $this->serverHostName);
     }
 
+    /**
+     * Get payment form url.
+     *
+     * @method getPaymentFormUrl
+     *
+     * @return string
+     */
     public function getPaymentFormUrl(): string
     {
         return sprintf('https://payment.%s/V4/GenericRD/Redirect.aspx', $this->serverHostName);
     }
 
-    private function getSTSTokenHash(string $username)
+    /**
+     * Get STS token hash by the eureka username (md5).
+     *
+     * @method getSTSTokenHash
+     *
+     * @param string $username
+     *
+     * @return string
+     */
+    private function getSTSTokenHash(string $username): string
     {
         return sprintf('idci_payment.eureka.sts_token.%s', md5($username));
     }
 
-    public function getSTSTokenResponse(string $username, string $password)
+    /**
+     * Get eureka user STS token response.
+     *
+     * @method getSTSTokenResponse
+     *
+     * @param string $username
+     * @param string $password
+     *
+     * @return Response
+     */
+    public function getSTSTokenResponse(string $username, string $password): Response
     {
         try {
             return $this->client->request('POST', $this->getSTSConnectionUrl(), [
@@ -188,7 +258,19 @@ class EurekaPaymentGatewayClient
         }
     }
 
-    public function getSTSToken(string $username, string $password)
+    /**
+     * Get eureka user STS token.
+     *
+     * @method getSTSToken
+     *
+     * @param string $username
+     * @param string $password
+     *
+     * @return string
+     *
+     * @throws \UnexpectedValueException if the STS token could not have been retrieved
+     */
+    public function getSTSToken(string $username, string $password): string
     {
         if (null !== $this->cache && $this->cache->hasItem($this->getSTSTokenHash($username))) {
             return $this->cache->getItem($this->getSTSTokenHash($username))->get();
@@ -213,7 +295,19 @@ class EurekaPaymentGatewayClient
         return $token;
     }
 
-    public function getScoringTokenResponse(string $type, array $options)
+    /**
+     * Get scoring token response according to score type & transaction options.
+     *
+     * @method getScoringTokenResponse
+     *
+     * @param string $type
+     * @param array  $options
+     *
+     * @return Response
+     *
+     * @throws \InvalidArgumentException If the score type given is not suported (v3|ccl)
+     */
+    public function getScoringTokenResponse(string $type, array $options): Response
     {
         if (self::SCORE_V3 !== $type && self::SCORE_CCL !== $type) {
             throw new \InvalidArgumentException(
@@ -241,7 +335,20 @@ class EurekaPaymentGatewayClient
         }
     }
 
-    public function getScoringToken(string $type, array $options)
+    /**
+     * Get scoring token according to score type & transaction options.
+     *
+     * @method getScoringToken
+     *
+     * @param string $type
+     * @param array  $options
+     *
+     * @return string
+     *
+     * @throws \UnexpectedValueException    If the scoring request failed
+     * @throws NotEligibleCustomerException If the customer is not elligible for the transaction
+     */
+    public function getScoringToken(string $type, array $options): string
     {
         $tokenResponse = $this->getScoringTokenResponse($type, $options);
 
@@ -268,7 +375,16 @@ class EurekaPaymentGatewayClient
         return $scoringToken;
     }
 
-    public function payOrderRank(array $options)
+    /**
+     * Get PayOrderRank response.
+     *
+     * @method payOrderRank
+     *
+     * @param array $options
+     *
+     * @return Response
+     */
+    public function payOrderRank(array $options): Response
     {
         try {
             return $this->client->request('POST', $this->getMerchantUrl(), [
@@ -283,7 +399,16 @@ class EurekaPaymentGatewayClient
         }
     }
 
-    public function updateOrder(array $options)
+    /**
+     * Get UpdateOrder response.
+     *
+     * @method updateOrder
+     *
+     * @param array $options
+     *
+     * @return Response
+     */
+    public function updateOrder(array $options): Response
     {
         try {
             return $this->client->request('POST', $this->getMerchantUrl(), [
@@ -298,6 +423,15 @@ class EurekaPaymentGatewayClient
         }
     }
 
+    /**
+     * Resolve score options.
+     *
+     * @method resolveScoreOptions
+     *
+     * @param array $scoreOptions
+     *
+     * @return array
+     */
     private function resolveScoreOptions(array $scoreOptions): array
     {
         $scoreResolver = (new OptionsResolver())
@@ -318,6 +452,15 @@ class EurekaPaymentGatewayClient
         return $scoreResolver->resolve($scoreOptions);
     }
 
+    /**
+     * Resolve PayOrderRank options.
+     *
+     * @method resolvePayOrderRankOptions
+     *
+     * @param array $payOrderRankOptions
+     *
+     * @return array
+     */
     private function resolvePayOrderRankOptions(array $payOrderRankOptions): array
     {
         $payOrderRankResolver = (new OptionsResolver())
@@ -338,9 +481,18 @@ class EurekaPaymentGatewayClient
         return $payOrderRankResolver->resolve($payOrderRankOptions);
     }
 
-    private function resolveUpdateOrderOptions(array $payOrderRankOptions): array
+    /**
+     * Resolve UpdateOrder options.
+     *
+     * @method resolveUpdateOrderOptions
+     *
+     * @param array $payOrderRankOptions
+     *
+     * @return array
+     */
+    private function resolveUpdateOrderOptions(array $updateOrderOptions): array
     {
-        $payOrderRankResolver = (new OptionsResolver())
+        $updateOrderResolver = (new OptionsResolver())
             ->setRequired([
                 'Header',
                 'UpdateOrderRequestMessage',
@@ -355,9 +507,18 @@ class EurekaPaymentGatewayClient
                 })
         ;
 
-        return $payOrderRankResolver->resolve($payOrderRankOptions);
+        return $updateOrderResolver->resolve($updateOrderOptions);
     }
 
+    /**
+     * Resolve Header options.
+     *
+     * @method resolveHeaderOptions
+     *
+     * @param array $headerOptions
+     *
+     * @return array
+     */
     private function resolveHeaderOptions(array $headerOptions): array
     {
         $headerResolver = (new OptionsResolver())
@@ -387,7 +548,16 @@ class EurekaPaymentGatewayClient
         return $headerResolver->resolve($headerOptions);
     }
 
-    private function resolveContextOptions($contextOptions): array
+    /**
+     * Resolve Header.Context options.
+     *
+     * @method resolveContextOptions
+     *
+     * @param array $contextOptions
+     *
+     * @return array
+     */
+    private function resolveContextOptions(array $contextOptions): array
     {
         $contextResolver = (new OptionsResolver())
             ->setRequired([
@@ -401,7 +571,16 @@ class EurekaPaymentGatewayClient
         return $contextResolver->resolve($contextOptions);
     }
 
-    private function resolveLocalizationOptions($localizationOptions): array
+    /**
+     * Resolve Header.Localization options.
+     *
+     * @method resolveLocalizationOptions
+     *
+     * @param array $localizationOptions
+     *
+     * @return array
+     */
+    private function resolveLocalizationOptions(array $localizationOptions): array
     {
         $localizationResolver = (new OptionsResolver())
             ->setRequired([
@@ -424,6 +603,15 @@ class EurekaPaymentGatewayClient
         return $localizationResolver->resolve($localizationOptions);
     }
 
+    /**
+     * Resolve Header.Security options.
+     *
+     * @method resolveSecurityContextOptions
+     *
+     * @param array $securityContextOptions
+     *
+     * @return array
+     */
     private function resolveSecurityContextOptions($securityContextOptions): array
     {
         $securityContextResolver = (new OptionsResolver())
@@ -436,6 +624,15 @@ class EurekaPaymentGatewayClient
         return $securityContextResolver->resolve($securityContextOptions);
     }
 
+    /**
+     * Resolve PayOrderRankRequestMessage options.
+     *
+     * @method resolvePayOrderRankRequestMessageOptions
+     *
+     * @param array $payOrderRankRequestMessageOptions
+     *
+     * @return array
+     */
     private function resolvePayOrderRankRequestMessageOptions(array $payOrderRankRequestMessageOptions): array
     {
         $payOrderRankRequestMessageResolver = (new OptionsResolver())
@@ -456,6 +653,15 @@ class EurekaPaymentGatewayClient
         return $payOrderRankRequestMessageResolver->resolve($payOrderRankRequestMessageOptions);
     }
 
+    /**
+     * Resolve UpdateOrderRequestMessage options.
+     *
+     * @method resolveUpdateOrderRequestMessageOptions
+     *
+     * @param array $updateOrderRequestMessageOptions
+     *
+     * @return array
+     */
     private function resolveUpdateOrderRequestMessageOptions(array $updateOrderRequestMessageOptions): array
     {
         $updateOrderRequestMessageResolver = (new OptionsResolver())
@@ -474,9 +680,18 @@ class EurekaPaymentGatewayClient
         return $updateOrderRequestMessageResolver->resolve($updateOrderRequestMessageOptions);
     }
 
-    private function resolveRequestOptions(array $contextOptions): array
+    /**
+     * Resolve Request options.
+     *
+     * @method resolveRequestOptions
+     *
+     * @param array $requestOptions
+     *
+     * @return array
+     */
+    private function resolveRequestOptions(array $requestOptions): array
     {
-        $contextResolver = (new OptionsResolver())
+        $requestResolver = (new OptionsResolver())
             ->setRequired([
                 'Customer',
                 'Order',
@@ -533,9 +748,20 @@ class EurekaPaymentGatewayClient
                 })
         ;
 
-        return $contextResolver->resolve($contextOptions);
+        return $requestResolver->resolve($requestOptions);
     }
 
+    /**
+     * Resolve Request.Customer options.
+     *
+     * @method resolveCustomerOptions
+     *
+     * @param array $customerOptions
+     *
+     * @return array
+     *
+     * @throws \InvalidArgumentException If a parameter is misconfigured
+     */
     private function resolveCustomerOptions(array $customerOptions): array
     {
         $customerResolver = (new OptionsResolver())
@@ -612,7 +838,7 @@ class EurekaPaymentGatewayClient
                     }
 
                     if (self::CIVILITY_MISSTRESS === $options['Civility'] && null === $value) {
-                        throw new \UnexpectedValueException(
+                        throw new \InvalidArgumentException(
                             sprintf(
                                 'As the field "Customer.Civility" of the customer equal to "%s", "Customer.MaidenName" mustn\'t be null.',
                                 self::CIVILITY_MISSTRESS
@@ -774,6 +1000,15 @@ class EurekaPaymentGatewayClient
         return $customerResolver->resolve($customerOptions);
     }
 
+    /**
+     * Resolve Request.Order options.
+     *
+     * @method resolveOrderOptions
+     *
+     * @param array $orderOptions
+     *
+     * @return array
+     */
     private function resolveOrderOptions(array $orderOptions): array
     {
         $orderResolver = (new OptionsResolver())
@@ -846,7 +1081,18 @@ class EurekaPaymentGatewayClient
         return $orderResolver->resolve($orderOptions);
     }
 
-    private function resolveOptionalCustomerHistoryOptions(array $optionalCustomerHistory): array
+    /**
+     * Resolve Request.OptionalCustomerHistory options.
+     *
+     * @method resolveOptionalCustomerHistoryOptions
+     *
+     * @param array $optionalCustomerHistoryOptions
+     *
+     * @return array
+     *
+     * @throws \InvalidArgumentException If a parameter is misconfigured
+     */
+    private function resolveOptionalCustomerHistoryOptions(array $optionalCustomerHistoryOptions): array
     {
         $optionalCustomerHistoryResolver = (new OptionsResolver())
             ->setRequired([
@@ -915,15 +1161,26 @@ class EurekaPaymentGatewayClient
             ->setAllowedTypes('ScoreSimulationCount7Days', ['null', 'int'])
         ;
 
-        $optionalCustomerHistory = $optionalCustomerHistoryResolver->resolve($optionalCustomerHistory);
-        if (empty(array_filter($optionalCustomerHistory, function ($a) { return null !== $a; }))) {
+        $optionalCustomerHistoryOptions = $optionalCustomerHistoryResolver->resolve($optionalCustomerHistoryOptions);
+        if (empty(array_filter($optionalCustomerHistoryOptions, function ($a) { return null !== $a; }))) {
             return [];
         }
 
-        return $optionalCustomerHistory;
+        return $optionalCustomerHistoryOptions;
     }
 
-    private function resolveOptionalTravelDetailsOptions(array $optionalTravelDetails): array
+    /**
+     * Resolve Request.OptionalTravelDetails options.
+     *
+     * @method resolveOptionalTravelDetailsOptions
+     *
+     * @param array $optionalTravelDetailsOptions
+     *
+     * @return array
+     *
+     * @throws \InvalidArgumentException If a parameter is misconfigured
+     */
+    private function resolveOptionalTravelDetailsOptions(array $optionalTravelDetailsOptions): array
     {
         $optionalTravelDetailsResolver = (new OptionsResolver())
             ->setRequired([
@@ -1078,21 +1335,32 @@ class EurekaPaymentGatewayClient
                 })
         ;
 
-        $optionalTravelDetails = $optionalTravelDetailsResolver->resolve($optionalTravelDetails);
-        if (empty(array_filter($optionalTravelDetails, function ($a) { return null !== $a && (is_array($a) && !empty($a)); }))) {
+        $optionalTravelDetails = $optionalTravelDetailsResolver->resolve($optionalTravelDetailsOptions);
+        if (empty(array_filter($optionalTravelDetailsOptions, function ($a) { return null !== $a && (is_array($a) && !empty($a)); }))) {
             return [];
         }
 
-        return $optionalTravelDetails;
+        return $optionalTravelDetailsOptions;
     }
 
-    private function resolveTravellerPassportListOptions(?array $travellerPassportList): array
+    /**
+     * Resolve Request.OptionalTravelDetails.TravellerPassportList options.
+     *
+     * @method resolveTravellerPassportListOptions
+     *
+     * @param array|null $travellerPassportListOptions
+     *
+     * @return array
+     *
+     * @throws \InvalidArgumentException If a parameter is misconfigured
+     */
+    private function resolveTravellerPassportListOptions(?array $travellerPassportListOptions): array
     {
-        if (null === $travellerPassportList || empty($travellerPassportList)) {
+        if (null === $travellerPassportListOptions || empty($travellerPassportListOptions)) {
             return [];
         }
 
-        $travellerPassportListResolver = (new OptionsResolver())
+        $travellerPassportResolver = (new OptionsResolver())
             ->setRequired([
                 'ExpirationDate',
                 'IssuanceCountry',
@@ -1128,14 +1396,25 @@ class EurekaPaymentGatewayClient
         ;
 
         $resolvedTravellerPassportList = [];
-        foreach ($value as $travellerPassport) {
-            $resolvedTravellerPassportList[] = $travellerPassportListResolver->resolve($travellerPassport);
+        foreach ($travellerPassportListOptions as $travellerPassportOption) {
+            $resolvedTravellerPassportList[] = $travellerPassportResolver->resolve($travellerPassportOption);
         }
 
         return !empty($resolvedTravellerPassportList) ? $resolvedTravellerPassportList : [];
     }
 
-    private function resolveOptionalStayDetailsOptions(array $optionalStayDetails): array
+    /**
+     * Resolve Request.OptionalStayDetails options.
+     *
+     * @method resolveOptionalStayDetailsOptions
+     *
+     * @param array $optionalStayDetailsOptions
+     *
+     * @return array
+     *
+     * @throws \InvalidArgumentException If a parameter is misconfigured
+     */
+    private function resolveOptionalStayDetailsOptions(array $optionalStayDetailsOptions): array
     {
         $optionalStayDetailsResolver = (new OptionsResolver())
             ->setRequired([
@@ -1168,15 +1447,26 @@ class EurekaPaymentGatewayClient
             ->setAllowedTypes('RoomRange', ['null', 'int'])
         ;
 
-        $optionalStayDetails = $optionalStayDetailsResolver->resolve($optionalStayDetails);
-        if (empty(array_filter($optionalStayDetails, function ($a) { return null !== $a; }))) {
+        $optionalStayDetailsOptions = $optionalStayDetailsResolver->resolve($optionalStayDetailsOptions);
+        if (empty(array_filter($optionalStayDetailsOptions, function ($a) { return null !== $a; }))) {
             return [];
         }
 
-        return $optionalStayDetails;
+        return $optionalStayDetailsOptions;
     }
 
-    private function resolveOptionalProductDetailsOptions(array $optionalProductDetails): array
+    /**
+     * Resolve Request.OptionalProductDetails options.
+     *
+     * @method resolveOptionalProductDetailsOptions
+     *
+     * @param array $optionalProductDetailsOptions
+     *
+     * @return array
+     *
+     * @throws \InvalidArgumentException If a parameter is misconfigured
+     */
+    private function resolveOptionalProductDetailsOptions(array $optionalProductDetailsOptions): array
     {
         $optionalProductDetailsResolver = (new OptionsResolver())
             ->setRequired([
@@ -1216,15 +1506,24 @@ class EurekaPaymentGatewayClient
                 })
         ;
 
-        $optionalProductDetails = $optionalProductDetailsResolver->resolve($optionalProductDetails);
-        if (empty(array_filter($optionalProductDetails, function ($a) { return null !== $a; }))) {
+        $optionalProductDetailsOptions = $optionalProductDetailsResolver->resolve($optionalProductDetailsOptions);
+        if (empty(array_filter($optionalProductDetailsOptions, function ($a) { return null !== $a; }))) {
             return [];
         }
 
-        return $optionalProductDetails;
+        return $optionalProductDetailsOptions;
     }
 
-    private function resolveOptionalPreScoreInformationOptions(array $optionalPreScoreInformation): array
+    /**
+     * Resolve Request.OptionalPreScoreInformation options.
+     *
+     * @method resolveOptionalPreScoreInformationOptions
+     *
+     * @param array $optionalPreScoreInformationOptions
+     *
+     * @return array
+     */
+    private function resolveOptionalPreScoreInformationOptions(array $optionalPreScoreInformationOptions): array
     {
         $optionalPreScoreInformationResolver = (new OptionsResolver())
             ->setRequired([
@@ -1233,36 +1532,56 @@ class EurekaPaymentGatewayClient
             ->setAllowedTypes('RequestID', ['null', 'string'])
         ;
 
-        $optionalPreScoreInformation = $optionalPreScoreInformationResolver->resolve($optionalPreScoreInformation);
-        if (empty(array_filter($optionalPreScoreInformation, function ($a) { return null !== $a; }))) {
+        $optionalPreScoreInformationOptions = $optionalPreScoreInformationResolver->resolve($optionalPreScoreInformationOptions);
+        if (empty(array_filter($optionalPreScoreInformationOptions, function ($a) { return null !== $a; }))) {
             return [];
         }
 
-        return $optionalPreScoreInformation;
+        return $optionalPreScoreInformationOptions;
     }
 
-    private function resolveAdditionalFieldListOptions(?array $additionalFieldList): array
+    /**
+     * Resolve AdditionalFieldList options.
+     *
+     * @method resolveAdditionalFieldListOptions
+     *
+     * @param ?array $additionalFieldListOptions
+     *
+     * @return array
+     */
+    private function resolveAdditionalFieldListOptions(?array $additionalFieldListOptions): array
     {
-        if (null === $additionalFieldList || empty($additionalFieldList)) {
+        if (null === $additionalFieldListOptions || empty($additionalFieldListOptions)) {
             return [];
         }
 
-        $additionalNumericFieldListResolver = (new OptionsResolver())
+        $additionalFieldResolver = (new OptionsResolver())
             ->setRequired([
                 'Index',
                 'Value',
             ])
         ;
 
-        $additionalNumericFieldList = [];
-        foreach ($additionalFieldList as $additionalNumericField) {
-            $additionalNumericFieldList[] = $additionalNumericFieldListResolver->resolve($additionalNumericField);
+        $resolvedAdditionalFieldListOptions = [];
+        foreach ($additionalFieldListOptions as $additionalFieldOptions) {
+            $resolvedAdditionalFieldListOptions[] = $additionalFieldResolver->resolve($additionalFieldOptions);
         }
 
-        return !empty($additionalNumericFieldList) ? $additionalNumericFieldList : [];
+        return !empty($resolvedAdditionalFieldListOptions) ? $resolvedAdditionalFieldListOptions : [];
     }
 
-    private function resolveOptionalShippingDetailsOptions(array $orderShippingDetails): array
+    /**
+     * Resolve Request.OptionalShippingDetails options.
+     *
+     * @method resolveOptionalShippingDetailsOptions
+     *
+     * @param array $orderShippingDetailsOptions
+     *
+     * @return array
+     *
+     * @throws \InvalidArgumentException If a parameter is misconfigured
+     */
+    private function resolveOptionalShippingDetailsOptions(array $orderShippingDetailsOptions): array
     {
         $orderShippingDetailsResolver = (new OptionsResolver())
             ->setRequired([
@@ -1324,11 +1643,11 @@ class EurekaPaymentGatewayClient
                 })
         ;
 
-        $orderShippingDetails = $orderShippingDetailsResolver->resolve($orderShippingDetails);
-        if (empty(array_filter($orderShippingDetails, function ($a) { return null !== $a; }))) {
+        $orderShippingDetailsOptions = $orderShippingDetailsResolver->resolve($orderShippingDetailsOptions);
+        if (empty(array_filter($orderShippingDetailsOptions, function ($a) { return null !== $a; }))) {
             return [];
         }
 
-        return $orderShippingDetails;
+        return $orderShippingDetailsOptions;
     }
 }

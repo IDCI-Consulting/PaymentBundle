@@ -7,11 +7,13 @@ use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payplug;
-use Payplug\Resource\Payment;
 use Symfony\Component\HttpFoundation\Request;
 
 class PayPlugPaymentGateway extends AbstractPaymentGateway
 {
+    /**
+     * {@inheritdoc}
+     */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -41,6 +43,9 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -52,6 +57,11 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \UnexpectedValueException If the request method is not POST
+     */
     public function getResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
@@ -83,6 +93,9 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

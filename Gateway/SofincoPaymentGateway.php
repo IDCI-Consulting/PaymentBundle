@@ -33,6 +33,16 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         $this->serverUrl = $serverUrl;
     }
 
+    /**
+     * Build options for WSACCROCHE Sofinco module.
+     *
+     * @method buildOfferVerifyOptions
+     *
+     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+     * @param Transaction                          $transaction
+     *
+     * @return array
+     */
     private function buildOfferVerifyOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -44,6 +54,16 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * Build gateway form options.
+     *
+     * @method buildOptions
+     *
+     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+     * @param Transaction                          $transaction
+     *
+     * @return array
+     */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -58,10 +78,22 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * Check if the sofinco offer exists according to transaction amount.
+     *
+     * @method verifyIfOfferExist
+     *
+     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+     * @param Transaction                          $transaction
+     *
+     * @return bool
+     *
+     * @throws \UnexpectedValueException If the offer doesn't exists
+     */
     private function verifyIfOfferExist(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ) {
+    ): bool {
         $options = $this->buildOfferVerifyOptions($paymentGatewayConfiguration, $transaction);
 
         $response = (new Client())->request('GET', $this->serverUrl, [
@@ -71,12 +103,23 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         $data = json_decode(json_encode(new \SimpleXMLElement($response->getBody()->getContents())), true);
 
         if ('00' !== $data['C_RETOUR']) {
-            throw new \UnexpectedValueException($data['LL_MSG']);
+            throw new \UnexpectedValueException(
+                sprintf(
+                    'Error code %s: No offer exists for the contract code "%s" and the amount "%s". Result of the request: %s',
+                    $data['C_RETOUR'],
+                    $options['q6'],
+                    $options['p4'],
+                    json_encode($data)
+                )
+            );
         }
 
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -91,6 +134,9 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -102,6 +148,11 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \UnexpectedValueException If the request method is not GET
+     */
     public function getResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
@@ -113,6 +164,7 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
+            ->setRaw($request->query->all())
         ;
 
         if (1 == $request->query->get('c3')) {
@@ -127,6 +179,9 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_UNVERIFIED);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

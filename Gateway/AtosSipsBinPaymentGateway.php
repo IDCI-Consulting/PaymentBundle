@@ -43,7 +43,16 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
         $this->responseBinPath = $responseBinPath;
     }
 
-    private function buildResponseParams(Request $request)
+    /**
+     * Build notification response parameters.
+     *
+     * @method buildResponseParams
+     *
+     * @param Request $request
+     *
+     * @return array
+     */
+    private function buildResponseParams(Request $request): array
     {
         $shellOptions = array(
             'pathfile' => $this->pathfile,
@@ -116,6 +125,16 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
         return $params;
     }
 
+    /**
+     * Build payment gateway options.
+     *
+     * @method buildOptions
+     *
+     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+     * @param Transaction                          $transaction
+     *
+     * @return array
+     */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -134,6 +153,12 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \UnexpectedValueException If the initialization request has failed
+     * @throws \UnexpectedValueException If the transaction could not have been initialized
+     */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -169,6 +194,9 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -180,6 +208,11 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \UnexpectedValueException If the request method is not POST
+     */
     public function getResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
@@ -219,6 +252,9 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

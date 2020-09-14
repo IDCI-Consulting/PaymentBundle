@@ -32,6 +32,18 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         $this->eurekaPaymentGatewayClient = $eurekaPaymentGatewayClient;
     }
 
+    /**
+     * Build payment gateway options.
+     *
+     * @method buildOptions
+     *
+     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+     * @param Transaction                          $transaction
+     *
+     * @return array
+     *
+     * @throws \UnexpectedValueException If required transaction metadata is not set
+     */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -67,10 +79,20 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * Request payment gateway request token.
+     *
+     * @method requestScoringToken
+     *
+     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+     * @param Transaction                          $transaction
+     *
+     * @return string
+     */
     private function requestScoringToken(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
-    ) {
+    ): string {
         $scoringToken = $this->eurekaPaymentGatewayClient->getScoringToken(
             $paymentGatewayConfiguration->get('score_type'),
             [
@@ -192,6 +214,16 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return $scoringToken;
     }
 
+    /**
+     * Build payment gateway HMAC signature according to its type (IN|OUT).
+     *
+     * @method buildHmac
+     *
+     * @param array  $options
+     * @param string $hmacType
+     *
+     * @return string
+     */
     private function buildHmac(array $options, string $hmacType): string
     {
         $hmacData = '';
@@ -217,6 +249,9 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return hash_hmac('sha1', utf8_encode(sprintf('%s*', substr($hmacData, 1))), utf8_encode($options['secretKey']));
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -228,6 +263,9 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -240,6 +278,11 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \UnexpectedValueException If the request method is not POST
+     */
     public function getResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
@@ -286,6 +329,9 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public static function getParameterNames(): ?array
     {
         return array_merge(
@@ -303,6 +349,15 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         );
     }
 
+    /**
+     * Get the HMAC build parameters names according to its type (IN|OUT).
+     *
+     * @method getHmacBuildParameters
+     *
+     * @param string $hmacType
+     *
+     * @return array
+     */
     private function getHmacBuildParameters(string $hmacType): array
     {
         if (self::HMAC_TYPE_OUT === $hmacType) {
@@ -355,6 +410,13 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * Get required transaction metadata names.
+     *
+     * @method getRequiredTransactionMetadata
+     *
+     * @return array
+     */
     private function getRequiredTransactionMetadata(): array
     {
         return [

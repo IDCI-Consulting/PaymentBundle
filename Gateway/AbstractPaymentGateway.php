@@ -28,21 +28,33 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
         $this->dispatcher = $dispatcher;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     abstract public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array;
 
+    /**
+     * {@inheritdoc}
+     */
     abstract public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): string;
 
+    /**
+     * {@inheritdoc}
+     */
     abstract public function getResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse;
 
+    /**
+     * {@inheritdoc}
+     */
     public static function getParameterNames(): ?array
     {
         return [

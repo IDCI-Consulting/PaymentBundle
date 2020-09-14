@@ -32,16 +32,39 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         $this->publicKeyUrl = $publicKeyUrl;
     }
 
+    /**
+     * Get Paybox server url.
+     *
+     * @method getServerUrl
+     *
+     * @return string
+     */
     private function getServerUrl(): string
     {
         return sprintf('https://%s/cgi/MYchoix_pagepaiement.cgi', $this->serverHostName);
     }
 
+    /**
+     * Get Paybox key file path accoding to client site id.
+     *
+     * @method getKeyPath
+     *
+     * @param string $clientSite
+     *
+     * @return string
+     */
     private function getKeyPath(string $clientSite): string
     {
         return sprintf('%s/%s.bin', $this->keyPath, $clientSite);
     }
 
+    /**
+     * Get Paybox requested parameters for notification response.
+     *
+     * @method getPayboxReturnString
+     *
+     * @return string
+     */
     private function getPayboxReturnString(): string
     {
         $codeMap = array(
@@ -77,6 +100,16 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ));
     }
 
+    /**
+     * Build payment gateway options.
+     *
+     * @method buildOptions
+     *
+     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+     * @param Transaction                          $transaction
+     *
+     * @return array
+     */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -102,6 +135,9 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -129,6 +165,9 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -140,6 +179,11 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \UnexpectedValueException If the request method is not post
+     */
     public function getResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
@@ -184,6 +228,9 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

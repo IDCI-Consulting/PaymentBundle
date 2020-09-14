@@ -30,26 +30,28 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
         $this->serverHostName = $serverHostName;
     }
 
-    private function buildSeal(array $options, string $secretKey)
-    {
-        $dataForSeal = '';
-
-        foreach ($options as $key => $value) {
-            if ('keyVersion' !== $key && 'sealAlgorithm' !== $key) {
-                $dataForSeal .= $value;
-            }
-        }
-
-        $dataToSend = utf8_encode($dataForSeal);
-
-        return hash_hmac('sha256', $dataToSend, $secretKey);
-    }
-
+    /**
+     * Get Atos Sips Json server url.
+     *
+     * @method getServerUrl
+     *
+     * @return string
+     */
     protected function getServerUrl(): string
     {
         return sprintf('https://%s/rs-services/v2/paymentInit', $this->serverHostName);
     }
 
+    /**
+     * Build payment gateway options.
+     *
+     * @method buildOptions
+     *
+     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+     * @param Transaction                          $transaction
+     *
+     * @return array
+     */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -69,6 +71,37 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * Build payment gateway signature hash.
+     *
+     * @method buildSeal
+     *
+     * @param array  $options
+     * @param string $secretKey
+     *
+     * @return string
+     */
+    private function buildSeal(array $options, string $secretKey): string
+    {
+        $dataForSeal = '';
+
+        foreach ($options as $key => $value) {
+            if ('keyVersion' !== $key && 'sealAlgorithm' !== $key) {
+                $dataForSeal .= $value;
+            }
+        }
+
+        $dataToSend = utf8_encode($dataForSeal);
+
+        return hash_hmac('sha256', $dataToSend, $secretKey);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \UnexpectedValueException               If the initialization request has failed
+     * @throws UnexpectedAtosSipsResponseCodeException If the transaction could not have been initialized
+     */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -95,6 +128,9 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
         return $returnParams;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -106,6 +142,11 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \UnexpectedValueException If the request method is not POST
+     */
     public function getResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
@@ -165,6 +206,9 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

@@ -33,6 +33,16 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         $this->serverUrl = $serverUrl;
     }
 
+    /**
+     * Build gateway options.
+     *
+     * @method buildOptions
+     *
+     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+     * @param Transaction                          $transaction
+     *
+     * @return array
+     */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -65,6 +75,16 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * Build SystemPay HMAC signature accoding to payment gateway coniguration.
+     *
+     * @method buildSignature
+     *
+     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+     * @param array                                $options
+     *
+     * @return string
+     */
     private function buildSignature(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         array $options
@@ -83,6 +103,9 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         return base64_encode(hash_hmac('sha256', $rawSignature, $key, true));
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -96,6 +119,9 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -107,6 +133,11 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \UnexpectedValueException If the request method is not POST
+     */
     public function getResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
@@ -161,6 +192,9 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public static function getParameterNames(): ?array
     {
         return array_merge(
@@ -178,6 +212,15 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         );
     }
 
+    /**
+     * Clean and sort alphabetically options array.
+     *
+     * @method cleanOptions
+     *
+     * @param array $options
+     *
+     * @return array
+     */
     protected function cleanOptions(array $options = []): array
     {
         $cleanedOptions = array_filter($options, function ($value, $name) {

@@ -28,11 +28,28 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
         $this->serverHostName = $serverHostName;
     }
 
+    /**
+     * Get Atos Sips POST server url.
+     *
+     * @method getServerUrl
+     *
+     * @return string
+     */
     private function getServerUrl(): string
     {
         return sprintf('https://%s/paymentInit', $this->serverHostName);
     }
 
+    /**
+     * Build payment gateway options.
+     *
+     * @method buildOptions
+     *
+     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+     * @param Transaction                          $transaction
+     *
+     * @return array
+     */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -50,11 +67,23 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * Build payment gateway signature hash.
+     *
+     * @method buildSeal
+     *
+     * @param array $options
+     *
+     * @return string
+     */
     private function buildSeal(array $options): string
     {
         return hash('sha256', mb_convert_encoding($options['build'].$options['secret'], 'UTF-8'));
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -83,6 +112,9 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -94,6 +126,11 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \UnexpectedValueException If the request method is not POST
+     */
     public function getResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
@@ -151,6 +188,9 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

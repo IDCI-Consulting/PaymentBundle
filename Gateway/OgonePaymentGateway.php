@@ -9,11 +9,28 @@ use Symfony\Component\HttpFoundation\Request;
 
 class OgonePaymentGateway extends AbstractPaymentGateway
 {
+    /**
+     * Get Ogone server url.
+     *
+     * @method getServerUrl
+     *
+     * @return string
+     */
     private function getServerUrl(): string
     {
         return 'https://secure.ogone.com/ncol/test/orderstandard.asp'; // raw (for test)
     }
 
+    /**
+     * Build payment gateway options.
+     *
+     * @method buildOptions
+     *
+     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+     * @param Transaction                          $transaction
+     *
+     * @return array
+     */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -38,6 +55,9 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -59,6 +79,9 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         return $options;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
@@ -70,6 +93,9 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
@@ -77,6 +103,9 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         return null;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public static function getParameterNames(): ?array
     {
         return array_merge(
