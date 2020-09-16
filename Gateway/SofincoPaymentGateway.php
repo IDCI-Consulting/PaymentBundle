@@ -124,8 +124,6 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
-        $this->verifyIfOfferExist($paymentGatewayConfiguration, $transaction);
-
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
         return [
