@@ -317,9 +317,9 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         ;
 
         if ('0' !== $request->request->get('returnCode')) {
-            $gatewayResponse->setMessage(EurekaStatusCode::getStatusMessage($returnParams['responseCode']));
+            $gatewayResponse->setMessage(EurekaStatusCode::getStatusMessage($returnParams['returnCode']));
 
-            if ('6' === $returnParams['responseCode']) {
+            if ('6' === $returnParams['returnCode']) {
                 $gatewayResponse->setStatus(PaymentStatus::STATUS_CANCELED);
             }
 
