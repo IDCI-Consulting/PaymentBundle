@@ -254,7 +254,7 @@ class EurekaPaymentGatewayClient
                 ],
             ]);
         } catch (RequestException $e) {
-            $this->logger->error((string) $e->getResponse()->getBody());
+            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
         }
     }
 
@@ -331,7 +331,7 @@ class EurekaPaymentGatewayClient
                 ]
             );
         } catch (RequestException $e) {
-            $this->logger->error((string) $e->getResponse()->getBody());
+            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
         }
     }
 
@@ -395,7 +395,7 @@ class EurekaPaymentGatewayClient
                 ],
             ]);
         } catch (RequestException $e) {
-            $this->logger->error((string) $e->getResponse()->getBody());
+            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
         }
     }
 
@@ -419,7 +419,7 @@ class EurekaPaymentGatewayClient
                 ],
             ]);
         } catch (RequestException $e) {
-            $this->logger->error((string) $e->getResponse()->getBody());
+            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
         }
     }
 
