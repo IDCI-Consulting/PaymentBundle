@@ -160,6 +160,8 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         }
 
         $gatewayResponse = (new GatewayResponse())
+            ->setTransactionUuid($request->query->get('ti'))
+            ->setAmount($request->query->get('s3'))
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
             ->setRaw($request->query->all())
@@ -168,11 +170,6 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         if (1 == $request->query->get('c3')) {
             return $gatewayResponse->setMessage('Transaction unauthorized');
         }
-
-        $gatewayResponse
-            ->setTransactionUuid($request->query->get('ti'))
-            ->setAmount($request->query->get('s3'))
-        ;
 
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_UNVERIFIED);
     }
