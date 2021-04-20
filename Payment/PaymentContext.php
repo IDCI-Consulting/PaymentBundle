@@ -114,6 +114,10 @@ class PaymentContext implements PaymentContextInterface
 
     public function buildHTMLView(): string
     {
+        if (!$this->hasTransaction()) {
+            throw new \LogicException('Payment context : No transaction has been initialized for this context.');
+        }
+
         return $this
             ->getPaymentGateway()
             ->buildHTMLView($this->getPaymentGatewayConfiguration(), $this->getTransaction())

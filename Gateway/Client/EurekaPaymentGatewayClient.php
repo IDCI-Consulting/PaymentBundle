@@ -142,7 +142,7 @@ class EurekaPaymentGatewayClient
     {
         if (null !== $cache) {
             if (!interface_exists(AdapterInterface::class)) {
-                throw new \RuntimeException('ConfigurationFetcher cache requires "symfony/cache" package');
+                throw new \RuntimeException('EurekaPaymentGatewayClient cache requires "symfony/cache" package');
             }
 
             if (!$cache instanceof AdapterInterface) {

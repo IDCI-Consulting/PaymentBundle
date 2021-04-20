@@ -212,7 +212,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             $options['prevent_next'] = false;
         }
 
-        if (PaymentStatus::STATUS_APPROVED === $transaction->getStatus()) {
+        if (PaymentStatus::STATUS_APPROVED === $transaction->getStatus() || PaymentStatus::STATUS_UNVERIFIED === $transaction->getStatus()) {
             $options['prevent_next'] = false;
             $options['prevent_previous'] = true;
         }
