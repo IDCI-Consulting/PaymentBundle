@@ -47,7 +47,6 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
-        // Important: Options must be in alphabetical order.
         return [
             'vads_action_mode' => $paymentGatewayConfiguration->get('action_mode'),
             'vads_amount' => $transaction->getAmount(),
@@ -66,6 +65,8 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
             'vads_order_id' => $transaction->getId(),
             'vads_page_action' => $paymentGatewayConfiguration->get('page_action'),
             'vads_payment_config' => $paymentGatewayConfiguration->get('payment_config'),
+            'vads_redirect_error_timeout' => $transaction->getMetadata('vads_redirect_error_timeout'),
+            'vads_redirect_success_timeout' => $transaction->getMetadata('vads_redirect_success_timeout'),
             'vads_site_id' => $paymentGatewayConfiguration->get('site_id'),
             'vads_trans_date' => (new \DateTime())->setTimezone(new \DateTimeZone('UTC'))->format('YmdHis'),
             'vads_trans_id' => sprintf('%06d', $transaction->getNumber()),
