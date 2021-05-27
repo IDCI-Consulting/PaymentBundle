@@ -1,0 +1,9 @@
+<Service ServiceName="{{ ServiceName }}">
+    <IN>
+        <DossiersCollection>
+            {% for Dossier in Dossiers %}
+                <Dossier DossierNumber="{{ Dossier.DossierNumber }}"{% if Dossier.CommandNumber is defined %} CommandNumber="{{ Dossier.CommandNumber }}"{% endif %}/>
+            {% endfor %}
+        </DossiersCollection>
+    </IN>
+</Service>

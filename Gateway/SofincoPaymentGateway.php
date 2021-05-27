@@ -2,13 +2,14 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
-use GuzzleHttp\Client;
+use IDCI\Bundle\PaymentBundle\Gateway\Client\SofincoPaymentGatewayClient;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Twig\Environment;
 
 class SofincoPaymentGateway extends AbstractPaymentGateway
 {
@@ -19,102 +20,87 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
     const CART_MODULE = 'PANIER';
 
     /**
-     * @var string
+     * @var SofincoPaymentGatewayClient
      */
-    private $serverUrl;
+    private $client;
 
     public function __construct(
-        \Twig_Environment $templating,
+        Environment $templating,
         EventDispatcherInterface $dispatcher,
-        string $serverUrl
+        SofincoPaymentGatewayClient $client
     ) {
         parent::__construct($templating, $dispatcher);
 
-        $this->serverUrl = $serverUrl;
-    }
-
-    /**
-     * Build options for WSACCROCHE Sofinco module.
-     *
-     * @method buildOfferVerifyOptions
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return array
-     */
-    private function buildOfferVerifyOptions(
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
-    ): array {
-        return [
-            'q6' => $paymentGatewayConfiguration->get('site_id'),
-            'p0' => self::OFFER_MODULE,
-            'p4' => $transaction->getAmount() / 100,
-        ];
+        $this->client = $client;
     }
 
     /**
      * Build gateway form options.
      *
      * @method buildOptions
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return array
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
         return [
-            'q6' => $paymentGatewayConfiguration->get('site_id'),
-            'p0' => self::CART_MODULE,
-            'ti' => $transaction->getId(),
-            's3' => $transaction->getAmount() / 100,
-            'uret' => $paymentGatewayConfiguration->get('return_url'),
-            'p5' => $paymentGatewayConfiguration->get('callback_url'),
+            'businessContext' => [
+                'providerContext' => [
+                    'businessProviderId' => $paymentGatewayConfiguration->get('business_provider_id'),
+                    'returnUrl' => $paymentGatewayConfiguration->get('return_url'),
+                ],
+                'customerContext' => [
+                    'externalCustomerId' => $transaction->getCustomerId(),
+                    'civilityCode' => $transaction->getMetadata('customerContext.civilityCode'),
+                    'firstName' => $transaction->getMetadata('customerContext.firstName'),
+                    'lastName' => $transaction->getMetadata('customerContext.lastName'),
+                    'birthName' => $transaction->getMetadata('customerContext.birthName'),
+                    'birthDate' => $transaction->getMetadata('customerContext.birthDate'),
+                    'citizenshipCode' => $transaction->getMetadata('customerContext.citizenshipCode'),
+                    'birthCountryCode' => $transaction->getMetadata('customerContext.birthCountryCode'),
+                    'additionalStreet' => $transaction->getMetadata('customerContext.additionalStreet'),
+                    'street' => $transaction->getMetadata('customerContext.street'),
+                    'city' => $transaction->getMetadata('customerContext.city'),
+                    'zipCode' => $transaction->getMetadata('customerContext.zipCode'),
+                    'distributerOffice' => $transaction->getMetadata('customerContext.distributerOffice'),
+                    'countryCode' => $transaction->getMetadata('customerContext.countryCode'),
+                    'phoneNumber' => $transaction->getMetadata('customerContext.phoneNumber'),
+                    'mobileNumber' => $transaction->getMetadata('customerContext.mobileNumber'),
+                    'emailAddress' => $transaction->getCustomerEmail(),
+                    'loyaltyCardId' => $transaction->getMetadata('customerContext.loyaltyCardId'),
+                ],
+                'coBorrowerContext' => [
+                    'externalCustomerId' => $transaction->getMetadata('coBorrowerContext.externalCustomerId'),
+                    'civilityCode' => $transaction->getMetadata('coBorrowerContext.civilityCode'),
+                    'firstName' => $transaction->getMetadata('coBorrowerContext.firstName'),
+                    'lastName' => $transaction->getMetadata('coBorrowerContext.lastName'),
+                    'birthName' => $transaction->getMetadata('coBorrowerContext.birthName'),
+                    'birthDate' => $transaction->getMetadata('coBorrowerContext.birthDate'),
+                    'citizenshipCode' => $transaction->getMetadata('coBorrowerContext.citizenshipCode'),
+                    'birthCountryCode' => $transaction->getMetadata('coBorrowerContext.birthCountryCode'),
+                    'additionalStreet' => $transaction->getMetadata('coBorrowerContext.additionalStreet'),
+                    'street' => $transaction->getMetadata('coBorrowerContext.street'),
+                    'city' => $transaction->getMetadata('coBorrowerContext.city'),
+                    'zipCode' => $transaction->getMetadata('coBorrowerContext.zipCode'),
+                    'distributerOffice' => $transaction->getMetadata('coBorrowerContext.distributerOffice'),
+                    'countryCode' => $transaction->getMetadata('coBorrowerContext.countryCode'),
+                    'phoneNumber' => $transaction->getMetadata('coBorrowerContext.phoneNumber'),
+                    'mobileNumber' => $transaction->getMetadata('coBorrowerContext.mobileNumber'),
+                    'emailAddress' => $transaction->getMetadata('coBorrowerContext.emailAddress'),
+                    'loyaltyCardId' => $transaction->getMetadata('coBorrowerContext.loyaltyCardId'),
+                ],
+                'offerContext' => [
+                    'orderId' => $transaction->getId(),
+                    'scaleId' => $transaction->getMetadata('offerContext.scaleId'),
+                    'equipmentCode' => $paymentGatewayConfiguration->get('equipment_code'),
+                    'amount' => $transaction->getAmount(),
+                    'orderAmount' => $transaction->getMetadata('offerContext.orderAmount'),
+                    'personalContributionAmount' => $transaction->getMetadata('offerContext.personalContributionAmount'),
+                    'duration' => $transaction->getMetadata('offerContext.duration'),
+                    'preScoringCode' => $transaction->getMetadata('offerContext.preScoringCode'),
+                ],
+            ],
         ];
-    }
-
-    /**
-     * Check if the sofinco offer exists according to transaction amount.
-     *
-     * @method verifyIfOfferExist
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return bool
-     *
-     * @throws \UnexpectedValueException If the offer doesn't exists
-     */
-    private function verifyIfOfferExist(
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
-    ): bool {
-        $options = $this->buildOfferVerifyOptions($paymentGatewayConfiguration, $transaction);
-
-        $response = (new Client())->request('GET', $this->serverUrl, [
-            'query' => $options,
-        ]);
-
-        $data = json_decode(json_encode(new \SimpleXMLElement($response->getBody()->getContents())), true);
-
-        if ('00' !== $data['C_RETOUR']) {
-            throw new \UnexpectedValueException(
-                sprintf(
-                    'Error code %s: No offer exists for the contract code "%s" and the amount "%s". Result of the request: %s',
-                    $data['C_RETOUR'],
-                    $options['q6'],
-                    $options['p4'],
-                    json_encode($data)
-                )
-            );
-        }
-
-        return true;
     }
 
     /**
@@ -127,7 +113,7 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
         return [
-            'url' => $this->serverUrl,
+            'url' => $this->client->getCreditUrl($options),
             'options' => $options,
         ];
     }
@@ -155,20 +141,32 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
-        if (!$request->isMethod(Request::METHOD_GET)) {
-            throw new \UnexpectedValueException('Sofinco : Payment Gateway error (Request method should be GET)');
+        if (!$request->isMethod(Request::METHOD_POST)) {
+            throw new \UnexpectedValueException('Sofinco : Payment Gateway error (Request method should be POST)');
         }
 
         $gatewayResponse = (new GatewayResponse())
-            ->setTransactionUuid($request->query->get('ti'))
-            ->setAmount($request->query->get('s3'))
+            ->setTransactionUuid($request->request->get('ORDER_ID'))
+            ->setAmount($request->request->get('AMOUNT'))
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
-            ->setRaw($request->query->all())
+            ->setRaw($request->request->all())
         ;
 
-        if (1 == $request->query->get('c3')) {
+        if (in_array(
+            $request->request->get('CONTRACT_STATUS'),
+            [
+                SofincoPaymentGatewayClient::DOCUMENT_STATUS_REFUSED,
+                SofincoPaymentGatewayClient::DOCUMENT_STATUS_CANCELED,
+                SofincoPaymentGatewayClient::DOCUMENT_STATUS_NOT_FOUND,
+                SofincoPaymentGatewayClient::DOCUMENT_STATUS_ERROR,
+            ]
+        )) {
             return $gatewayResponse->setMessage('Transaction unauthorized');
+        }
+
+        if (SofincoPaymentGatewayClient::DOCUMENT_STATUS_FUNDED === $request->request->get('CONTRACT_STATUS')) {
+            return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
         }
 
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_UNVERIFIED);
@@ -182,7 +180,8 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         return array_merge(
             parent::getParameterNames(),
             [
-                'site_id',
+                'business_provider_id',
+                'equipment_code',
             ]
         );
     }
