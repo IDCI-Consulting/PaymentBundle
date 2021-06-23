@@ -12,7 +12,7 @@ use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Twig\Environment;
 
-class SofincoPaymentGatewayClient
+class SofincoCACFPaymentGatewayClient
 {
     const BUSINESS_TOKEN_DURATION = 30;
     const BUSINESS_TOKEN_FORMAT_OPAQUE = 'OPAQUE';
@@ -145,7 +145,7 @@ class SofincoPaymentGatewayClient
     public function getAccessTokenResponse(): ?Response
     {
         if (null === $this->clientId || null === $this->secretId) {
-            throw new \LogicException('You must define "idci_payment.sofinco.client_id" and "idci_payment.sofinco.secret_id" parameters to use SofincoPaymentGatewayClient');
+            throw new \LogicException('You must define "idci_payment.sofinco.client_id" and "idci_payment.sofinco.secret_id" parameters to use SofincoCACFPaymentGatewayClient');
         }
 
         try {

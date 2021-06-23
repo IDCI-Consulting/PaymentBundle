@@ -278,3 +278,18 @@ idci_payment:
                 callback_url: http://[your server host]/payment-gateway/sofinco_test/callback # must be public
                 site_id: [Given in the documentation]
 ```
+
+# Sofinco CACF
+
+```yaml
+idci_payment:
+    gateway_configurations:
+        sofinco_cacf_test:
+            gateway_name: sofinco_cacf
+            enabled: true
+            parameters:
+                return_url: http://www.example.com/
+                callback_url: http://[your server host]/payment-gateway/sofinco_cacf_test/callback # must be public
+                business_provider_id: [Given in the documentation]
+                equipment_code: [Given in the documentation]
+```

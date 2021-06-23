@@ -108,6 +108,7 @@ Supported Gateways
 * [PayPlug](./Gateway/PayPlugPaymentGateway.php) ([example](./Resources/docs/example/payplug.md))
 * [SystemPay](./Gateway/SystemPayPaymentGateway.php) ([example](./Resources/docs/example/systempay.md))
 * [Sofinco](./Gateway/SofincoPaymentGateway.php) ([example](./Resources/docs/example/sofinco.md))
+* [Sofinco CACF](./Gateway/SofincoCACFPaymentGateway.php) ([example](./Resources/docs/example/sofinco-cacf.md))
 * [Atos Sips Bin](./Gateway/AtosSipsBinPaymentGateway.php)
     * Mercanet ([example](./Resources/docs/example/mercanet-bin.md))
     * Scellius ([example](./Resources/docs/example/scellius-bin.md))

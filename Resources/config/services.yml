@@ -131,8 +131,14 @@ services:
             - { name: idci_payment.gateways, alias: systempay }
 
     IDCI\Bundle\PaymentBundle\Gateway\SofincoPaymentGateway:
+        arguments:
+            $serverUrl: '%idci_payment.sofinco.server_url%'
         tags:
             - { name: idci_payment.gateways, alias: sofinco }
+
+    IDCI\Bundle\PaymentBundle\Gateway\SofincoCACFPaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: sofinco_cacf }
 
     IDCI\Bundle\PaymentBundle\Gateway\EurekaPaymentGateway:
         tags:
@@ -146,12 +152,12 @@ services:
         calls:
             - [setCache, ['@?cache.idci_payment']]
 
-    IDCI\Bundle\PaymentBundle\Gateway\Client\SofincoPaymentGatewayClient:
+    IDCI\Bundle\PaymentBundle\Gateway\Client\SofincoCACFPaymentGatewayClient:
         arguments:
-            $clientId: '%idci_payment.sofinco.client_id%'
-            $secretId: '%idci_payment.sofinco.secret_id%'
-            $serverHostName: '%idci_payment.sofinco.server_host_name%'
-            $apiHostName: '%idci_payment.sofinco.api_host_name%'
-            $weblongHostName: '%idci_payment.sofinco.weblong_host_name%'
+            $clientId: '%idci_payment.sofinco_cacf.client_id%'
+            $secretId: '%idci_payment.sofinco_cacf.secret_id%'
+            $serverHostName: '%idci_payment.sofinco_cacf.server_host_name%'
+            $apiHostName: '%idci_payment.sofinco_cacf.api_host_name%'
+            $weblongHostName: '%idci_payment.sofinco_cacf.weblong_host_name%'
         calls:
             - [setCache, ['@?cache.idci_payment']]

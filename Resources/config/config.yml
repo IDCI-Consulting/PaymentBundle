@@ -27,11 +27,14 @@ parameters:
     idci_payment.systempay.server_url: https://paiement.systempay.fr/vads-payment/
 
     # Sofinco default server url for test purposes
-    idci_payment.sofinco.server_host_name: rct.creditpartner.fr
-    idci_payment.sofinco.api_host_name: rct-api.sofinco.fr
-    idci_payment.sofinco.weblong_host_name: r7weblong.transcred.com
-    idci_payment.sofinco.client_id: null
-    idci_payment.sofinco.secret_id: null
+    idci_payment.sofinco.server_url: https://re7financement.transcred.com/sofgate.asp # prod: https://financement.transcred.com/sofgate.asp
+
+    # Sofinco CACF default server url for test purposes
+    idci_payment.sofinco_cacf.server_host_name: rct.creditpartner.fr
+    idci_payment.sofinco_cacf.api_host_name: rct-api.sofinco.fr
+    idci_payment.sofinco_cacf.weblong_host_name: r7weblong.transcred.com
+    idci_payment.sofinco_cacf.client_id: null
+    idci_payment.sofinco_cacf.secret_id: null
 
     # Eureka default server url for test purposes
     idci_payment.eureka.server_host_name: recette-cb4x.fr # prod: cb4x.fr
