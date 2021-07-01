@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Response;
 use IDCI\Bundle\PaymentBundle\Exception\Gateway\Eureka\NotEligibleCustomerException;
+use IDCI\Bundle\PaymentBundle\Exception\Gateway\GatewayException;
 use Payum\ISO4217\ISO4217;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
@@ -350,7 +351,11 @@ class EurekaPaymentGatewayClient
      */
     public function getScoringToken(string $type, array $options): string
     {
-        $tokenResponse = $this->getScoringTokenResponse($type, $options);
+        try {
+            $tokenResponse = $this->getScoringTokenResponse($type, $options);
+        } catch (\Exception $e) {
+            throw new GatewayException($e->getMessage());
+        }
 
         if (null === $tokenResponse) {
             throw new \UnexpectedValueException('The scoring token request failed.');
@@ -360,14 +365,14 @@ class EurekaPaymentGatewayClient
 
         if ('false' === $crawler->filterXPath('//paymentagreement')->text()) {
             $this->logger->error(
-                sprintf(
+                $scoringTokenException = sprintf(
                     'The scoring token request failed: %s. Scoring token response: %s',
                     $crawler->filterXPath('//responsemessage')->text(),
                     (string) $tokenResponse->getBody()
                 )
             );
 
-            throw new NotEligibleCustomerException($type);
+            throw new NotEligibleCustomerException($scoringTokenException, $type);
         }
 
         $scoringToken = $crawler->filterXPath('//scoringtoken')->text();
