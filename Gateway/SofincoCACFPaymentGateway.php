@@ -13,12 +13,6 @@ use Twig\Environment;
 
 class SofincoCACFPaymentGateway extends AbstractPaymentGateway
 {
-    const OFFER_MODULE = 'WSACCROCHE';
-
-    const PRODUCT_MODULE = 'PRODUCT';
-
-    const CART_MODULE = 'PANIER';
-
     /**
      * @var SofincoCACFPaymentGatewayClient
      */
@@ -48,6 +42,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
                 'providerContext' => [
                     'businessProviderId' => $paymentGatewayConfiguration->get('business_provider_id'),
                     'returnUrl' => $paymentGatewayConfiguration->get('return_url'),
+                    'exchangeUrl' => $paymentGatewayConfiguration->get('callback_url'),
                 ],
                 'customerContext' => [
                     'externalCustomerId' => $transaction->getCustomerId(),

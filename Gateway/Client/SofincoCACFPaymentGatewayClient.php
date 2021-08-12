@@ -319,7 +319,7 @@ class SofincoCACFPaymentGatewayClient
         try {
             $resolvedOptions = $this->resolveDocumentsOptions($options);
 
-            $templateName = in_array($resolvedOptions['ServiceName'], [self::DOCUMENT_SERVICE_NAME_A1, self::DOCUMENT_SERVICE_NAME_B]) ?
+            $templateName = in_array($resolvedOptions['ServiceName'], [self::DOCUMENT_SERVICE_NAME_A1, self::DOCUMENT_SERVICE_NAME_C]) ?
                 'flux_a1_c' :
                 'flux_b_d'
             ;
@@ -421,6 +421,14 @@ class SofincoCACFPaymentGatewayClient
                 ->setNormalizer('returnUrl', function (Options $options, $value) {
                     if (!filter_var($value, FILTER_VALIDATE_URL)) {
                         throw new \InvalidArgumentException('The "returnUrl" parameter is not a valid URL');
+                    }
+
+                    return $value;
+                })
+            ->setRequired('exchangeUrl')->setAllowedTypes('exchangeUrl', ['string'])
+                ->setNormalizer('exchangeUrl', function (Options $options, $value) {
+                    if (!filter_var($value, FILTER_VALIDATE_URL)) {
+                        throw new \InvalidArgumentException('The "exchangeUrl" parameter is not a valid URL');
                     }
 
                     return $value;
