@@ -107,9 +107,12 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
     ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
+        $fields = [];
+        parse_str(parse_url($this->client->getCreditUrl($options), PHP_URL_QUERY), $fields);
+
         return [
             'url' => $this->client->getCreditUrl($options),
-            'options' => $options,
+            'options' => $fields,
         ];
     }
 
