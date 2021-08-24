@@ -139,8 +139,8 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
-        if (!$request->isMethod(Request::METHOD_POST)) {
-            throw new \UnexpectedValueException('Sofinco : Payment Gateway error (Request method should be POST)');
+        if (!$request->isMethod(Request::METHOD_GET)) {
+            throw new \UnexpectedValueException('Sofinco : Payment Gateway error (Request method should be GET)');
         }
 
         $gatewayResponse = (new GatewayResponse())
