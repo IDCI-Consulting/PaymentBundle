@@ -133,26 +133,32 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
     /**
      * {@inheritdoc}
      *
-     * @throws \UnexpectedValueException If the request method is not GET
+     * @throws \UnexpectedValueException If the request method is not POST
      */
     public function getResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
-        if (!$request->isMethod(Request::METHOD_GET)) {
-            throw new \UnexpectedValueException('Sofinco : Payment Gateway error (Request method should be GET)');
+        if (!$request->isMethod(Request::METHOD_POST)) {
+            throw new \UnexpectedValueException('Sofinco : Payment Gateway error (Request method should be POST)');
+        }
+
+        $requestData = json_decode($request->getContent(), true);
+
+        if (json_last_error()) {
+            throw new \UnexpectedValueException(sprintf('Sofinco - JSON Error: %s', json_last_error_msg()));
         }
 
         $gatewayResponse = (new GatewayResponse())
-            ->setTransactionUuid($request->request->get('ORDER_ID'))
-            ->setAmount($request->request->get('AMOUNT'))
+            ->setTransactionUuid($requestData['ORDER_ID'])
+            ->setAmount($requestData['AMOUNT'])
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
-            ->setRaw($request->request->all())
+            ->setRaw($requestData)
         ;
 
         if (in_array(
-            $request->request->get('CONTRACT_STATUS'),
+            $requestData['CONTRACT_STATUS'],
             [
                 SofincoCACFPaymentGatewayClient::DOCUMENT_STATUS_REFUSED,
                 SofincoCACFPaymentGatewayClient::DOCUMENT_STATUS_CANCELED,
@@ -163,7 +169,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
             return $gatewayResponse->setMessage('Transaction unauthorized');
         }
 
-        if (SofincoCACFPaymentGatewayClient::DOCUMENT_STATUS_FUNDED === $request->request->get('CONTRACT_STATUS')) {
+        if (SofincoCACFPaymentGatewayClient::DOCUMENT_STATUS_FUNDED === $requestData['CONTRACT_STATUS']) {
             return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
         }
 

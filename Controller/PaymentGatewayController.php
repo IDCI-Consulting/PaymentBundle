@@ -38,10 +38,11 @@ class PaymentGatewayController extends AbstractController
         try {
             $this->logger->info(
                 sprintf(
-                    '[gateway configuration alias: %s, data: %s, ip: %s]',
+                    '[gateway configuration alias: %s, data: %s, ip: %s, content: %s]',
                     $configuration_alias,
                     json_encode($data),
-                    json_encode($request->getClientIps())
+                    json_encode($request->getClientIps()),
+                    $request->getContent()
                 )
             );
         } catch (\Exception $e) {}
