@@ -42,7 +42,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
                 'providerContext' => [
                     'businessProviderId' => $paymentGatewayConfiguration->get('business_provider_id'),
                     'returnUrl' => $paymentGatewayConfiguration->get('return_url'),
-                    'exchangeUrl' => $paymentGatewayConfiguration->get('callback_url'),
+                    'exchangeUrl' => $this->buildExchangeUrl($paymentGatewayConfiguration->get('callback_url'), $transaction->getId()),
                 ],
                 'customerContext' => [
                     'externalCustomerId' => $transaction->getCustomerId(),
@@ -149,8 +149,22 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
             throw new \UnexpectedValueException(sprintf('Sofinco - JSON Error: %s', json_last_error_msg()));
         }
 
+        if (!$request->query->has('transactionId')) {
+            throw new \UnexpectedValueException('The query parameter transactionId was not found.');
+        }
+
+        if (strtoupper($request->query->get('transactionId')) !== $requestData['ORDER_ID']) {
+            throw new \UnexpectedValueException(
+                sprintf(
+                    'The transaction/order id mismatch in the data (query: %s, body: %s).',
+                    $request->query->get('transactionId'),
+                    $requestData['ORDER_ID']
+                )
+            );
+        }
+
         $gatewayResponse = (new GatewayResponse())
-            ->setTransactionUuid($requestData['ORDER_ID'])
+            ->setTransactionUuid($request->query->get('transactionId'))
             ->setAmount($requestData['AMOUNT'])
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
@@ -188,5 +202,23 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
                 'equipment_code',
             ]
         );
+    }
+
+    /**
+     * Build exchange url with transactionId query parameter.
+     *
+     * @param string $url
+     *
+     * @return string
+     */
+    private function buildExchangeUrl(string $url, string $transactionId): string
+    {
+        $query = parse_url($url, PHP_URL_QUERY);
+
+        if ($query) {
+            return sprintf('%s&transactionId=%s', $url, $transactionId);
+        }
+
+        return sprintf('%s?transactionId=%s', $url, $transactionId);
     }
 }
