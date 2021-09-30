@@ -165,7 +165,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
 
         $gatewayResponse = (new GatewayResponse())
             ->setTransactionUuid($request->query->get('transactionId'))
-            ->setAmount($requestData['AMOUNT'])
+            ->setAmount($requestData['AMOUNT'] * 100)
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
             ->setRaw($requestData)
