@@ -118,7 +118,15 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         try {
             if (isset($event->getStepEventData()['id'])) {
                 $transaction = $this->transactionManager->retrieveTransactionByUuid($event->getStepEventData()['id']);
-                if (null !== $transaction && !in_array($transaction->getStatus(), [PaymentStatus::STATUS_FAILED, PaymentStatus::STATUS_CANCELED])) {
+
+                if (
+                    null !== $transaction &&
+                    !in_array($transaction->getStatus(), [PaymentStatus::STATUS_FAILED, PaymentStatus::STATUS_CANCELED]) &&
+                    $transaction->getItemId() === $parameters['item_id'] &&
+                    $transaction->getAmount() === $parameters['amount'] &&
+                    $transaction->getCurrencyCode() === $parameters['currency_code'] &&
+                    $transaction->getCustomerId() === $parameters['customer_id']
+                ) {
                     $paymentContext->setTransaction($transaction);
                 }
             }
