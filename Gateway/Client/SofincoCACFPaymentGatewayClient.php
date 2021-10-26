@@ -341,13 +341,13 @@ class SofincoCACFPaymentGatewayClient
 
     public function getDocuments(array $options): Crawler
     {
-        $documentResponse = $this->getDocumentsResponse($options);
+        $loanSimulationResponse = $this->getDocumentsResponse($options);
 
-        if (null === $documentResponse) {
+        if (null === $loanSimulationResponse) {
             throw new \UnexpectedValueException('The loan simulations request failed.');
         }
 
-        return new Crawler($documentResponse->getBody()->getContents());
+        return new Crawler($loanSimulationResponse->getBody()->getContents());
     }
 
     private function resolveBusinessTokenOptions(array $options): array
