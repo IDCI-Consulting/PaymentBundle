@@ -32,6 +32,7 @@
         "pascaldevink/shortuuid": "~2.0"
     },
     "suggest": {
+        "alma/alma-php-client": "^1.0",
         "idci/step-bundle": "~3.0",
         "symfony/cache": "^4.0"
     },

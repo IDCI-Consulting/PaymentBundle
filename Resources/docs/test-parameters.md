@@ -293,3 +293,18 @@ idci_payment:
                 business_provider_id: [Given in the documentation]
                 equipment_code: [Given in the documentation]
 ```
+
+# Alma
+
+```yaml
+idci_payment:
+    gateway_configurations:
+        alma_test:
+            gateway_name: alma
+            enabled: true
+            parameters:
+                return_url: http://www.example.com/
+                callback_url: http://[your server host]/payment-gateway/alma_test/callback # must be public
+                api_key: [Given in the documentation]
+                merchant_id: [Given in the documentation]
+```

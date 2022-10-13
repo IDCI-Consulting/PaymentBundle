@@ -109,6 +109,8 @@ Supported Gateways
 * [SystemPay](./Gateway/SystemPayPaymentGateway.php) ([example](./Resources/docs/example/systempay.md))
 * [Sofinco](./Gateway/SofincoPaymentGateway.php) ([example](./Resources/docs/example/sofinco.md))
 * [Sofinco CACF](./Gateway/SofincoCACFPaymentGateway.php) ([example](./Resources/docs/example/sofinco-cacf.md))
+* [Eureka/FloaBank](./Gateway/EurekaPaymentGateway.php) ([example](./Resources/docs/example/eureka.md))
+* [Alma](./Gateway/AlmaPaymentGateway.php) ([example](./Resources/docs/example/alma.md))
 * [Atos Sips Bin](./Gateway/AtosSipsBinPaymentGateway.php)
     * Mercanet ([example](./Resources/docs/example/mercanet-bin.md))
     * Scellius ([example](./Resources/docs/example/scellius-bin.md))

@@ -121,7 +121,7 @@ class SofincoCACFPaymentGatewayClient
     {
         if (null !== $cache) {
             if (!interface_exists(AdapterInterface::class)) {
-                throw new \RuntimeException('EurekaPaymentGatewayClient cache requires "symfony/cache" package');
+                throw new \RuntimeException('SofincoCACFPaymentGatewayClient cache requires "symfony/cache" package');
             }
 
             if (!$cache instanceof AdapterInterface) {
@@ -470,7 +470,7 @@ class SofincoCACFPaymentGatewayClient
                         throw new \InvalidArgumentException('The "civilityCode" parameter must be formatted as described in documentation "[123]{1}"');
                     }
 
-                    return $value !== null ? (int) $value : null;
+                    return null !== $value ? (int) $value : null;
                 })
             ->setDefined('firstName')->setAllowedTypes('firstName', ['null', 'string'])
                 ->setNormalizer('firstName', function (Options $options, $value) {
@@ -549,7 +549,7 @@ class SofincoCACFPaymentGatewayClient
                     if (is_int($value)) {
                         $value = (string) $value;
                     }
-                    
+
                     if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
                         throw new \InvalidArgumentException('The "zipCode" parameter must be formatted as described in documentation "[0-9]{5}"');
                     }
@@ -647,7 +647,7 @@ class SofincoCACFPaymentGatewayClient
                         throw new \InvalidArgumentException('The "amount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
                     }
 
-                    return $value !== null ? (float) $value : null;
+                    return null !== $value ? (float) $value : null;
                 })
             ->setDefined('orderAmount')->setAllowedTypes('orderAmount', ['null', 'float', 'int', 'string'])
                 ->setNormalizer('orderAmount', function (Options $options, $value) {
@@ -655,7 +655,7 @@ class SofincoCACFPaymentGatewayClient
                         throw new \InvalidArgumentException('The "orderAmount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
                     }
 
-                    return $value !== null ? (float) $value : null;
+                    return null !== $value ? (float) $value : null;
                 })
             ->setDefined('personalContributionAmount')->setAllowedTypes('personalContributionAmount', ['null', 'float', 'int', 'string'])
                 ->setNormalizer('personalContributionAmount', function (Options $options, $value) {
@@ -663,7 +663,7 @@ class SofincoCACFPaymentGatewayClient
                         throw new \InvalidArgumentException('The "personalContributionAmount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
                     }
 
-                    return $value !== null ? (float) $value : null;
+                    return null !== $value ? (float) $value : null;
                 })
             ->setDefined('duration')->setAllowedTypes('duration', ['null', 'string'])
                 ->setNormalizer('duration', function (Options $options, $value) {

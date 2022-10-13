@@ -144,6 +144,10 @@ services:
         tags:
             - { name: idci_payment.gateways, alias: eureka }
 
+    IDCI\Bundle\PaymentBundle\Gateway\AlmaPaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: alma }
+
     # Payment Gateway Clients
 
     IDCI\Bundle\PaymentBundle\Gateway\Client\EurekaPaymentGatewayClient:
