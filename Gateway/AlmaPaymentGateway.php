@@ -3,57 +3,56 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use Alma\API\Client;
-use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\EurekaStatusCode;
+use Alma\API\RequestError;
+use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AlmaStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class AlmaPaymentGateway extends AbstractPaymentGateway
 {
+    public function __construct(
+        \Twig_Environment $templating,
+        EventDispatcherInterface $dispatcher,
+        LoggerInterface $logger
+    ) {
+        parent::__construct($templating, $dispatcher);
+
+        $this->logger = $logger;
+    }
+
     private function getClient(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration)
     {
         if (!class_exists(Client::class)) {
             throw new \RuntimeException('AlmaPaymentGateway cache requires "alma/alma-php-client" package');
         }
 
-        return new Client($paymentGatewayConfiguration->get('api_key'));
+        return new Client($paymentGatewayConfiguration->get('api_key'), [
+            'mode' => $paymentGatewayConfiguration->get('mode'),
+        ]);
     }
 
     private function createPayment(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ) {
-        $payment = $this->getClient($paymentGatewayConfiguration)->payments->createPayment(
-            $this->resolveCreatePaymentOptions(
-                $paymentGatewayConfiguration,
-                $transaction,
-                $transaction->getMetadata('payment_options') ?? []
-            )
-        );
-
-        dd($payment);
-    }
-
-    /**
-     * Build payment gateway options.
-     *
-     * @method buildOptions
-     *
-     * @throws \UnexpectedValueException If required transaction metadata is not set
-     */
-    private function buildOptions(
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
-    ): array {
-        $payment = $this->createPayment($paymentGatewayConfiguration, $transaction);
-
-        return [
-            'payment' => $payment,
-        ];
+        try {
+            return $this->getClient($paymentGatewayConfiguration)->payments->create(
+                $this->resolveCreatePaymentOptions(
+                    $paymentGatewayConfiguration,
+                    $transaction,
+                    $transaction->getMetadata('payment_options') ?? []
+                )
+            );
+        } catch (RequestError $e) {
+            $this->logger->error(sprintf('Error: %s. Context: %s', $e->getMessage(), json_encode($e->response->json)));
+        }
     }
 
     /**
@@ -63,11 +62,11 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction
     ): array {
-        $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
+        $payment = $this->createPayment($paymentGatewayConfiguration, $transaction);
 
-        return array_merge($options, [
-            'hmac' => $this->buildHmac($options, self::HMAC_TYPE_ENTRY),
-        ]);
+        return [
+            'url' => $payment->url,
+        ];
     }
 
     /**
@@ -80,8 +79,7 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         return $this->templating->render('@IDCIPayment/Gateway/alma.html.twig', [
-            // 'url' => $this->eurekaPaymentGatewayClient->getPaymentFormUrl(),
-            // 'initializationData' => $initializationData,
+            'url' => $initializationData['url'],
         ]);
     }
 
@@ -94,30 +92,30 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
-        if (!$request->isMethod('POST')) {
-            throw new \UnexpectedValueException('Eureka : Payment Gateway error (Request method should be POST)');
+        if (!$request->isMethod('GET')) {
+            throw new \UnexpectedValueException('Alma : Payment Gateway error (Request method should be POST)');
         }
 
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
-            ->setRaw($request->request->all())
+            ->setRaw($request->query->all())
         ;
 
-        $payment = $this->getClient($paymentGatewayConfiguration)->payments->fetch($paymentId);
+        if (!$request->query->has('pid')) {
+            throw new \UnexpectedValueException('Alma : Payment Gateway error (missing pid query parameter)');
+        }
+
+        $payment = $this->getClient($paymentGatewayConfiguration)->payments->fetch($request->query->get('pid'));
 
         $gatewayResponse
-            ->setTransactionUuid($request->request->get('orderRef'))
-            ->setAmount($request->request->get('amount'))
-            ->setCurrencyCode($request->request->get('currency'))
+            ->setTransactionUuid($payment->orders[0]->merchant_reference)
+            ->setAmount($payment->purchase_amount)
+            ->setRaw(get_object_vars($payment))
         ;
 
-        if ('0' !== $request->request->get('returnCode')) {
-            $gatewayResponse->setMessage(EurekaStatusCode::getStatusMessage($request->request->get('returnCode')));
-
-            if ('6' === $request->request->get('returnCode')) {
-                $gatewayResponse->setStatus(PaymentStatus::STATUS_CANCELED);
-            }
+        if (!in_array($payment->state, [AlmaStatusCode::STATUS_IN_PROGRESS, AlmaStatusCode::STATUS_PAID])) {
+            $gatewayResponse->setMessage(AlmaStatusCode::getStatusMessage($payment->state));
 
             return $gatewayResponse;
         }
@@ -133,8 +131,8 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
         return array_merge(
             parent::getParameterNames(),
             [
-                'merchant_id',
                 'api_key',
+                'mode',
             ]
         );
     }
@@ -249,7 +247,7 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
             })
             ->setDefault('order', function (OptionsResolver $orderResolver) use ($transaction) {
                 $orderResolver
-                    ->setDefault('merchant_reference', $transaction->getItemId())->setAllowedTypes('merchant_reference', ['string'])
+                    ->setDefault('merchant_reference', $transaction->getId())->setAllowedTypes('merchant_reference', ['string'])
                     ->setDefined('merchant_url')->setAllowedTypes('merchant_url', ['string'])
                     ->setDefined('data')->setAllowedTypes('data', ['string', 'array'])
                         ->setNormalizer('data', function (Options $options, $value) {

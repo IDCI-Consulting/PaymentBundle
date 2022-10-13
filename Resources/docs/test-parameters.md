@@ -306,5 +306,5 @@ idci_payment:
                 return_url: http://www.example.com/
                 callback_url: http://[your server host]/payment-gateway/alma_test/callback # must be public
                 api_key: [Given in the documentation]
-                merchant_id: [Given in the documentation]
+                mode: test
 ```
