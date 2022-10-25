@@ -161,7 +161,7 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
                             ->setDefined('phone')->setAllowedTypes('phone', ['string'])
                             ->setDefined('line1')->setAllowedTypes('line1', ['string'])
                             ->setDefined('line2')->setAllowedTypes('line2', ['string'])
-                            ->setDefined('postal_code')->setAllowedTypes('postal_code', ['string'])
+                            ->setDefined('postal_code')->setAllowedTypes('postal_code', ['string', 'int'])
                             ->setDefined('city')->setAllowedTypes('city', ['string'])
                             ->setDefined('country')->setAllowedTypes('country', ['string'])
                         ;
@@ -189,7 +189,7 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
                             ->setDefined('phone')->setAllowedTypes('phone', ['string'])
                             ->setDefined('line1')->setAllowedTypes('line1', ['string'])
                             ->setDefined('line2')->setAllowedTypes('line2', ['string'])
-                            ->setDefined('postal_code')->setAllowedTypes('postal_code', ['string'])
+                            ->setDefined('postal_code')->setAllowedTypes('postal_code', ['string', 'int'])
                             ->setDefined('city')->setAllowedTypes('city', ['string'])
                             ->setDefined('country')->setAllowedTypes('country', ['string'])
                         ;
