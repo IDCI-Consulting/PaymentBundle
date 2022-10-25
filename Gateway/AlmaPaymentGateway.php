@@ -166,7 +166,7 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
                             ->setDefined('country')->setAllowedTypes('country', ['string'])
                         ;
                     })
-                    ->setDefined('customer_cancel_url')->setAllowedTypes('customer_cancel_url', ['string'])
+                    ->setDefault('customer_cancel_url', $paymentGatewayConfiguration->get('return_url'))->setAllowedTypes('customer_cancel_url', ['string'])
                     ->setDefined('custom_data')->setAllowedTypes('custom_data', ['string', 'array'])
                         ->setNormalizer('custom_data', function (Options $options, $value) {
                             if (is_array($value)) {
