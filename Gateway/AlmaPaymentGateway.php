@@ -202,7 +202,8 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
             })
             ->setDefault('customer', function (OptionsResolver $customerResolver) use ($transaction) {
                 $customerResolver
-                    ->setDefault('id', $transaction->getCustomerId())->setAllowedTypes('id', ['string'])
+                    ->setDefined('id')->setAllowedTypes('id', ['string'])
+                    ->setDefault('identifier', $transaction->getCustomerId())->setAllowedTypes('identifier', ['string'])
                     ->setDefined('created')->setAllowedTypes('created', [\DateTimeInterface::class, 'string'])
                     ->setNormalizer('created', function (Options $options, $value) {
                         if (is_string($value)) {
