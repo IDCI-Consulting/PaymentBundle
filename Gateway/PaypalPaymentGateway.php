@@ -47,13 +47,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
         if (!array_key_exists($paymentGatewayConfiguration->get('checkout_flow'), self::PAYPAL_CHECKOUT_FLOW_TEMPLATE_MAPPING)) {
-            throw new \UnexpectedValueException(
-                sprintf(
-                    'The checkout flow "%s" is not yet implemented in %s',
-                    $paymentGatewayConfiguration->get('checkout_flow'),
-                    self::class
-                )
-            );
+            throw new \UnexpectedValueException(sprintf('The checkout flow "%s" is not yet implemented in %s', $paymentGatewayConfiguration->get('checkout_flow'), self::class));
         }
 
         return $this->templating->render(
@@ -69,10 +63,20 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
 
     /**
      * {@inheritdoc}
+     */
+    public function getReturnResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        return new GatewayResponse();
+    }
+
+    /**
+     * {@inheritdoc}
      *
      * @throws \UnexpectedValueException If the request method is not POST
      */
-    public function getResponse(
+    public function getCallbackResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {

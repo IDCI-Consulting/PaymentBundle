@@ -56,7 +56,7 @@ class StripePaymentGatewayTest extends PaymentGatewayTestCase
     {
         $request = Request::create('dummy_uri', Request::METHOD_GET);
 
-        $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
     }
 
     public function testRequestError()
@@ -74,7 +74,7 @@ class StripePaymentGatewayTest extends PaymentGatewayTestCase
             ]
         );
 
-        $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $gatewayResponse = $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
         $this->assertEquals($request->get('error')['message'], $gatewayResponse->getMessage());
     }
 
@@ -91,7 +91,7 @@ class StripePaymentGatewayTest extends PaymentGatewayTestCase
             ]
         );
 
-        $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $gatewayResponse = $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
         $this->assertEquals(PaymentStatus::STATUS_APPROVED, $gatewayResponse->getStatus());
     }
 }

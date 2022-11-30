@@ -3,10 +3,10 @@ How to create your own payment gateway
 
 ## Introduction
 
-Q: What's a payment gateway ?  
+Q: What's a payment gateway ?
 A: That's what that prepare the form and the management of the transaction for a specific payment method (ex: paypal, stripe, ...)
 
-Q: How does it work ?  
+Q: How does it work ?
 A: (schema)
 
 ## Learn by example
@@ -53,8 +53,28 @@ class ExemplePaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
+    // If you want to pre-validate the transaction on customer return
+    public function getReturnResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        $gatewayResponse = new GatewayResponse();
+
+        if (null === $request->get('transactionID')) {
+            return $gatewayResponse;
+        }
+
+        $gatewayResponse->setTransactionUuid($request->get('transactionID'));
+
+        if ('failed' === $result->getState()) {
+            return $gatewayResponse->setStatus(PaymentStatus::STATUS_FAILED);
+        }
+
+        return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
+    }
+
     // Return the bank response in formalized GatewayResponse format to let PaymentContext verify that the transaction is correct
-    public function getResponse(
+    public function getCallbackResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
@@ -104,7 +124,7 @@ MyBundle\Gateway\ExemplePaymentGateway:
         - { name: idci_payment.gateways, alias: exemple }
 ```
 
-Warning : The payment gateway ```getResponse()``` method will never be call by the client but by the bank itself in backend controller for security reason.  
+Warning : The payment gateway ```getCallbackResponse()``` method will never be call by the client but by the bank itself in backend controller for security reason.
 
 ## How to create a payment gateway configuration for your own gateway
 

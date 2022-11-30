@@ -85,10 +85,44 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
 
     /**
      * {@inheritdoc}
+     */
+    public function getReturnResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        $gatewayResponse = new GatewayResponse();
+
+        if (!$request->query->has('pid')) {
+            return $gatewayResponse;
+        }
+
+        try {
+            $payment = $this->getClient($paymentGatewayConfiguration)->payments->fetch($request->query->get('pid'));
+
+            $gatewayResponse
+                ->setTransactionUuid($payment->orders[0]->merchant_reference)
+                ->setAmount($payment->purchase_amount)
+                ->setRaw(get_object_vars($payment))
+            ;
+
+            if (!in_array($payment->state, [AlmaStatusCode::STATUS_IN_PROGRESS, AlmaStatusCode::STATUS_PAID])) {
+                return $gatewayResponse->setStatus(PaymentStatus::STATUS_FAILED);
+            }
+
+            return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
+        } catch (\Exception $e) {
+            $this->logger->error(sprintf('Error: %s. Context: %s', $e->getMessage(), json_encode($e->response->json)));
+        }
+
+        return $gatewayResponse;
+    }
+
+    /**
+     * {@inheritdoc}
      *
      * @throws \UnexpectedValueException If the request method is not POST
      */
-    public function getResponse(
+    public function getCallbackResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {

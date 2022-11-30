@@ -132,10 +132,20 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
 
     /**
      * {@inheritdoc}
+     */
+    public function getReturnResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        return new GatewayResponse();
+    }
+
+    /**
+     * {@inheritdoc}
      *
      * @throws \UnexpectedValueException If the request method is not POST
      */
-    public function getResponse(
+    public function getCallbackResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
@@ -154,13 +164,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
         }
 
         if (strtoupper($request->query->get('transactionId')) !== $requestData['ORDER_ID']) {
-            throw new \UnexpectedValueException(
-                sprintf(
-                    'The transaction/order id mismatch in the data (query: %s, body: %s).',
-                    $request->query->get('transactionId'),
-                    $requestData['ORDER_ID']
-                )
-            );
+            throw new \UnexpectedValueException(sprintf('The transaction/order id mismatch in the data (query: %s, body: %s).', $request->query->get('transactionId'), $requestData['ORDER_ID']));
         }
 
         $gatewayResponse = (new GatewayResponse())
@@ -206,10 +210,6 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
 
     /**
      * Build exchange url with transactionId query parameter.
-     *
-     * @param string $url
-     *
-     * @return string
      */
     private function buildExchangeUrl(string $url, string $transactionId): string
     {

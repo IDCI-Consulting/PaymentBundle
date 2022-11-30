@@ -36,8 +36,6 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
      * Get Paybox server url.
      *
      * @method getServerUrl
-     *
-     * @return string
      */
     private function getServerUrl(): string
     {
@@ -48,10 +46,6 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
      * Get Paybox key file path accoding to client site id.
      *
      * @method getKeyPath
-     *
-     * @param string $clientSite
-     *
-     * @return string
      */
     private function getKeyPath(string $clientSite): string
     {
@@ -62,12 +56,10 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
      * Get Paybox requested parameters for notification response.
      *
      * @method getPayboxReturnString
-     *
-     * @return string
      */
     private function getPayboxReturnString(): string
     {
-        $codeMap = array(
+        $codeMap = [
             'M' => 'amount',
             'R' => 'reference',
             'A' => 'authorisation_id',
@@ -91,7 +83,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
             'I' => 'country',
             'Y' => 'bank_country',
             'K' => 'hash',
-        );
+        ];
 
         return implode(';', array_map(
             function ($k, $v) { return sprintf('%s:%s', $v, $k); },
@@ -104,11 +96,6 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
      * Build payment gateway options.
      *
      * @method buildOptions
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return array
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
@@ -181,10 +168,20 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
 
     /**
      * {@inheritdoc}
+     */
+    public function getReturnResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        return new GatewayResponse();
+    }
+
+    /**
+     * {@inheritdoc}
      *
      * @throws \UnexpectedValueException If the request method is not post
      */
-    public function getResponse(
+    public function getCallbackResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {

@@ -13,8 +13,6 @@ class OgonePaymentGateway extends AbstractPaymentGateway
      * Get Ogone server url.
      *
      * @method getServerUrl
-     *
-     * @return string
      */
     private function getServerUrl(): string
     {
@@ -25,11 +23,6 @@ class OgonePaymentGateway extends AbstractPaymentGateway
      * Build payment gateway options.
      *
      * @method buildOptions
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return array
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
@@ -96,7 +89,17 @@ class OgonePaymentGateway extends AbstractPaymentGateway
     /**
      * {@inheritdoc}
      */
-    public function getResponse(
+    public function getReturnResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        return new GatewayResponse();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCallbackResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {

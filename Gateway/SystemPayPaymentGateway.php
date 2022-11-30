@@ -37,11 +37,6 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
      * Build gateway options.
      *
      * @method buildOptions
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return array
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
@@ -80,11 +75,6 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
      * Build SystemPay HMAC signature accoding to payment gateway coniguration.
      *
      * @method buildSignature
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param array                                $options
-     *
-     * @return string
      */
     private function buildSignature(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
@@ -136,10 +126,20 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
 
     /**
      * {@inheritdoc}
+     */
+    public function getReturnResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        return new GatewayResponse();
+    }
+
+    /**
+     * {@inheritdoc}
      *
      * @throws \UnexpectedValueException If the request method is not POST
      */
-    public function getResponse(
+    public function getCallbackResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
@@ -217,10 +217,6 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
      * Clean and sort alphabetically options array.
      *
      * @method cleanOptions
-     *
-     * @param array $options
-     *
-     * @return array
      */
     protected function cleanOptions(array $options = []): array
     {

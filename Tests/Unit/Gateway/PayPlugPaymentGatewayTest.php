@@ -33,17 +33,17 @@ class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
     {
         $request = Request::create('dumy_uri', Request::METHOD_GET);
 
-        $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
     }
 
-    public function testGetResponseEmptyPostDataRequest()
+    public function testGetCallbackResponseEmptyPostDataRequest()
     {
         $request = Request::create(
             'dummy_uri',
             Request::METHOD_POST
         );
 
-        $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $gatewayResponse = $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
         $this->assertEquals('The request do not contains required post data', $gatewayResponse->getMessage());
     }
 
@@ -62,11 +62,11 @@ class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
             ]
         );
 
-        $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $gatewayResponse = $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
         $this->assertEquals('Transaction unauthorized', $gatewayResponse->getMessage());
     }
 
-    public function testGetResponseApproved()
+    public function testGetCallbackResponseApproved()
     {
         $request = Request::create(
             'dummy_uri',
@@ -81,7 +81,7 @@ class PayPlugPaymentGatewayTest extends PaymentGatewayTestCase
             ]
         );
 
-        $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $gatewayResponse = $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
         $this->assertEquals(PaymentStatus::STATUS_APPROVED, $gatewayResponse->getStatus());
     }
 }

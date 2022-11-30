@@ -54,6 +54,6 @@ class PayboxPaymentGatewayTest extends PaymentGatewayTestCase
     {
         $request = Request::create('dummy_uri', Request::METHOD_GET);
 
-        $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
     }
 }
