@@ -34,8 +34,6 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
      * Get Atos Sips Json server url.
      *
      * @method getServerUrl
-     *
-     * @return string
      */
     protected function getServerUrl(): string
     {
@@ -46,11 +44,6 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
      * Build payment gateway options.
      *
      * @method buildOptions
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return array
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
@@ -75,11 +68,6 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
      * Build payment gateway signature hash.
      *
      * @method buildSeal
-     *
-     * @param array  $options
-     * @param string $secretKey
-     *
-     * @return string
      */
     private function buildSeal(array $options, string $secretKey): string
     {
@@ -120,9 +108,7 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
         }
 
         if ('00' != $returnParams['redirectionStatusCode']) {
-            throw new UnexpectedAtosSipsResponseCodeException(
-                AtosSipsStatusCode::getStatusMessage($returnParams['redirectionStatusCode'])
-            );
+            throw new UnexpectedAtosSipsResponseCodeException(AtosSipsStatusCode::getStatusMessage($returnParams['redirectionStatusCode']));
         }
 
         return $returnParams;
@@ -144,10 +130,20 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
 
     /**
      * {@inheritdoc}
+     */
+    public function getReturnResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        return new GatewayResponse();
+    }
+
+    /**
+     * {@inheritdoc}
      *
      * @throws \UnexpectedValueException If the request method is not POST
      */
-    public function getResponse(
+    public function getCallbackResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {

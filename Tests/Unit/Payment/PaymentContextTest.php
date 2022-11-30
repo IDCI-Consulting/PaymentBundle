@@ -55,7 +55,7 @@ class PaymentContextTest extends TestCase
 
         $this->paymentGateway = $this->getMockBuilder(AbstractPaymentGateway::class)
             ->setConstructorArgs([$this->twig])
-            ->setMethods(['initialize', 'getResponse', 'buildHTMLView'])
+            ->setMethods(['initialize', 'getCallbackResponse', 'buildHTMLView'])
             ->getMock()
         ;
 
@@ -150,7 +150,7 @@ class PaymentContextTest extends TestCase
 
         $this->paymentGateway
             ->expects($this->once())
-            ->method('getResponse')
+            ->method('getCallbackResponse')
             ->with($this->equalTo($request), $this->equalTo($this->paymentGatewayConfiguration))
             ->will($this->returnValue($gatewayResponse))
         ;
@@ -181,7 +181,7 @@ class PaymentContextTest extends TestCase
 
         $this->paymentGateway
             ->expects($this->once())
-            ->method('getResponse')
+            ->method('getCallbackResponse')
             ->with($this->equalTo($request), $this->equalTo($this->paymentGatewayConfiguration))
             ->will($this->returnValue($gatewayResponse))
         ;
@@ -214,7 +214,7 @@ class PaymentContextTest extends TestCase
 
         $this->paymentGateway
             ->expects($this->once())
-            ->method('getResponse')
+            ->method('getCallbackResponse')
             ->with($this->equalTo($request), $this->equalTo($this->paymentGatewayConfiguration))
             ->will($this->returnValue($gatewayResponse))
         ;
@@ -243,7 +243,7 @@ class PaymentContextTest extends TestCase
     ) {
         $this->paymentGateway
             ->expects($this->once())
-            ->method('getResponse')
+            ->method('getCallbackResponse')
             ->with($this->equalTo($request), $this->equalTo($this->paymentGatewayConfiguration))
             ->will($this->returnValue($gatewayResponse))
         ;

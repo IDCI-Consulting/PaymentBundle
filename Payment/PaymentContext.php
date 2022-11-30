@@ -8,8 +8,8 @@ use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class PaymentContext implements PaymentContextInterface
 {
@@ -60,11 +60,34 @@ class PaymentContext implements PaymentContextInterface
         return $this->transaction;
     }
 
+    public function handleReturnCallback(Request $request): ?Transaction
+    {
+        $gatewayResponse = $this
+            ->paymentGateway
+            ->getReturnResponse($request, $this->paymentGatewayConfiguration)
+        ;
+
+        if (null === $gatewayResponse->getTransactionUuid()) {
+            return null;
+        }
+
+        $transaction = $this
+            ->transactionManager
+            ->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid())
+        ;
+
+        if (null !== $gatewayResponse->getStatus()) {
+            $transaction->setStatus($gatewayResponse->getStatus());
+        }
+
+        return $transaction;
+    }
+
     public function handleGatewayCallback(Request $request): Transaction
     {
         $gatewayResponse = $this
             ->paymentGateway
-            ->getResponse($request, $this->paymentGatewayConfiguration)
+            ->getCallbackResponse($request, $this->paymentGatewayConfiguration)
         ;
 
         if (null === $gatewayResponse->getTransactionUuid()) {
@@ -92,7 +115,8 @@ class PaymentContext implements PaymentContextInterface
                 $this->logger->info('Gateway response: ', [
                     'response' => json_encode($gatewayResponse->toArray()),
                 ]);
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
 
         return $transaction

@@ -47,7 +47,15 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
     /**
      * {@inheritdoc}
      */
-    abstract public function getResponse(
+    abstract public function getReturnResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse;
+
+    /**
+     * {@inheritdoc}
+     */
+    abstract public function getCallbackResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse;

@@ -48,14 +48,14 @@ class AtosSipsPostPaymentGatewayTest extends PaymentGatewayTestCase
     {
         $request = Request::create('dummy_uri', Request::METHOD_GET);
 
-        $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
     }
 
     public function testRequestNoData()
     {
         $request = Request::create('dummy_uri', Request::METHOD_POST);
 
-        $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $gatewayResponse = $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
         $this->assertEquals('The request do not contains "Data"', $gatewayResponse->getMessage());
     }
 
@@ -69,7 +69,7 @@ class AtosSipsPostPaymentGatewayTest extends PaymentGatewayTestCase
             ]
         );
 
-        $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $gatewayResponse = $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
         $this->assertEquals('Seal check failed', $gatewayResponse->getMessage());
     }
 
@@ -87,7 +87,7 @@ class AtosSipsPostPaymentGatewayTest extends PaymentGatewayTestCase
             );
             $request->request->set('Seal', hash('sha256', $data));
 
-            $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+            $gatewayResponse = $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
             $this->assertEquals(AtosSipsStatusCode::getStatusMessage($testedStatusCode), $gatewayResponse->getMessage());
         }
     }
@@ -104,7 +104,7 @@ class AtosSipsPostPaymentGatewayTest extends PaymentGatewayTestCase
         );
         $request->request->set('Seal', hash('sha256', $data));
 
-        $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $gatewayResponse = $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
         $this->assertEquals(PaymentStatus::STATUS_CANCELED, $gatewayResponse->getStatus());
     }
 
@@ -120,7 +120,7 @@ class AtosSipsPostPaymentGatewayTest extends PaymentGatewayTestCase
         );
         $request->request->set('Seal', hash('sha256', $data));
 
-        $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $gatewayResponse = $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
         $this->assertEquals('Transaction unauthorized', $gatewayResponse->getMessage());
     }
 
@@ -136,7 +136,7 @@ class AtosSipsPostPaymentGatewayTest extends PaymentGatewayTestCase
         );
         $request->request->set('Seal', hash('sha256', $data));
 
-        $gatewayResponse = $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $gatewayResponse = $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
         $this->assertEquals(PaymentStatus::STATUS_APPROVED, $gatewayResponse->getStatus());
     }
 }

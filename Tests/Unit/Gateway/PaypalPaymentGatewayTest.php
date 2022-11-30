@@ -37,6 +37,6 @@ class PaypalPaymentGatewayTest extends PaymentGatewayTestCase
     {
         $request = Request::create('dumy_uri', Request::METHOD_GET);
 
-        $this->gateway->getResponse($request, $this->paymentGatewayConfiguration);
+        $this->gateway->getCallbackResponse($request, $this->paymentGatewayConfiguration);
     }
 }

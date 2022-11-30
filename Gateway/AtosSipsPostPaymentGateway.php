@@ -32,8 +32,6 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
      * Get Atos Sips POST server url.
      *
      * @method getServerUrl
-     *
-     * @return string
      */
     private function getServerUrl(): string
     {
@@ -44,11 +42,6 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
      * Build payment gateway options.
      *
      * @method buildOptions
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return array
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
@@ -71,10 +64,6 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
      * Build payment gateway signature hash.
      *
      * @method buildSeal
-     *
-     * @param array $options
-     *
-     * @return string
      */
     private function buildSeal(array $options): string
     {
@@ -128,10 +117,20 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
 
     /**
      * {@inheritdoc}
+     */
+    public function getReturnResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        return new GatewayResponse();
+    }
+
+    /**
+     * {@inheritdoc}
      *
      * @throws \UnexpectedValueException If the request method is not POST
      */
-    public function getResponse(
+    public function getCallbackResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {

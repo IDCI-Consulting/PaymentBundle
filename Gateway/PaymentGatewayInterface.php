@@ -11,13 +11,6 @@ interface PaymentGatewayInterface
 {
     /**
      * Initialize payment gateway configuration.
-     *
-     * @method initialize
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return array
      */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
@@ -26,13 +19,6 @@ interface PaymentGatewayInterface
 
     /**
      * Build payment gateway HTML view.
-     *
-     * @method buildHTMLView
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return string
      */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
@@ -40,16 +26,17 @@ interface PaymentGatewayInterface
     ): string;
 
     /**
-     * Get payment gateway callback/notification response.
-     *
-     * @method getResponse
-     *
-     * @param Request                              $request
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     *
-     * @return GatewayResponse
+     * Get payment gateway return response.
      */
-    public function getResponse(
+    public function getReturnResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse;
+
+    /**
+     * Get payment gateway callback/notification response.
+     */
+    public function getCallbackResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse;
@@ -58,8 +45,6 @@ interface PaymentGatewayInterface
      * Get payment gateway authorized parameters names used in configuration.
      *
      * @method getParameterNames
-     *
-     * @return array|null
      */
     public static function getParameterNames(): ?array;
 }

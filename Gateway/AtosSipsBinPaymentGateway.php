@@ -47,17 +47,13 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
      * Build notification response parameters.
      *
      * @method buildResponseParams
-     *
-     * @param Request $request
-     *
-     * @return array
      */
     private function buildResponseParams(Request $request): array
     {
-        $shellOptions = array(
+        $shellOptions = [
             'pathfile' => $this->pathfile,
             'message' => $request->request->get('DATA'),
-        );
+        ];
 
         $args = implode(' ', array_map(
             function ($k, $v) { return sprintf('%s=%s', $k, $v); },
@@ -129,11 +125,6 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
      * Build payment gateway options.
      *
      * @method buildOptions
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return array
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
@@ -210,10 +201,20 @@ class AtosSipsBinPaymentGateway extends AbstractPaymentGateway
 
     /**
      * {@inheritdoc}
+     */
+    public function getReturnResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        return new GatewayResponse();
+    }
+
+    /**
+     * {@inheritdoc}
      *
      * @throws \UnexpectedValueException If the request method is not POST
      */
-    public function getResponse(
+    public function getCallbackResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {

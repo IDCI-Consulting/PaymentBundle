@@ -38,11 +38,6 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
      * Build options for WSACCROCHE Sofinco module.
      *
      * @method buildOfferVerifyOptions
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return array
      */
     private function buildOfferVerifyOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
@@ -59,11 +54,6 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
      * Build gateway form options.
      *
      * @method buildOptions
-     *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return array
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
@@ -84,11 +74,6 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
      *
      * @method verifyIfOfferExist
      *
-     * @param PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
-     * @param Transaction                          $transaction
-     *
-     * @return bool
-     *
      * @throws \UnexpectedValueException If the offer doesn't exists
      */
     private function verifyIfOfferExist(
@@ -104,15 +89,7 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         $data = json_decode(json_encode(new \SimpleXMLElement($response->getBody()->getContents())), true);
 
         if ('00' !== $data['C_RETOUR']) {
-            throw new \UnexpectedValueException(
-                sprintf(
-                    'Error code %s: No offer exists for the contract code "%s" and the amount "%s". Result of the request: %s',
-                    $data['C_RETOUR'],
-                    $options['q6'],
-                    $options['p4'],
-                    json_encode($data)
-                )
-            );
+            throw new \UnexpectedValueException(sprintf('Error code %s: No offer exists for the contract code "%s" and the amount "%s". Result of the request: %s', $data['C_RETOUR'], $options['q6'], $options['p4'], json_encode($data)));
         }
 
         return true;
@@ -149,10 +126,20 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
 
     /**
      * {@inheritdoc}
+     */
+    public function getReturnResponse(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+    ): GatewayResponse {
+        return new GatewayResponse();
+    }
+
+    /**
+     * {@inheritdoc}
      *
      * @throws \UnexpectedValueException If the request method is not GET
      */
-    public function getResponse(
+    public function getCallbackResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {

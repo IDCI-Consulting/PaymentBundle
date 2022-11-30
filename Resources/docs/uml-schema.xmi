@@ -502,7 +502,7 @@
           <UML:Parameter visibility="private" isSpecification="false" value="" name="transaction" type="u8cn9dFFwvUXm" xmi.id="u6DnH9hf3KJ6B"/>
          </UML:BehavioralFeature.parameter>
         </UML:Operation>
-        <UML:Operation visibility="public" isSpecification="false" isQuery="false" name="getResponse" isRoot="false" isAbstract="false" isLeaf="false" xmi.id="uLp28RtE086M3">
+        <UML:Operation visibility="public" isSpecification="false" isQuery="false" name="getCallbackResponse" isRoot="false" isAbstract="false" isLeaf="false" xmi.id="uLp28RtE086M3">
          <UML:BehavioralFeature.parameter>
           <UML:Parameter kind="return" type="uYLXDjKoDyxyC" xmi.id="uQcwuJBcR6ytq"/>
           <UML:Parameter visibility="private" isSpecification="false" value="" name="request" type="ubdVEWTPiyo0J" xmi.id="utreszFcstVTh"/>
