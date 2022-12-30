@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Twig\Environment;
 
 class ManageTransactionStepEventAction extends AbstractStepEventAction
 {
@@ -45,7 +46,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
     protected $dispatcher;
 
     /**
-     * @var \Twig_Environment
+     * @var Environment
      */
     private $templating;
 
@@ -60,7 +61,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         UrlGeneratorInterface $router,
         RequestStack $requestStack,
         EventDispatcherInterface $dispatcher,
-        \Twig_Environment $templating,
+        Environment $templating,
         array $templates
     ) {
         $this->paymentManager = $paymentManager;

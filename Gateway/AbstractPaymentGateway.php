@@ -7,11 +7,12 @@ use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Twig\Environment;
 
 abstract class AbstractPaymentGateway implements PaymentGatewayInterface
 {
     /**
-     * @var \Twig_Environment
+     * @var Environment
      */
     protected $templating;
 
@@ -21,7 +22,7 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
     protected $dispatcher;
 
     public function __construct(
-        \Twig_Environment $templating,
+        Environment $templating,
         EventDispatcherInterface $dispatcher
     ) {
         $this->templating = $templating;
