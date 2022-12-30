@@ -11,6 +11,7 @@ use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Twig\Environment;
 
 class EurekaPaymentGateway extends AbstractPaymentGateway
 {
@@ -23,7 +24,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
     private $serverHostName;
 
     public function __construct(
-        \Twig_Environment $templating,
+        Environment $templating,
         EventDispatcherInterface $dispatcher,
         EurekaPaymentGatewayClient $eurekaPaymentGatewayClient
     ) {

@@ -6,13 +6,13 @@ use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfiguration;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\TransactionFactory;
 use PHPUnit\Framework\TestCase;
-use Twig\Environment as TwigEnvironment;
+use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
 class PaymentGatewayTestCase extends TestCase
 {
     /**
-     * @var \Twig_Environment
+     * @var Environment
      */
     protected $twig;
 
@@ -36,7 +36,7 @@ class PaymentGatewayTestCase extends TestCase
         $loader = new FilesystemLoader();
         $loader->addPath(__DIR__.'/../../..', 'IDCIPaymentBundle');
 
-        $this->twig = new TwigEnvironment($loader);
+        $this->twig = new Environment($loader);
 
         $this->paymentGatewayConfiguration = (new PaymentGatewayConfiguration())
             ->setAlias('dummy_gateway_alias')
