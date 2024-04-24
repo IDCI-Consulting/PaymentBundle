@@ -14,7 +14,7 @@ use IDCI\Bundle\PaymentBundle\Payment\TransactionFactory;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Request;
-use Twig\Environment as TwigEnvironment;
+use Twig\Environment;
 use Twig\Loader\ArrayLoader;
 
 class PaymentContextTest extends TestCase
@@ -35,7 +35,7 @@ class PaymentContextTest extends TestCase
     private $dispatcher;
 
     /**
-     * @var \Twig_Environment
+     * @var Environment
      */
     private $twig;
 
@@ -51,7 +51,7 @@ class PaymentContextTest extends TestCase
 
     public function setUp()
     {
-        $this->twig = new TwigEnvironment(new ArrayLoader());
+        $this->twig = new Environment(new ArrayLoader());
 
         $this->paymentGateway = $this->getMockBuilder(AbstractPaymentGateway::class)
             ->setConstructorArgs([$this->twig])

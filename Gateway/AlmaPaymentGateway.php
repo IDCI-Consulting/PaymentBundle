@@ -14,11 +14,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Twig\Environment;
 
 class AlmaPaymentGateway extends AbstractPaymentGateway
 {
     public function __construct(
-        \Twig_Environment $templating,
+        Environment $templating,
         EventDispatcherInterface $dispatcher,
         LoggerInterface $logger
     ) {

@@ -9,6 +9,7 @@ use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Twig\Environment;
 
 class StripePaymentGateway extends AbstractPaymentGateway
 {
@@ -18,7 +19,7 @@ class StripePaymentGateway extends AbstractPaymentGateway
     private $router;
 
     public function __construct(
-        \Twig_Environment $templating,
+        Environment $templating,
         EventDispatcherInterface $dispatcher,
         UrlGeneratorInterface $router
     ) {

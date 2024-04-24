@@ -12,6 +12,7 @@ use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Twig\Environment;
 
 class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
 {
@@ -21,7 +22,7 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
     private $serverHostName;
 
     public function __construct(
-        \Twig_Environment $templating,
+        Environment $templating,
         EventDispatcherInterface $dispatcher,
         string $serverHostName
     ) {
