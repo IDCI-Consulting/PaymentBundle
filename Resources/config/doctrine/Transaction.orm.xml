@@ -14,8 +14,8 @@
         <field name="amount" type="integer" column="amount" />
         <field name="currencyCode" type="string" column="currency_code" />
         <field name="description" type="text" column="description" nullable="true" />
-        <field name="metadata" type="json_array" column="metadata" />
-        <field name="raw" type="json_array" column="raw" />
+        <field name="metadata" type="json" column="metadata" />
+        <field name="raw" type="json" column="raw" />
         <field name="createdAt" type="datetime" column="created_at" />
         <field name="updatedAt" type="datetime" column="updated_at" />
         <lifecycle-callbacks>
