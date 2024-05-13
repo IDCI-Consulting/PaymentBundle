@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Manager;
 
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Exception\NoTransactionFoundException;
 use IDCI\Bundle\PaymentBundle\Model\Transaction as TransactionModel;
@@ -10,25 +10,25 @@ use IDCI\Bundle\PaymentBundle\Model\Transaction as TransactionModel;
 class DoctrineTransactionManager implements TransactionManagerInterface
 {
     /**
-     * @var ObjectManager
+     * @var EntityManagerInterface
      */
-    private $om;
+    private $em;
 
-    public function __construct(?ObjectManager $om = null)
+    public function __construct(?EntityManagerInterface $em = null)
     {
-        $this->om = $om;
+        $this->em = $em;
     }
 
     public function saveTransaction(TransactionModel $transaction)
     {
-        $this->om->persist($transaction);
-        $this->om->flush();
+        $this->em->persist($transaction);
+        $this->em->flush();
     }
 
     public function retrieveTransactionByUuid(string $transactionUuid): TransactionModel
     {
         $transaction = $this
-            ->om
+            ->em
             ->getRepository(Transaction::class)
             ->findOneBy(['id' => $transactionUuid])
         ;

@@ -14,6 +14,11 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 class PaymentContext implements PaymentContextInterface
 {
     /**
+     * @var EventDispatcherInterface
+     */
+    private $dispatcher;
+
+    /**
      * @var PaymentGatewayConfigurationInterface
      */
     private $paymentGatewayConfiguration;
@@ -27,6 +32,11 @@ class PaymentContext implements PaymentContextInterface
      * @var TransactionManagerInterface
      */
     private $transactionManager;
+
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
 
     /**
      * @var Transaction

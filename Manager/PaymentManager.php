@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Manager;
 
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
 use IDCI\Bundle\PaymentBundle\Exception\NoPaymentGatewayConfigurationFoundException;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistryInterface;
@@ -15,9 +15,9 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 class PaymentManager
 {
     /**
-     * @var ObjectManager
+     * @var EntityManagerInterface
      */
-    private $om;
+    private $em;
 
     /**
      * @var PaymentGatewayRegistryInterface
@@ -35,22 +35,27 @@ class PaymentManager
     private $dispatcher;
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @var array
      */
     private $paymentGatewayConfigurations;
 
     public function __construct(
-        ?ObjectManager $om = null,
+        ?EntityManagerInterface $em = null,
         PaymentGatewayRegistryInterface $paymentGatewayRegistry,
         TransactionManagerInterface $transactionManager,
         EventDispatcherInterface $dispatcher,
         LoggerInterface $logger,
         array $paymentGatewayConfigurations
     ) {
-        $this->om = $om;
-        $this->dispatcher = $dispatcher;
+        $this->em = $em;
         $this->paymentGatewayRegistry = $paymentGatewayRegistry;
         $this->transactionManager = $transactionManager;
+        $this->dispatcher = $dispatcher;
         $this->logger = $logger;
         $this->paymentGatewayConfigurations = $paymentGatewayConfigurations;
     }
@@ -60,7 +65,7 @@ class PaymentManager
         $paymentGatewayConfigurations = [];
 
         $doctrinePaymentGatewayConfigurations = $this
-            ->om
+            ->em
             ->getRepository(PaymentGatewayConfiguration::class)
             ->findAll()
         ;
@@ -100,7 +105,7 @@ class PaymentManager
             ;
         }
 
-        if (!$this->om) {
+        if (!$this->em) {
             return $paymentGatewayConfigurations;
         }
 
