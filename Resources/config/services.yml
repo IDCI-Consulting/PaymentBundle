@@ -15,8 +15,6 @@ services:
             $logger: '@monolog.logger.payment'
 
     # Manager
-    Doctrine\ORM\EntityManagerInterface: null
-
     IDCI\Bundle\PaymentBundle\Manager\DoctrineTransactionManager:
         arguments:
             $em: '@?doctrine.orm.entity_manager'
