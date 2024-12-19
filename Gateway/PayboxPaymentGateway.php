@@ -18,6 +18,8 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
      * @var string
      */
     private $serverHostName;
+    private $keyPath;
+    private $publicKeyUrl;
 
     public function __construct(
         Environment $templating,

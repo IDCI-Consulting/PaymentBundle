@@ -18,6 +18,8 @@ use Twig\Environment;
 
 class AlmaPaymentGateway extends AbstractPaymentGateway
 {
+    private $logger;
+    
     public function __construct(
         Environment $templating,
         EventDispatcherInterface $dispatcher,

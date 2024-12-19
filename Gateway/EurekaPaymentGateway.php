@@ -22,6 +22,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
      * @var string
      */
     private $serverHostName;
+    private $eurekaPaymentGatewayClient;
 
     public function __construct(
         Environment $templating,
