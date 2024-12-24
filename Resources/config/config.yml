@@ -39,5 +39,9 @@ parameters:
     # Eureka default server url for test purposes
     idci_payment.eureka.server_host_name: recette-cb4x.fr # prod: cb4x.fr
 
+    # Apple Pay
+    idci_payment.apple_pay.domain_verification_directory_path: ~
+    idci_payment.apple_pay.root_ca_file_path: ~
+
 monolog:
     channels: [payment]

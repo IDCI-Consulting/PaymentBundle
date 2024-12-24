@@ -2,17 +2,17 @@ TEST PARAMETERS FOR PAYMENT GATEWAYS
 ------------------------------------
 
 # Atos Sips
-CARD_NUMBER: 4100 0000 0000 0000  
-CVV: 123  
-EXPIRATION: any date above now  
+CARD_NUMBER: 4100 0000 0000 0000
+CVV: 123
+EXPIRATION: any date above now
 
-The two last digits are for testing prupose  
+The two last digits are for testing prupose
 ex: 4100 0000 0000 0014 will provoke error n°14
 
 <sup>(\*) In mercanet bin you must let the CVV at null</sup>
 
 # Paypal
-account: [your buyer account] ex: email-buyer@example.com  
+account: [your buyer account] ex: email-buyer@example.com
 password: [your buyer account password]
 
 # Monetico
@@ -20,16 +20,21 @@ password: [your buyer account password]
 # Ogone
 
 # PayPlug
-CARD_NUMBER: 4242 4242 4242 4242  
-CVV: 123  
+CARD_NUMBER: 4242 4242 4242 4242
+CVV: 123
 EXPIRATION: any date above now
 
 # PayBox
-CARD_NUMBER: 1111 2222 3333 4444  
-CVV: 123  
+CARD_NUMBER: 1111 2222 3333 4444
+CVV: 123
 EXPIRATION: any date above now
 
 # Stripe
-CARD_NUMBER: 4242 4242 4242 4242  
-CVV: 123  
+CARD_NUMBER: 4242 4242 4242 4242
+CVV: 123
+EXPIRATION: any date above now
+
+# Apple Pay
+CARD_NUMBER: 3717 377570 42005
+CVV: 1111
 EXPIRATION: any date above now

@@ -16,7 +16,8 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
      */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): array {
         Payplug\Payplug::setSecretKey($paymentGatewayConfiguration->get('secret_key'));
 
@@ -48,7 +49,8 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
      */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 

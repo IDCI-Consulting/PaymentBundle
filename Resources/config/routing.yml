@@ -1,5 +1,2 @@
-idci_payment_paymentgateway:
+idci_payment_payment_gateway:
     resource: IDCI\Bundle\PaymentBundle\Controller\PaymentGatewayController
-
-idci_payment_stripepaymentgateway:
-    resource: IDCI\Bundle\PaymentBundle\Controller\StripePaymentGatewayController

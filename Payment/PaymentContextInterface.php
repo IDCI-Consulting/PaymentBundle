@@ -21,7 +21,7 @@ interface PaymentContextInterface
 
     public function getTransaction(): ?Transaction;
 
-    public function buildHTMLView(): string;
+    public function buildHTMLView(array $options = []): string;
 
     public function getPaymentGatewayConfiguration(): PaymentGatewayConfigurationInterface;
 

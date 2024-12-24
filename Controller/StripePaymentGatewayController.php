@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/stripe-payment-gateway")
+ * @Route("/stripe-payment-gateway", name="idci_payment_stripe_payment_gateway_")
  */
 class StripePaymentGatewayController extends AbstractController
 {

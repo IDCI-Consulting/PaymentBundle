@@ -33,14 +33,15 @@ class StripePaymentGateway extends AbstractPaymentGateway
      */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): array {
         return [
             'callbackUrl' => $paymentGatewayConfiguration->get('callback_url'),
             'cancelUrl' => $paymentGatewayConfiguration->get('return_url'),
             'publicKey' => $paymentGatewayConfiguration->get('public_key'),
             'proxyUrl' => $this->router->generate(
-                'idci_payment_stripepaymentgateway_proxy',
+                'idci_payment_stripe_payment_gateway_proxy',
                 ['configuration_alias' => $paymentGatewayConfiguration->getAlias()],
                 UrlGeneratorInterface::ABSOLUTE_URL
             ),
@@ -54,7 +55,8 @@ class StripePaymentGateway extends AbstractPaymentGateway
      */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
