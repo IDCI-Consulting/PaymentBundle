@@ -2,6 +2,16 @@
 
 Last updated: 02/01/25
 
+## Project prequisites
+
+Make sure to import routing configuration provided by the bundle before:
+
+```yaml
+idci_payment_apple_pay:
+    resource: '@IDCIPaymentBundle/Resources/config/routing_apple_pay.yml'
+    prefix:   /
+```
+
 ## Setting Up Your Server
 
 Official docs: https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server
