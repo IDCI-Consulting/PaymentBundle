@@ -97,9 +97,11 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
         $this->log('Transaction unverified: '.$transactionEvent->getTransaction()->getId());
     }
 
-    private function log(string $message) {
+    private function log(string $message)
+    {
         try {
             $this->logger->info($message);
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
     }
 }

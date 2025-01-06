@@ -18,7 +18,7 @@ class TransactionFactory
     public static function getInstance(): self
     {
         if (null === self::$_instance) {
-            self::$_instance = new TransactionFactory();
+            self::$_instance = new self();
         }
 
         return self::$_instance;

@@ -79,9 +79,9 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
                     'merchantIdentifier' => $paymentGatewayConfiguration->get('merchant_identifier'),
                     'displayName' => $paymentGatewayConfiguration->get('display_name'),
                     'initiative' => 'web',
-                    'initiativeContext' => $this->requestStack->getMainRequest()->getHost()
+                    'initiativeContext' => $this->requestStack->getMainRequest()->getHost(),
                 ],
-                'cert' => stream_get_meta_data($merchantIdentityCertificate)['uri']
+                'cert' => stream_get_meta_data($merchantIdentityCertificate)['uri'],
             ]);
         } catch (RequestException $e) {
             $this->logger->error(null !== $e->getResponse() ? (string) $e->getResponse()->getBody() : $e->getMessage());
@@ -140,12 +140,12 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
                 'onlinePaymentCryptogram' => $decodedToken->getOnlinePaymentCryptogram(),
                 'eciIndicator' => $decodedToken->getEciIndicator(),
             ];
-        } catch(DecodingFailedException $e) {
-            $this->logger->error('Decoding failed:'. $e->getMessage());
+        } catch (DecodingFailedException $e) {
+            $this->logger->error('Decoding failed:'.$e->getMessage());
 
             return null;
-        } catch(InvalidFormatException $e) {
-            $this->logger->critical('Invalid format:'. $e->getMessage());
+        } catch (InvalidFormatException $e) {
+            $this->logger->critical('Invalid format:'.$e->getMessage());
 
             return null;
         }
@@ -309,7 +309,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
 
                     $applicationData = array_merge([
                         'transaction_id' => $transaction->getId(),
-                        'mode' => $paymentGatewayConfiguration->get('mode')
+                        'mode' => $paymentGatewayConfiguration->get('mode'),
                     ], $applicationData);
 
                     return json_encode($applicationData);
