@@ -14,6 +14,10 @@ services:
         arguments:
             $logger: '@monolog.logger.payment'
 
+    IDCI\Bundle\PaymentBundle\Controller\ApplePayPaymentGatewayController:
+        arguments:
+            $domainVerificationDirectoryPath: '%idci_payment.apple_pay.domain_verification_directory_path%'
+
     # Manager
     IDCI\Bundle\PaymentBundle\Manager\DoctrineTransactionManager:
         arguments:
@@ -145,6 +149,12 @@ services:
     IDCI\Bundle\PaymentBundle\Gateway\AlmaPaymentGateway:
         tags:
             - { name: idci_payment.gateways, alias: alma }
+
+    IDCI\Bundle\PaymentBundle\Gateway\ApplePayPaymentGateway:
+        arguments:
+            $rootCaFilePath: '%idci_payment.apple_pay.root_ca_file_path%'
+        tags:
+            - { name: idci_payment.gateways, alias: apple_pay }
 
     # Payment Gateway Clients
 

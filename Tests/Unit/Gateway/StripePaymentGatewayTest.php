@@ -36,7 +36,7 @@ class StripePaymentGatewayTest extends PaymentGatewayTestCase
 
         $data = $this->gateway->initialize($this->paymentGatewayConfiguration, $this->transaction);
         $proxyUrl = $this->router->generate(
-            'idci_payment_stripepaymentgateway_proxy',
+            'idci_payment_stripe_payment_gateway_proxy',
             ['configuration_alias' => $this->paymentGatewayConfiguration->getAlias()],
             UrlGeneratorInterface::ABSOLUTE_URL
         );

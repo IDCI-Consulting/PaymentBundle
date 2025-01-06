@@ -24,7 +24,8 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
      */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): array {
         return [
             'clientId' => $paymentGatewayConfiguration->get('client_id'),
@@ -42,7 +43,8 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
      */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 

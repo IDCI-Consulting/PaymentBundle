@@ -32,7 +32,8 @@ class ExemplePaymentGateway extends AbstractPaymentGateway
     // Return the data that will be used in payment gateway view
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): array {
         return [
             'clientId' => $paymentGatewayConfiguration->get('client_id'),
@@ -46,7 +47,8 @@ class ExemplePaymentGateway extends AbstractPaymentGateway
     // Return the builded view in HTML format by using twig templating
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): string {
         return $this->templating->render('@IDCIPayment/Gateway/paypal.html.twig', [
             'initializationData' => $this->initialize($paymentGatewayConfiguration, $transaction),

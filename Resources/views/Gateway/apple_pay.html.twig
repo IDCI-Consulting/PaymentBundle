@@ -1,0 +1,96 @@
+<apple-pay-button buttonstyle="black" type="buy" locale="fr-FR"></apple-pay-button>
+<script src="https://applepay.cdn-apple.com/jsapi/v1.1.0/apple-pay-sdk.js"></script>
+<script>
+    function createApplePaySession() {
+        var applePayButton = document.querySelector('apple-pay-button');
+        var applePayPaymentRequest = {{ apple_pay_payment_request|json_encode|raw }};
+        var selectedShippingMethod = {};
+        var orderAmount = '{{ apple_pay_payment_request.total.amount }}';
+
+        var appleSession = new ApplePaySession({{ version }}, applePayPaymentRequest);
+
+        // Validate payment
+        appleSession.onvalidatemerchant = function (event) {
+            var validationData = { ValidationUrl: event.validationURL };
+            $.ajax({
+                url: '{{ path("idci_payment_apple_pay_payment_gateway_create_session", {"configurationAlias": "apple_pay"}) }}',
+                method: "POST",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(validationData)
+            }).then(function (merchantSession) {
+                appleSession.completeMerchantValidation(merchantSession);
+            }, function (error) {
+                console.error('Merchant validation unsuccessful: ' + JSON.stringify(error));
+
+                appleSession.abort();
+            });
+        };
+
+        appleSession.onpaymentmethodselected = function (event) {
+            applePayButton.dispatchEvent(new CustomEvent('onpaymentmethodselected', {'detail': event}));
+
+            appleSession.completePaymentMethodSelection(applePayPaymentRequest.total, applePayPaymentRequest.lineItems ?? []);
+        };
+
+        appleSession.onshippingcontactselected = function (event) {
+            applePayButton.dispatchEvent(new CustomEvent('onshippingcontactselected', {'detail': event}));
+
+            appleSession.completeShippingContactSelection(ApplePaySession.STATUS_SUCCESS, applePayPaymentRequest.shippingMethods ?? [], applePayPaymentRequest.total, applePayPaymentRequest.lineItems ?? []);
+        };
+
+        appleSession.onshippingmethodselected = function (event) {
+            applePayButton.dispatchEvent(new CustomEvent('onshippingmethodselected', {'detail': event}));
+
+            selectedShippingMethod = event.shippingMethod.identifier;
+
+            let total = applePayPaymentRequest.total;
+            total.amount = parseFloat(orderAmount) + parseFloat(event.shippingMethod.amount);
+
+            appleSession.completeShippingMethodSelection(ApplePaySession.STATUS_SUCCESS, total, applePayPaymentRequest.lineItems ?? []);
+        }
+
+        appleSession.onpaymentauthorized = function (event) {
+            var tokenData = {
+                paymentRequest: applePayPaymentRequest,
+                paymentToken: event.payment.token,
+                billingContact: event.payment.billingContact ?? null,
+                shippingContact: event.payment.shippingContact ?? null,
+                selectedShippingMethod: selectedShippingMethod,
+            };
+
+            $.ajax({
+                url: '{{ path("idci_payment_payment_gateway_callback", {"configuration_alias": "apple_pay"}) }}',
+                method: "POST",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(tokenData)
+            }).then(function (data) {
+                appleSession.completePayment('approved' === data.status ? ApplePaySession.STATUS_SUCCESS : ApplePaySession.STATUS_FAILURE);
+
+                applePayButton.dispatchEvent(new CustomEvent('approved' === data.status ? 'onpaymentsuccess' : 'onpaymentfailed', {'detail': data}));
+            }, function (error) {
+                console.error('Payment validation unsuccessful: ' + JSON.stringify(error));
+
+                appleSession.abort();
+            })
+        }
+
+        appleSession.oncancel = function (event) {
+            applePayButton.dispatchEvent(new CustomEvent('oncancel', {'detail': event}));
+        }
+
+        appleSession.begin();
+    }
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!window.ApplePaySession || ApplePaySession.canMakePayments() !== true) {
+            document.querySelector('apple-pay-button').style.display = 'none';
+
+            return;
+        }
+
+        document.querySelector('apple-pay-button').addEventListener('click', function () {
+            createApplePaySession();
+        });
+    })
+</script>
