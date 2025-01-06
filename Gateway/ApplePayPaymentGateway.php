@@ -42,7 +42,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
     private $logger;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $rootCaFilePath;
 
@@ -51,7 +51,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
         EventDispatcherInterface $dispatcher,
         RequestStack $requestStack,
         LoggerInterface $logger,
-        string $rootCaFilePath
+        ?string $rootCaFilePath = null
     ) {
         parent::__construct($templating, $dispatcher);
 
@@ -112,6 +112,10 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
 
         if (!$paymentGatewayConfiguration->get('token_self_decrypt')) {
             throw new \LogicException('You must enable the "token_self_decrypt" to allow payment token self decryption. Becareful, you must be PCI-compliant to enable it.');
+        }
+
+        if (null === $this->rootCaFilePath) {
+            throw new \LogicException('You must configure "idci_payment.apple_pay.root_ca_file_path" parameter to use self decryption.');
         }
 
         $applePayDecodingServiceFactory = new ApplePayDecodingServiceFactory();
