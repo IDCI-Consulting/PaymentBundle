@@ -1,0 +1,2 @@
+idci_payment_stripe_payment_gateway:
+    resource: IDCI\Bundle\PaymentBundle\Controller\StripePaymentGatewayController

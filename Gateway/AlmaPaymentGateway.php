@@ -19,7 +19,7 @@ use Twig\Environment;
 class AlmaPaymentGateway extends AbstractPaymentGateway
 {
     private $logger;
-    
+
     public function __construct(
         Environment $templating,
         EventDispatcherInterface $dispatcher,
@@ -63,7 +63,8 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
      */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): array {
         $payment = $this->createPayment($paymentGatewayConfiguration, $transaction);
 
@@ -77,7 +78,8 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
      */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 

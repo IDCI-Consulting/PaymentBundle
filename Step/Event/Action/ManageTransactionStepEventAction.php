@@ -172,7 +172,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
                 array_merge(
                     $parameters['template_extra_vars'],
                     [
-                        'view' => $paymentContext->buildHTMLView(),
+                        'view' => $paymentContext->buildHTMLView($parameters['gateway_options']),
                         'transaction' => $transaction,
                     ]
                 )
@@ -299,6 +299,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
                 'customer_email' => null,
                 'description' => null,
                 'metadata' => [],
+                'gateway_options' => [],
                 'success_message' => 'Your transaction succeeded.',
                 'error_message' => 'There was a problem with your transaction, please try again.',
                 'template_extra_vars' => [],
@@ -312,6 +313,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             ->setAllowedTypes('customer_email', ['null', 'string'])
             ->setAllowedTypes('description', ['null', 'string'])
             ->setAllowedTypes('metadata', ['array'])
+            ->setAllowedTypes('gateway_options', ['array'])
             ->setAllowedTypes('success_message', ['null', 'string'])
             ->setAllowedTypes('error_message', ['null', 'string'])
             ->setAllowedTypes('template_extra_vars', ['array'])

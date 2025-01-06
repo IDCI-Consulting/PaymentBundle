@@ -14,7 +14,8 @@ interface PaymentGatewayInterface
      */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): array;
 
     /**
@@ -22,7 +23,8 @@ interface PaymentGatewayInterface
      */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): string;
 
     /**

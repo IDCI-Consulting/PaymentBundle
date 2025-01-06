@@ -93,7 +93,8 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
      */
     public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
         $options['seal'] = $this->buildSeal($options, $paymentGatewayConfiguration->get('secret'));
@@ -120,7 +121,8 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
      */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 

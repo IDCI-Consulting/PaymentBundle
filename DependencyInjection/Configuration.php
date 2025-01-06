@@ -33,7 +33,7 @@ class Configuration implements ConfigurationInterface
                         ->children()
                             ->scalarNode('gateway_name')->isRequired()->cannotBeEmpty()->end()
                             ->booleanNode('enabled')->defaultTrue()->end()
-                            ->arrayNode('parameters')->scalarPrototype()->end()->end()
+                            ->arrayNode('parameters')->variablePrototype()->end()->end()
                         ->end()
                     ->end()
                 ->end()

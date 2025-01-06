@@ -45,7 +45,8 @@ class PaymentGatewayController extends AbstractController
                     $request->getContent()
                 )
             );
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         $paymentContext = $this
             ->paymentManager

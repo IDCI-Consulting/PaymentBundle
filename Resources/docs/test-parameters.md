@@ -308,3 +308,27 @@ idci_payment:
                 api_key: [Given in the documentation]
                 mode: test
 ```
+
+```yaml
+idci_payment:
+    gateway_configurations:
+        apple_pay_test:
+            gateway_name: apple_pay
+            enabled: true
+            parameters:
+                return_url: ~
+                callback_url: ~
+                version: 3
+                mode: transaction # Or "one_click"
+                merchant_identifier: merchant.mydomain.com
+                display_name: My Website
+                country_code: FR
+                merchant_capabilities: ['supports3DS']
+                supported_networks: ['amex', 'discover', 'masterCard', 'visa']
+                required_billing_contact_fields: ['name', 'email', 'phone', 'postalAddress']
+                required_shipping_contact_fields: ['name', 'email', 'phone', 'postalAddress']
+                merchant_identity_certificate: 'Bag Attributes\n    localKeyID: ...'
+                payment_processing_private_key: '9BFVrhBsBgHXg/PVTjWaz8qdgky5t0tDhc9Hq13t64UjMG+C4nMc3LeJwTDd9tcN9XwJSPBC51ZR6u6lPhW0C3L2NVJmM9ImhOV5AjuEGvWp2mIkkGSKJkniCnM='
+                token_signature_duration: 300
+                token_self_decrypt: false # You must be PCI-compliant before enabling
+```

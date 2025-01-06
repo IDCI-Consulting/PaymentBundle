@@ -34,7 +34,8 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
      */
     abstract public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): array;
 
     /**
@@ -42,7 +43,8 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
      */
     abstract public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): string;
 
     /**

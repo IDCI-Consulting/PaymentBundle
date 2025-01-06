@@ -1,0 +1,2 @@
+idci_payment_apple_pay_payment_gateway:
+    resource: IDCI\Bundle\PaymentBundle\Controller\ApplePayPaymentGatewayController
