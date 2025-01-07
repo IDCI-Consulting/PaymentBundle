@@ -15,11 +15,6 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 class PaymentManager
 {
     /**
-     * @var EntityManagerInterface
-     */
-    private $em;
-
-    /**
      * @var PaymentGatewayRegistryInterface
      */
     private $paymentGatewayRegistry;
@@ -44,20 +39,25 @@ class PaymentManager
      */
     private $paymentGatewayConfigurations;
 
+    /**
+     * @var EntityManagerInterface|null
+     */
+    private $em;
+
     public function __construct(
-        ?EntityManagerInterface $em = null,
         PaymentGatewayRegistryInterface $paymentGatewayRegistry,
         TransactionManagerInterface $transactionManager,
         EventDispatcherInterface $dispatcher,
         LoggerInterface $logger,
-        array $paymentGatewayConfigurations
+        array $paymentGatewayConfigurations,
+        ?EntityManagerInterface $em = null,
     ) {
-        $this->em = $em;
         $this->paymentGatewayRegistry = $paymentGatewayRegistry;
         $this->transactionManager = $transactionManager;
         $this->dispatcher = $dispatcher;
         $this->logger = $logger;
         $this->paymentGatewayConfigurations = $paymentGatewayConfigurations;
+        $this->em = $em;
     }
 
     public function getAllPaymentGatewayConfigurationFromDoctrine(): array
