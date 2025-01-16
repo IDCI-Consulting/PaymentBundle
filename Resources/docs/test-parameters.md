@@ -225,7 +225,9 @@ idci_payment:
             parameters:
                 return_url: http://www.example.com/
                 callback_url: http://[your server host]/payment-gateway/payplug_test/callback # must be public
+                version: 1
                 secret_key: [Available in your account]
+                mode: hosted # or "lightbox" ("integrated" not supported for now)
 ```
 
 # PayBox
