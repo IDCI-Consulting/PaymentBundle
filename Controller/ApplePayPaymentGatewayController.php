@@ -2,17 +2,25 @@
 
 namespace IDCI\Bundle\PaymentBundle\Controller;
 
+use IDCI\Bundle\PaymentBundle\Gateway\Event\ApplePayPaymentGatewayEvents;
+use IDCI\Bundle\PaymentBundle\Gateway\Event\ApplePayPaymentGatewaySessionEvent;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @Route(name="idci_payment_apple_pay_payment_gateway_")
  */
 class ApplePayPaymentGatewayController extends AbstractController
 {
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $dispatcher;
+
     /**
      * @var PaymentManager
      */
@@ -24,9 +32,11 @@ class ApplePayPaymentGatewayController extends AbstractController
     private $domainVerificationDirectoryPath;
 
     public function __construct(
+        EventDispatcherInterface $dispatcher,
         PaymentManager $paymentManager,
         string $domainVerificationDirectoryPath
     ) {
+        $this->dispatcher = $dispatcher;
         $this->paymentManager = $paymentManager;
         $this->domainVerificationDirectoryPath = $domainVerificationDirectoryPath;
     }
@@ -56,6 +66,19 @@ class ApplePayPaymentGatewayController extends AbstractController
         ;
 
         $data = json_decode($request->getContent(), true);
+
+        $event = new ApplePayPaymentGatewaySessionEvent($request, $paymentContext, $data);
+        $this->dispatcher->dispatch($event, ApplePayPaymentGatewayEvents::CREATE_SESSION);
+
+        if (null !== $event->getSessionData()) {
+            return new Response(
+                $event->getSessionData(),
+                Response::HTTP_OK,
+                [
+                    'Content-Type' => 'application/json',
+                ]
+            );
+        }
 
         if (!isset($data['ValidationUrl'])) {
             return new Response(

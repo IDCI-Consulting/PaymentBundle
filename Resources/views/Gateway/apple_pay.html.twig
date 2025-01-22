@@ -11,12 +11,13 @@
 
         // Validate payment
         appleSession.onvalidatemerchant = function (event) {
-            var validationData = { ValidationUrl: event.validationURL };
+            var sessionData = Object.assign({}, { ValidationUrl: event.validationURL }, applePayPaymentRequest);
+
             $.ajax({
                 url: '{{ path("idci_payment_apple_pay_payment_gateway_create_session", {"configurationAlias": "apple_pay"}) }}',
                 method: "POST",
                 contentType: "application/json; charset=utf-8",
-                data: JSON.stringify(validationData)
+                data: JSON.stringify(sessionData)
             }).then(function (merchantSession) {
                 appleSession.completeMerchantValidation(merchantSession);
             }, function (error) {
