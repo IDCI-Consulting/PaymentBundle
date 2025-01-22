@@ -166,6 +166,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
         array $options = []
     ): array {
         return [
+            'configuration_alias' => $paymentGatewayConfiguration->getAlias(),
             'version' => $paymentGatewayConfiguration->get('version'),
             'apple_pay_payment_request' => $this->resolveInitializationOptions(
                 $paymentGatewayConfiguration,

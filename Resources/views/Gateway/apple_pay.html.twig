@@ -13,14 +13,22 @@
         appleSession.onvalidatemerchant = function (event) {
             var sessionData = Object.assign({}, { ValidationUrl: event.validationURL }, applePayPaymentRequest);
 
-            $.ajax({
-                url: '{{ path("idci_payment_apple_pay_payment_gateway_create_session", {"configurationAlias": "apple_pay"}) }}',
-                method: "POST",
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify(sessionData)
-            }).then(function (merchantSession) {
+            let headers = new Headers();
+            headers.append('X-Requested-With', 'XMLHttpRequest');
+            headers.append('Content-Type', 'application/json; charset=utf-8');
+
+            let options = {
+                method: 'POST',
+                body: JSON.stringify(sessionData),
+                credentials: 'include',
+                headers: headers
+            };
+
+            fetch('{{ path("idci_payment_apple_pay_payment_gateway_create_session", {"configurationAlias": configuration_alias}) }}', options).then((response) => {
+                return response.json();
+            }).then((merchantSession) => {
                 appleSession.completeMerchantValidation(merchantSession);
-            }, function (error) {
+            }).catch(function (error) {
                 console.error('Merchant validation unsuccessful: ' + JSON.stringify(error));
 
                 appleSession.abort();
@@ -59,20 +67,28 @@
                 selectedShippingMethod: selectedShippingMethod,
             };
 
-            $.ajax({
-                url: '{{ path("idci_payment_payment_gateway_callback", {"configuration_alias": "apple_pay"}) }}',
-                method: "POST",
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify(tokenData)
-            }).then(function (data) {
+            let headers = new Headers();
+            headers.append('X-Requested-With', 'XMLHttpRequest');
+            headers.append('Content-Type', 'application/json; charset=utf-8');
+
+            let options = {
+                method: 'POST',
+                body: JSON.stringify(tokenData),
+                credentials: 'include',
+                headers: headers
+            };
+
+            fetch('{{ path("idci_payment_payment_gateway_callback", {"configuration_alias": configuration_alias}) }}', options).then((response) => {
+                return response.json();
+            }).then((data) => {
                 appleSession.completePayment('approved' === data.status ? ApplePaySession.STATUS_SUCCESS : ApplePaySession.STATUS_FAILURE);
 
                 applePayButton.dispatchEvent(new CustomEvent('approved' === data.status ? 'onpaymentsuccess' : 'onpaymentfailed', {'detail': data}));
-            }, function (error) {
-                console.error('Payment validation unsuccessful: ' + JSON.stringify(error));
+            }).catch(function (error) {
+                console.error('Payment validation unsuccessful: ' + error);
 
                 appleSession.abort();
-            })
+            });
         }
 
         appleSession.oncancel = function (event) {
