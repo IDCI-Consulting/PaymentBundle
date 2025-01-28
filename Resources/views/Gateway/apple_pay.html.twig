@@ -36,24 +36,18 @@
         };
 
         appleSession.onpaymentmethodselected = function (event) {
-            applePayButton.dispatchEvent(new CustomEvent('onpaymentmethodselected', {'detail': event}));
-
             appleSession.completePaymentMethodSelection(applePayPaymentRequest.total, applePayPaymentRequest.lineItems ?? []);
         };
 
         appleSession.onshippingcontactselected = function (event) {
-            applePayButton.dispatchEvent(new CustomEvent('onshippingcontactselected', {'detail': event}));
-
             appleSession.completeShippingContactSelection(ApplePaySession.STATUS_SUCCESS, applePayPaymentRequest.shippingMethods ?? [], applePayPaymentRequest.total, applePayPaymentRequest.lineItems ?? []);
         };
 
         appleSession.onshippingmethodselected = function (event) {
-            applePayButton.dispatchEvent(new CustomEvent('onshippingmethodselected', {'detail': event}));
-
             selectedShippingMethod = event.shippingMethod.identifier;
 
             let total = applePayPaymentRequest.total;
-            total.amount = parseFloat(orderAmount) + parseFloat(event.shippingMethod.amount);
+            total.amount = (parseFloat(orderAmount) + parseFloat(event.shippingMethod.amount)).toFixed(2);
 
             appleSession.completeShippingMethodSelection(ApplePaySession.STATUS_SUCCESS, total, applePayPaymentRequest.lineItems ?? []);
         }
@@ -83,7 +77,29 @@
             }).then((data) => {
                 appleSession.completePayment('approved' === data.status ? ApplePaySession.STATUS_SUCCESS : ApplePaySession.STATUS_FAILURE);
 
-                applePayButton.dispatchEvent(new CustomEvent('approved' === data.status ? 'onpaymentsuccess' : 'onpaymentfailed', {'detail': data}));
+                if ('approved' === data.status) {
+                    if (typeof appleSession.onpaymentsuccess != 'function') {
+                        return;
+                    }
+
+                    return appleSession.onpaymentsuccess({
+                        'amount': orderAmount,
+                        'request': applePayPaymentRequest,
+                        'session': appleSession,
+                        'data': data
+                    });
+                }
+
+                if (typeof appleSession.onpaymentsuccess != 'function') {
+                    return;
+                }
+
+                return appleSession.onpaymentfailed({
+                    'amount': orderAmount,
+                    'request': applePayPaymentRequest,
+                    'session': appleSession,
+                    'data': data
+                });
             }).catch(function (error) {
                 console.error('Payment validation unsuccessful: ' + error);
 
@@ -91,8 +107,12 @@
             });
         }
 
-        appleSession.oncancel = function (event) {
-            applePayButton.dispatchEvent(new CustomEvent('oncancel', {'detail': event}));
+        if (typeof ApplePaySession.onsessioncreate == 'function') {
+            ApplePaySession.onsessioncreate({
+                'amount': orderAmount,
+                'request': applePayPaymentRequest,
+                'session': appleSession,
+            });
         }
 
         appleSession.begin();

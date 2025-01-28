@@ -326,7 +326,7 @@ class ApplePayPaymentGatewayEventSubscriber implements EventSubscriberInterface
 
 ## Custom JS events
 
-You can attach to some js events if you want to add some real time changes, here is the list:
+You can attach to some js events if you want to add some real time changes, here is the list (be careful it will override default one, so make sure to complete every step):
 
 - onpaymentmethodselected
 - onshippingcontactselected
@@ -339,12 +339,19 @@ Example (redirect to order summary on payment success):
 
 ```js
 document.addEventListener('DOMContentLoaded', function () {
-    document.querySelector('apple-pay-button').addEventListener('onpaymentsuccess', function (e) {
-        let data = e.detail; // retrieve transaction data
+    // Attach to session create event to retrieve initialization elements
+    ApplePaySession.onsessioncreate = function (event) {
+        let amount = event.amount;
+        let request = event.request;
+        let session = event.session;
 
-        if ('approved' === data.status) {
-            window.location.href = 'https://my-domain.com/order_summary/' + data.item_id;
+        // Then override the session events
+        session.onpaymentsuccess = function (event) {
+            let data = event.data;
+            if ('approved' === data.status) {
+                window.location.href = 'https://my-domain.com/order_summary/' + data.item_id;
+            }
         }
-    });
+    };
 })
 ```
