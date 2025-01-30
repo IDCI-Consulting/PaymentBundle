@@ -1,8 +1,7 @@
-<apple-pay-button buttonstyle="black" type="buy" locale="fr-FR"></apple-pay-button>
+<apple-pay-button class="apple-pay-button" buttonstyle="black" type="buy" locale="fr-FR"></apple-pay-button>
 <script src="https://applepay.cdn-apple.com/jsapi/v1.1.0/apple-pay-sdk.js"></script>
 <script>
     function createApplePaySession() {
-        var applePayButton = document.querySelector('apple-pay-button');
         var applePayPaymentRequest = {{ apple_pay_payment_request|json_encode|raw }};
         var selectedShippingMethod = {};
         var orderAmount = '{{ apple_pay_payment_request.total.amount }}';
@@ -121,13 +120,17 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         if (!window.ApplePaySession || ApplePaySession.canMakePayments() !== true) {
-            document.querySelector('apple-pay-button').style.display = 'none';
+            document.querySelectorAll('.apple-pay-button').forEach(function (button) {
+                button.style.display = 'none';
+            });
 
             return;
         }
 
-        document.querySelector('apple-pay-button').addEventListener('click', function () {
-            createApplePaySession();
+        document.querySelectorAll('.apple-pay-button').forEach(function (button) {
+            button.addEventListener('click', function () {
+                createApplePaySession();
+            })
         });
     })
 </script>
