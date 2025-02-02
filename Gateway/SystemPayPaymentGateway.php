@@ -41,35 +41,29 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): array {
-        return [
-            'vads_action_mode' => $paymentGatewayConfiguration->get('action_mode'),
-            'vads_amount' => $transaction->getAmount(),
-            'vads_ctx_mode' => $paymentGatewayConfiguration->get('ctx_mode'),
-            'vads_currency' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
-            'vads_cust_address' => $transaction->getMetadata('vads_cust_address'),
-            'vads_cust_cell_phone' => $transaction->getMetadata('vads_cust_cell_phone'),
-            'vads_cust_city' => $transaction->getMetadata('vads_cust_city'),
-            'vads_cust_country' => $transaction->getMetadata('vads_cust_country'),
-            'vads_cust_email' => $transaction->getCustomerEmail(),
-            'vads_cust_first_name' => $transaction->getMetadata('vads_cust_first_name'),
-            'vads_cust_id' => $transaction->getCustomerId(),
-            'vads_cust_last_name' => $transaction->getMetadata('vads_cust_last_name'),
-            'vads_cust_phone' => $transaction->getMetadata('vads_cust_phone'),
-            'vads_cust_zip' => $transaction->getMetadata('vads_cust_zip'),
-            'vads_order_id' => $transaction->getId(),
-            'vads_page_action' => $paymentGatewayConfiguration->get('page_action'),
-            'vads_payment_config' => $paymentGatewayConfiguration->get('payment_config'),
-            'vads_redirect_error_timeout' => $transaction->getMetadata('vads_redirect_error_timeout'),
-            'vads_redirect_success_timeout' => $transaction->getMetadata('vads_redirect_success_timeout'),
-            'vads_site_id' => $paymentGatewayConfiguration->get('site_id'),
-            'vads_trans_date' => (new \DateTime())->setTimezone(new \DateTimeZone('UTC'))->format('YmdHis'),
-            'vads_trans_id' => sprintf('%06d', $transaction->getNumber()),
-            'vads_url_check' => $paymentGatewayConfiguration->get('callback_url'),
-            'vads_url_return' => $paymentGatewayConfiguration->get('return_url'),
-            'vads_version' => $paymentGatewayConfiguration->get('version'),
-        ];
+        return array_merge(
+            [
+                'vads_action_mode' => $paymentGatewayConfiguration->get('action_mode'),
+                'vads_amount' => $transaction->getAmount(),
+                'vads_ctx_mode' => $paymentGatewayConfiguration->get('ctx_mode'),
+                'vads_currency' => (new ISO4217())->findByAlpha3($transaction->getCurrencyCode())->getNumeric(),
+                'vads_cust_email' => $transaction->getCustomerEmail(),
+                'vads_cust_id' => $transaction->getCustomerId(),
+                'vads_order_id' => $transaction->getId(),
+                'vads_page_action' => $paymentGatewayConfiguration->get('page_action'),
+                'vads_payment_config' => $paymentGatewayConfiguration->get('payment_config'),
+                'vads_site_id' => $paymentGatewayConfiguration->get('site_id'),
+                'vads_trans_date' => (new \DateTime())->setTimezone(new \DateTimeZone('UTC'))->format('YmdHis'),
+                'vads_trans_id' => sprintf('%06d', $transaction->getNumber()),
+                'vads_url_check' => $paymentGatewayConfiguration->get('callback_url'),
+                'vads_url_return' => $paymentGatewayConfiguration->get('return_url'),
+                'vads_version' => $paymentGatewayConfiguration->get('version'),
+            ],
+            $options
+        );
     }
 
     /**
@@ -103,7 +97,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         Transaction $transaction,
         array $options = []
     ): array {
-        $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
+        $options = $this->buildOptions($paymentGatewayConfiguration, $transaction, $options);
         $options['signature'] = $this->buildSignature($paymentGatewayConfiguration, $options);
 
         return [
@@ -120,7 +114,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         Transaction $transaction,
         array $options = []
     ): string {
-        $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
+        $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction, $options);
 
         return $this->templating->render('@IDCIPayment/Gateway/systempay.html.twig', [
             'initializationData' => $initializationData,
