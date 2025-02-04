@@ -1,4 +1,4 @@
-<apple-pay-button class="apple-pay-button" buttonstyle="black" type="buy" locale="fr-FR"></apple-pay-button>
+<apple-pay-button style="display: none;" class="apple-pay-button" buttonstyle="black" type="buy" locale="fr-FR"></apple-pay-button>
 <script src="https://applepay.cdn-apple.com/jsapi/v1.1.0/apple-pay-sdk.js"></script>
 <script>
     function createApplePaySession() {
@@ -117,20 +117,42 @@
         appleSession.begin();
     }
 
-
-    document.addEventListener('DOMContentLoaded', function () {
+    function initApplePayButton() {
         if (!window.ApplePaySession || ApplePaySession.canMakePayments() !== true) {
-            document.querySelectorAll('.apple-pay-button').forEach(function (button) {
-                button.style.display = 'none';
-            });
-
             return;
         }
 
         document.querySelectorAll('.apple-pay-button').forEach(function (button) {
+            if (button.classList.contains('initialized')) {
+                return;
+            }
+
+            button.classList.add('initialized');
+            button.style.display = 'block';
+
             button.addEventListener('click', function () {
                 createApplePaySession();
             })
         });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        initApplePayButton();
     })
+
+    var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length >= 1) {
+                for (var i = 0; i < mutation.addedNodes.length; i++) {
+                    if (undefined !== mutation.addedNodes[i].localName) {
+                        if (mutation.addedNodes[i].querySelectorAll('.apple-pay-button:not(.initialized)').length !== 0) {
+                            initApplePayButton();
+                        };
+                    }
+                }
+            }
+        });
+    });
+
+    observer.observe(document.body, { attributes: false, childList: true, characterData: false, subtree: true });
 </script>
