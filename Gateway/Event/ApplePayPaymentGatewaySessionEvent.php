@@ -18,9 +18,14 @@ class ApplePayPaymentGatewaySessionEvent
     protected $paymentContext;
 
     /**
+     * @var string
+     */
+    protected $validationUrl;
+
+    /**
      * @var array
      */
-    protected $data = [];
+    protected $paymentRequest = [];
 
     /**
      * @var string
@@ -32,13 +37,15 @@ class ApplePayPaymentGatewaySessionEvent
      */
     public function __construct(
         Request $request,
-        PaymentContextInterface $paymentContext = null,
-        array $data = [],
+        PaymentContextInterface $paymentContext,
+        string $validationUrl,
+        array &$paymentRequest = [],
         string &$sessionData = null
     ) {
         $this->request = $request;
         $this->paymentContext = $paymentContext;
-        $this->data = $data;
+        $this->validationUrl = $validationUrl;
+        $this->paymentRequest = &$paymentRequest;
         $this->sessionData = &$sessionData;
     }
 
@@ -59,11 +66,29 @@ class ApplePayPaymentGatewaySessionEvent
     }
 
     /**
-     * Get data.
+     * Get validation url.
      */
-    public function getData(): array
+    public function getValidationUrl(): string
     {
-        return $this->data;
+        return $this->validationUrl;
+    }
+
+    /**
+     * Get payment request.
+     */
+    public function getPaymentRequest(): array
+    {
+        return $this->paymentRequest;
+    }
+
+    /**
+     * Set payment request
+     */
+    public function setPaymentRequest(array $paymentRequest): self
+    {
+        $this->paymentRequest = $paymentRequest;
+
+        return $this;
     }
 
     /**

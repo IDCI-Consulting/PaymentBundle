@@ -92,12 +92,16 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         if (empty($request->request->all())) {
             return $gatewayResponse->setMessage('The request do not contains required post data');
         }
+
         $params = $request->request->all();
+
+        // TODO: Retrieve payment from Payplug to improve confiance in "is_paid" bool
 
         $gatewayResponse
             ->setTransactionUuid($params['metadata']['transaction_id'])
             ->setAmount($params['amount'])
             ->setCurrencyCode($params['currency'])
+            ->setRaw($params)
         ;
 
         if (!$params['is_paid']) {

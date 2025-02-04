@@ -67,12 +67,15 @@ class ApplePayPaymentGatewayController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
-        $event = new ApplePayPaymentGatewaySessionEvent($request, $paymentContext, $data);
+        $event = new ApplePayPaymentGatewaySessionEvent($request, $paymentContext, $data['validationUrl'], $data['paymentRequest']);
         $this->dispatcher->dispatch($event, ApplePayPaymentGatewayEvents::CREATE_SESSION);
 
         if (null !== $event->getSessionData()) {
             return new Response(
-                $event->getSessionData(),
+                json_encode([
+                    'paymentRequest' => $event->getPaymentRequest(),
+                    'sessionData' => json_decode($event->getSessionData())
+                ]),
                 Response::HTTP_OK,
                 [
                     'Content-Type' => 'application/json',
@@ -80,9 +83,9 @@ class ApplePayPaymentGatewayController extends AbstractController
             );
         }
 
-        if (!isset($data['ValidationUrl'])) {
+        if (!isset($data['validationUrl'])) {
             return new Response(
-                json_encode(['error' => 'Missing "ValidationUrl" parameter']),
+                json_encode(['error' => 'Missing "validationUrl" parameter']),
                 Response::HTTP_BAD_REQUEST,
                 [
                     'Content-Type' => 'application/json',
@@ -90,7 +93,7 @@ class ApplePayPaymentGatewayController extends AbstractController
             );
         }
 
-        $sessionData = $paymentContext->getPaymentGateway()->createSession($paymentContext->getPaymentGatewayConfiguration(), $data['ValidationUrl']);
+        $sessionData = $paymentContext->getPaymentGateway()->createSession($paymentContext->getPaymentGatewayConfiguration(), $data['validationUrl']);
 
         if (null === $sessionData) {
             return new Response(
@@ -101,6 +104,17 @@ class ApplePayPaymentGatewayController extends AbstractController
                 ]
             );
         }
+
+        return new Response(
+            json_encode([
+                'paymentRequest' => $event->getPaymentRequest(),
+                'sessionData' => json_decode($sessionData)
+            ]),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/json',
+            ]
+        );
 
         return new Response(
             $sessionData,

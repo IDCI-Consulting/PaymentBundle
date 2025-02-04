@@ -10,23 +10,22 @@
 
         // Validate payment
         appleSession.onvalidatemerchant = function (event) {
-            var sessionData = Object.assign({}, { ValidationUrl: event.validationURL }, applePayPaymentRequest);
-
             let headers = new Headers();
             headers.append('X-Requested-With', 'XMLHttpRequest');
             headers.append('Content-Type', 'application/json; charset=utf-8');
 
             let options = {
                 method: 'POST',
-                body: JSON.stringify(sessionData),
+                body: JSON.stringify({ validationUrl: event.validationURL, paymentRequest: applePayPaymentRequest}),
                 credentials: 'include',
                 headers: headers
             };
 
             fetch('{{ path("idci_payment_apple_pay_payment_gateway_create_session", {"configurationAlias": configuration_alias}) }}', options).then((response) => {
                 return response.json();
-            }).then((merchantSession) => {
-                appleSession.completeMerchantValidation(merchantSession);
+            }).then((data) => {
+                applePayPaymentRequest = data.paymentRequest;
+                appleSession.completeMerchantValidation(data.sessionData);
             }).catch(function (error) {
                 console.error('Merchant validation unsuccessful: ' + JSON.stringify(error));
 
