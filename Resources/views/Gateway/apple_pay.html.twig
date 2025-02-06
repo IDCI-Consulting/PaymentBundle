@@ -1,4 +1,4 @@
-<apple-pay-button style="display: none;" class="apple-pay-button" buttonstyle="black" type="buy" locale="fr-FR"></apple-pay-button>
+{% include '@IDCIPayment/Gateway/apple_pay/button.html.twig' %}
 <script src="https://applepay.cdn-apple.com/jsapi/v1.1.0/apple-pay-sdk.js"></script>
 <script>
     function createApplePaySession() {
@@ -77,6 +77,8 @@
 
                 if ('approved' === data.status) {
                     if (typeof appleSession.onpaymentsuccess != 'function') {
+                        window.location.href = '{{ return_url }}';
+
                         return;
                     }
 
@@ -88,7 +90,9 @@
                     });
                 }
 
-                if (typeof appleSession.onpaymentsuccess != 'function') {
+                if (typeof appleSession.onpaymentfailed != 'function') {
+                    window.location.href = '{{ return_url }}';
+
                     return;
                 }
 
