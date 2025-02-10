@@ -44,6 +44,12 @@ class SofincoCACFPaymentGatewayClient
     const DOCUMENT_STATUS_UNKNOWN = 'UKW';
     const DOCUMENT_STATUS_ABANDONNED = 'ABD';
 
+    const CONTRACT_STATUS_ACCEPTED_1 = '080';
+    const CONTRACT_STATUS_ACCEPTED_2 = '091';
+    const CONTRACT_STATUS_PRE_ACCEPTED_1 = '091';
+    const CONTRACT_STATUS_PRE_ACCEPTED_2 = '052';
+    const CONTRACT_STATUS_PENDING = '021';
+
     /**
      * @var Environment
      */
@@ -209,61 +215,61 @@ class SofincoCACFPaymentGatewayClient
      * Simulation API
      */
 
-     public function getLoanSimulationsUrl(): string
-     {
-         return sprintf('https://%s/loanSimulation/v1/simulations/', $this->apiHostName);
-     }
+    public function getLoanSimulationsUrl(): string
+    {
+        return sprintf('https://%s/loanSimulation/v1/simulations/', $this->apiHostName);
+    }
 
-     public function getLoanSimulationsResponse(array $options): ?Response
-     {
-         try {
-             return $this->client->request('POST', $this->getLoanSimulationsUrl(), [
-                 'json' => $this->resolveLoanSimulationsOptions($options),
-                 'headers' => [
-                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
-                     'Content-Type' => 'application/json',
-                     'Context-Applicationid' => self::CONTEXT_APPLICATION_ID,
-                     'Context-Partnerid' => self::CONTEXT_PARTNER_ID,
-                     'Context-Sourceid' => self::CONTEXT_SOURCE_ID,
-                 ],
-             ]);
-         } catch (RequestException $e) {
-             $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+    public function getLoanSimulationsResponse(array $options): ?Response
+    {
+        try {
+            return $this->client->request('POST', $this->getLoanSimulationsUrl(), [
+                'json' => $this->resolveLoanSimulationsOptions($options),
+                'headers' => [
+                    'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
+                    'Content-Type' => 'application/json',
+                    'Context-Applicationid' => self::CONTEXT_APPLICATION_ID,
+                    'Context-Partnerid' => self::CONTEXT_PARTNER_ID,
+                    'Context-Sourceid' => self::CONTEXT_SOURCE_ID,
+                ],
+            ]);
+        } catch (RequestException $e) {
+            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
 
-             return null;
-         }
-     }
+            return null;
+        }
+    }
 
-     public function getLoanSimulations(array $options): array
-     {
-         $loanSimulationResponse = $this->getLoanSimulationsResponse($options);
+    public function getLoanSimulations(array $options): array
+    {
+        $loanSimulationResponse = $this->getLoanSimulationsResponse($options);
 
-         if (null === $loanSimulationResponse) {
-             throw new \UnexpectedValueException('The loan simulations request failed.');
-         }
+        if (null === $loanSimulationResponse) {
+            throw new \UnexpectedValueException('The loan simulations request failed.');
+        }
 
-         $loanSimulations = json_decode($loanSimulationResponse->getBody()->getContents(), true);
+        $loanSimulations = json_decode($loanSimulationResponse->getBody()->getContents(), true);
 
-         if (!is_array($loanSimulations)) {
-             throw new \UnexpectedValueException('The loanSimulationResponse response can\'t be parsed.');
-         }
+        if (!is_array($loanSimulations)) {
+            throw new \UnexpectedValueException('The loanSimulationResponse response can\'t be parsed.');
+        }
 
-         return $loanSimulations;
-     }
+        return $loanSimulations;
+    }
 
-     public function getSimulatorUrl(array $options): string
-     {
-         $resolvedOptions = $this->resolveSimulatorOptions($options);
+    public function getSimulatorUrl(array $options): string
+    {
+        $resolvedOptions = $this->resolveSimulatorOptions($options);
 
-         return sprintf(
-             'https://%s/simulateur/?Q6=%s&X1=simu_vac&s3=%s&a9=%s&n2=%s',
-             $this->serverHostName,
-             self::CONTEXT_PARTNER_ID,
-             $resolvedOptions['amount'],
-             $resolvedOptions['businessProviderId'],
-             $resolvedOptions['equipmentCode']
-         );
-     }
+        return sprintf(
+            'https://%s/simulateur/?Q6=%s&X1=simu_vac&s3=%s&a9=%s&n2=%s',
+            $this->serverHostName,
+            self::CONTEXT_PARTNER_ID,
+            $resolvedOptions['amount'],
+            $resolvedOptions['businessProviderId'],
+            $resolvedOptions['equipmentCode']
+        );
+    }
 
     /**
      * Business token API
@@ -313,7 +319,7 @@ class SofincoCACFPaymentGatewayClient
     }
 
     /**
-     * Partner data exchange link
+     * Partner data exchange link API
      */
 
     public function getPartnerDataExchangeLinkUrl(): string
@@ -325,7 +331,7 @@ class SofincoCACFPaymentGatewayClient
     {
         try {
             return $this->client->request('POST', $this->getPartnerDataExchangeLinkUrl(), [
-                'json' => $this->resolveBusinessTokenOptions($options),
+                'json' => $this->resolvePartnerDataExchangeLinkOptions($options),
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
@@ -376,6 +382,190 @@ class SofincoCACFPaymentGatewayClient
             self::CONTEXT_SOURCE_ID,
             $this->getBusinessToken($options)
         );
+    }
+
+    /**
+     * Partner Loan Portfolio API
+     */
+
+    public function getPartnerLoanPortfolioUrl(): string
+    {
+        return sprintf('https://%s/partnerLoanPortfolio/v1/', $this->apiHostName);
+    }
+
+    public function getContractById(string $contractId, array $options): ?array
+    {
+        $response = null;
+
+        try {
+            $response = $this->client->request('POST', sprintf('%s/contracts/%s', $this->getPartnerLoanPortfolioUrl(), $contractId), [
+                'json' => $this->resolveContractByIdOptions($options),
+                'headers' => [
+                    'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
+                    'Content-Type' => 'application/json',
+                ],
+            ]);
+        } catch (RequestException $e) {
+            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+
+            return null;
+        }
+
+        if (null === $response) {
+            throw new \UnexpectedValueException('The partner loan portfolio contract by id request failed.');
+        }
+
+        $contractData = json_decode($response->getBody()->getContents(), true);
+
+        if (!is_array($contractData)) {
+            throw new \UnexpectedValueException('The contract response can\'t be parsed.');
+        }
+
+        return $contractData;
+    }
+
+    public function getContractByExternalId(array $options): ?array
+    {
+        $response = null;
+
+        try {
+            $response = $this->client->request('POST', sprintf('%s/contracts', $this->getPartnerLoanPortfolioUrl()), [
+                'json' => $this->resolveContractByExternalIdOptions($options),
+                'headers' => [
+                    'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
+                    'Content-Type' => 'application/json',
+                ],
+            ]);
+        } catch (RequestException $e) {
+            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+
+            return null;
+        }
+
+        if (null === $response) {
+            throw new \UnexpectedValueException('The partner loan portfolio contract by external id request failed.');
+        }
+
+        $contractData = json_decode($response->getBody()->getContents(), true);
+
+        if (!is_array($contractData)) {
+            throw new \UnexpectedValueException('The contract response can\'t be parsed.');
+        }
+
+        return $contractData;
+    }
+
+    private function resolveContractByIdOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
+            ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
+            ->setRequired('orderId')->setAllowedTypes('orderId', ['string'])
+        ;
+
+        return $resolver->resolve($options);
+    }
+
+    private function resolveContractByExternalIdOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setRequired('partnerExternalId')->setAllowedTypes('partnerExternalId', ['string'])
+            ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
+            ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
+        ;
+
+        return $resolver->resolve($options);
+    }
+
+    /**
+     * Order Status Notification API
+     */
+
+    public function getOrderStatusNotificationUrl(): string
+    {
+        return sprintf('https://%s/orderStatusNotification/v1/', $this->apiHostName);
+    }
+
+    public function deliverOrder(string $id): ?Response
+    {
+        $response = null;
+
+        try {
+            $response = $this->client->request('POST', sprintf('%s/contracts/%s/order/deliver', $this->getOrderStatusNotificationUrl(), $id), [
+                'headers' => [
+                    'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
+                    'Content-Type' => 'application/json',
+                ],
+            ]);
+        } catch (RequestException $e) {
+            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+
+            return null;
+        }
+
+        if (null === $response) {
+            throw new \UnexpectedValueException('The order status notification deliver order request failed.');
+        }
+
+        return $response;
+    }
+
+    public function cancelOrder(string $id): ?Response
+    {
+        $response = null;
+
+        try {
+            $response = $this->client->request('POST', sprintf('%s/contracts/%s/order/cancel', $this->getOrderStatusNotificationUrl(), $id), [
+                'headers' => [
+                    'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
+                    'Content-Type' => 'application/json',
+                ],
+            ]);
+        } catch (RequestException $e) {
+            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+
+            return null;
+        }
+
+        if (null === $response) {
+            throw new \UnexpectedValueException('The order status notification deliver order request failed.');
+        }
+
+        return $response;
+    }
+
+    public function validateOrder(string $id, array $options): ?Response
+    {
+        $response = null;
+
+        try {
+            $response = $this->client->request('POST', sprintf('%s/contracts/%s/order/cancel', $this->getOrderStatusNotificationUrl(), $id), [
+                'json' => $this->resolveValidateOrderOptions($options),
+                'headers' => [
+                    'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
+                    'Content-Type' => 'application/json',
+                ],
+            ]);
+        } catch (RequestException $e) {
+            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+
+            return null;
+        }
+
+        if (null === $response) {
+            throw new \UnexpectedValueException('The order status notification deliver order request failed.');
+        }
+
+        return $response;
+    }
+
+    private function resolveValidateOrderOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
+        ;
+
+        return $resolver->resolve($options);
     }
 
     /**
@@ -431,84 +621,84 @@ class SofincoCACFPaymentGatewayClient
      * Options Resolver > Simulation API
      */
 
-     private function resolveLoanSimulationsOptions(array $options): array
-     {
-         $resolver = (new OptionsResolver())
-             ->setRequired('amount')->setAllowedTypes('amount', ['null', 'int', 'float'])
-             ->setDefined('personalContributionAmount')->setAllowedTypes('personalContributionAmount', ['null', 'int', 'float'])
-             ->setDefault('dueNumbers', [])->setAllowedTypes('dueNumbers', ['array'])
-                 ->setNormalizer('dueNumbers', function (Options $options, $value) {
-                     foreach ($value as $dueNumber) {
-                         if (!is_int($dueNumber)) {
-                             throw new \InvalidArgumentException('The "dueNumbers" parameter must be an array of integer');
-                         }
-                     }
+    private function resolveLoanSimulationsOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setRequired('amount')->setAllowedTypes('amount', ['null', 'int', 'float'])
+            ->setDefined('personalContributionAmount')->setAllowedTypes('personalContributionAmount', ['null', 'int', 'float'])
+            ->setDefault('dueNumbers', [])->setAllowedTypes('dueNumbers', ['array'])
+                ->setNormalizer('dueNumbers', function (Options $options, $value) {
+                    foreach ($value as $dueNumber) {
+                        if (!is_int($dueNumber)) {
+                            throw new \InvalidArgumentException('The "dueNumbers" parameter must be an array of integer');
+                        }
+                    }
 
-                     return $value;
-                 })
-             ->setDefined('monthlyAmount')->setAllowedTypes('amount', ['int', 'float'])
-             ->setDefined('hasBorrowerInsurance')->setAllowedTypes('hasBorrowerInsurance', ['bool'])
-             ->setDefined('hasCoBorrowerInsurance')->setAllowedTypes('hasBorrowerInsurance', ['bool'])
-             ->setDefined('hasEquipmentInsurance')->setAllowedTypes('hasBorrowerInsurance', ['bool'])
-             ->setDefined('borrowerBirthDate')->setAllowedTypes('borrowerBirthDate', [\DateTimeInterface::class, 'string'])
-                 ->setNormalizer('borrowerBirthDate', function (Options $options, $value) {
-                     if ($value instanceof \DateTime) {
-                         $value = $value->format('Y-m-d');
-                     }
+                    return $value;
+                })
+            ->setDefined('monthlyAmount')->setAllowedTypes('amount', ['int', 'float'])
+            ->setDefined('hasBorrowerInsurance')->setAllowedTypes('hasBorrowerInsurance', ['bool'])
+            ->setDefined('hasCoBorrowerInsurance')->setAllowedTypes('hasBorrowerInsurance', ['bool'])
+            ->setDefined('hasEquipmentInsurance')->setAllowedTypes('hasBorrowerInsurance', ['bool'])
+            ->setDefined('borrowerBirthDate')->setAllowedTypes('borrowerBirthDate', [\DateTimeInterface::class, 'string'])
+                ->setNormalizer('borrowerBirthDate', function (Options $options, $value) {
+                    if ($value instanceof \DateTime) {
+                        $value = $value->format('Y-m-d');
+                    }
 
-                     if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
-                         throw new \InvalidArgumentException('The "borrowerBirthDate" must be formatted as described in documentation "YYYY-MM-DD"');
-                     }
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                        throw new \InvalidArgumentException('The "borrowerBirthDate" must be formatted as described in documentation "YYYY-MM-DD"');
+                    }
 
-                     return $value;
-                 })
-             ->setDefined('coBorrowerBirthDate')->setAllowedTypes('coBorrowerBirthDate', [\DateTimeInterface::class, 'string'])
-                 ->setNormalizer('coBorrowerBirthDate', function (Options $options, $value) {
-                     if ($value instanceof \DateTime) {
-                         $value = $value->format('Y-m-d');
-                     }
+                    return $value;
+                })
+            ->setDefined('coBorrowerBirthDate')->setAllowedTypes('coBorrowerBirthDate', [\DateTimeInterface::class, 'string'])
+                ->setNormalizer('coBorrowerBirthDate', function (Options $options, $value) {
+                    if ($value instanceof \DateTime) {
+                        $value = $value->format('Y-m-d');
+                    }
 
-                     if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
-                         throw new \InvalidArgumentException('The "coBorrowerBirthDate" must be formatted as described in documentation "YYYY-MM-DD"');
-                     }
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                        throw new \InvalidArgumentException('The "coBorrowerBirthDate" must be formatted as described in documentation "YYYY-MM-DD"');
+                    }
 
-                     return $value;
-                 })
-             ->setDefined('scaleCode')->setAllowedTypes('scaleCode', ['string'])
-             ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
-             ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
-             ->setDefined('offerDate')->setAllowedTypes('offerDate', [\DateTimeInterface::class, 'string'])
-                 ->setNormalizer('offerDate', function (Options $options, $value) {
-                     if ($value instanceof \DateTime) {
-                         $value = $value->format('Y-m-d');
-                     }
+                    return $value;
+                })
+            ->setDefined('scaleCode')->setAllowedTypes('scaleCode', ['string'])
+            ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
+            ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
+            ->setDefined('offerDate')->setAllowedTypes('offerDate', [\DateTimeInterface::class, 'string'])
+                ->setNormalizer('offerDate', function (Options $options, $value) {
+                    if ($value instanceof \DateTime) {
+                        $value = $value->format('Y-m-d');
+                    }
 
-                     if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
-                         throw new \InvalidArgumentException('The "offerDate" must be formatted as described in documentation "YYYY-MM-DD"');
-                     }
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                        throw new \InvalidArgumentException('The "offerDate" must be formatted as described in documentation "YYYY-MM-DD"');
+                    }
 
-                     return $value;
-                 })
-         ;
+                    return $value;
+                })
+        ;
 
-         $resolvedOptions = $resolver->resolve($options);
-         if (empty(array_filter($resolvedOptions, function ($a) { return null !== $a; }))) {
-             return [];
-         }
+        $resolvedOptions = $resolver->resolve($options);
+        if (empty(array_filter($resolvedOptions, function ($a) { return null !== $a; }))) {
+            return [];
+        }
 
-         return $resolvedOptions;
+        return $resolvedOptions;
      }
 
-     private function resolveSimulatorOptions(array $options): array
-     {
-         $resolver = (new OptionsResolver())
-             ->setRequired('amount')->setAllowedTypes('amount', ['int', 'float'])
-             ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
-             ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
-         ;
+    private function resolveSimulatorOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setRequired('amount')->setAllowedTypes('amount', ['int', 'float'])
+            ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
+            ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
+        ;
 
-         return $resolver->resolve($options);
-     }
+        return $resolver->resolve($options);
+    }
 
     /**
      * Options Resolver > Business token API
