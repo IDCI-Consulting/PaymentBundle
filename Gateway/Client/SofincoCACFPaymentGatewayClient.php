@@ -41,6 +41,8 @@ class SofincoCACFPaymentGatewayClient
     const DOCUMENT_STATUS_FUNDED = 'FIN';
     const DOCUMENT_STATUS_NOT_FOUND = 'NFD';
     const DOCUMENT_STATUS_ERROR = 'ERR';
+    const DOCUMENT_STATUS_UNKNOWN = 'UKW';
+    const DOCUMENT_STATUS_ABANDONNED = 'ABD';
 
     /**
      * @var Environment
@@ -132,6 +134,10 @@ class SofincoCACFPaymentGatewayClient
         }
     }
 
+    /**
+     * Access token "API Manager / APIM"
+     */
+
     public function getAccessTokenHash(): string
     {
         return md5(sprintf('idci_payment.sofinco.access_token.%s', $this->clientId));
@@ -199,6 +205,70 @@ class SofincoCACFPaymentGatewayClient
         return $this->getAccessTokenData()['access_token'];
     }
 
+    /**
+     * Simulation API
+     */
+
+     public function getLoanSimulationsUrl(): string
+     {
+         return sprintf('https://%s/loanSimulation/v1/simulations/', $this->apiHostName);
+     }
+
+     public function getLoanSimulationsResponse(array $options): ?Response
+     {
+         try {
+             return $this->client->request('POST', $this->getLoanSimulationsUrl(), [
+                 'json' => $this->resolveLoanSimulationsOptions($options),
+                 'headers' => [
+                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
+                     'Content-Type' => 'application/json',
+                     'Context-Applicationid' => self::CONTEXT_APPLICATION_ID,
+                     'Context-Partnerid' => self::CONTEXT_PARTNER_ID,
+                     'Context-Sourceid' => self::CONTEXT_SOURCE_ID,
+                 ],
+             ]);
+         } catch (RequestException $e) {
+             $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+
+             return null;
+         }
+     }
+
+     public function getLoanSimulations(array $options): array
+     {
+         $loanSimulationResponse = $this->getLoanSimulationsResponse($options);
+
+         if (null === $loanSimulationResponse) {
+             throw new \UnexpectedValueException('The loan simulations request failed.');
+         }
+
+         $loanSimulations = json_decode($loanSimulationResponse->getBody()->getContents(), true);
+
+         if (!is_array($loanSimulations)) {
+             throw new \UnexpectedValueException('The loanSimulationResponse response can\'t be parsed.');
+         }
+
+         return $loanSimulations;
+     }
+
+     public function getSimulatorUrl(array $options): string
+     {
+         $resolvedOptions = $this->resolveSimulatorOptions($options);
+
+         return sprintf(
+             'https://%s/simulateur/?Q6=%s&X1=simu_vac&s3=%s&a9=%s&n2=%s',
+             $this->serverHostName,
+             self::CONTEXT_PARTNER_ID,
+             $resolvedOptions['amount'],
+             $resolvedOptions['businessProviderId'],
+             $resolvedOptions['equipmentCode']
+         );
+     }
+
+    /**
+     * Business token API
+     */
+
     public function getBusinessTokenUrl(): string
     {
         return sprintf('https://%s/BusinessDataTransfer/V1/businessDataTransferTokens/', $this->apiHostName);
@@ -242,27 +312,20 @@ class SofincoCACFPaymentGatewayClient
         return $this->getBusinessTokenData($options)['token'];
     }
 
-    public function getCreditUrl(array $options): string
+    /**
+     * Partner data exchange link
+     */
+
+    public function getPartnerDataExchangeLinkUrl(): string
     {
-        return sprintf(
-            'https://%s/creditpartner/?q6=%s&x1=%s&token=%s',
-            $this->serverHostName,
-            self::CONTEXT_PARTNER_ID,
-            self::CONTEXT_SOURCE_ID,
-            $this->getBusinessToken($options)
-        );
+        return sprintf('https://%s/partnerDataExchange/v1/links/', $this->apiHostName);
     }
 
-    public function getLoanSimulationsUrl(): string
-    {
-        return sprintf('https://%s/loanSimulation/v1/simulations/', $this->apiHostName);
-    }
-
-    public function getLoanSimulationsResponse(array $options): ?Response
+    public function getPartnerDataExchangeLinkResponse(array $options): ?Response
     {
         try {
-            return $this->client->request('POST', $this->getLoanSimulationsUrl(), [
-                'json' => $this->resolveLoanSimulationsOptions($options),
+            return $this->client->request('POST', $this->getPartnerDataExchangeLinkUrl(), [
+                'json' => $this->resolveBusinessTokenOptions($options),
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
@@ -278,36 +341,46 @@ class SofincoCACFPaymentGatewayClient
         }
     }
 
-    public function getLoanSimulations(array $options): array
+    public function getPartnerDataExchangeLinkData(array $options): array
     {
-        $loanSimulationResponse = $this->getLoanSimulationsResponse($options);
+        $partnerDataExchangeLinkResponse = $this->getPartnerDataExchangeLinkResponse($options);
 
-        if (null === $loanSimulationResponse) {
-            throw new \UnexpectedValueException('The loan simulations request failed.');
+        if (null === $partnerDataExchangeLinkResponse) {
+            throw new \UnexpectedValueException('The partner data exchange link request failed.');
         }
 
-        $loanSimulations = json_decode($loanSimulationResponse->getBody()->getContents(), true);
+        $partnerDataExchangeLinkData = json_decode($partnerDataExchangeLinkResponse->getBody()->getContents(), true);
 
-        if (!is_array($loanSimulations)) {
-            throw new \UnexpectedValueException('The loanSimulationResponse response can\'t be parsed.');
+        if (!is_array($partnerDataExchangeLinkData)) {
+            throw new \UnexpectedValueException('The business token response can\'t be parsed.');
         }
 
-        return $loanSimulations;
+        return $partnerDataExchangeLinkData;
     }
 
-    public function getSimulatorUrl(array $options): string
+    public function getPartnerDataExchangeUrl(array $options): string
     {
-        $resolvedOptions = $this->resolveSimulatorOptions($options);
+        return $this->getPartnerDataExchangeLinkData($options)['link'];
+    }
 
+    /**
+     * Gateway credit URL for customer
+     */
+
+    public function getCreditUrl(array $options): string
+    {
         return sprintf(
-            'https://%s/creditpartner/?q6=%s&x1=simu_vac&s3=%s&a9=%s&n2=%s',
+            'https://%s/creditpartner/?q6=%s&x1=%s&token=%s',
             $this->serverHostName,
             self::CONTEXT_PARTNER_ID,
-            $resolvedOptions['amount'],
-            $resolvedOptions['businessProviderId'],
-            $resolvedOptions['equipmentCode']
+            self::CONTEXT_SOURCE_ID,
+            $this->getBusinessToken($options)
         );
     }
+
+    /**
+     * Documents API
+     */
 
     public function getDocumentsUrl(): string
     {
@@ -349,6 +422,97 @@ class SofincoCACFPaymentGatewayClient
 
         return new Crawler($loanSimulationResponse->getBody()->getContents());
     }
+
+    /**
+     * Options Resolver
+     */
+
+    /**
+     * Options Resolver > Simulation API
+     */
+
+     private function resolveLoanSimulationsOptions(array $options): array
+     {
+         $resolver = (new OptionsResolver())
+             ->setRequired('amount')->setAllowedTypes('amount', ['null', 'int', 'float'])
+             ->setDefined('personalContributionAmount')->setAllowedTypes('personalContributionAmount', ['null', 'int', 'float'])
+             ->setDefault('dueNumbers', [])->setAllowedTypes('dueNumbers', ['array'])
+                 ->setNormalizer('dueNumbers', function (Options $options, $value) {
+                     foreach ($value as $dueNumber) {
+                         if (!is_int($dueNumber)) {
+                             throw new \InvalidArgumentException('The "dueNumbers" parameter must be an array of integer');
+                         }
+                     }
+
+                     return $value;
+                 })
+             ->setDefined('monthlyAmount')->setAllowedTypes('amount', ['int', 'float'])
+             ->setDefined('hasBorrowerInsurance')->setAllowedTypes('hasBorrowerInsurance', ['bool'])
+             ->setDefined('hasCoBorrowerInsurance')->setAllowedTypes('hasBorrowerInsurance', ['bool'])
+             ->setDefined('hasEquipmentInsurance')->setAllowedTypes('hasBorrowerInsurance', ['bool'])
+             ->setDefined('borrowerBirthDate')->setAllowedTypes('borrowerBirthDate', [\DateTimeInterface::class, 'string'])
+                 ->setNormalizer('borrowerBirthDate', function (Options $options, $value) {
+                     if ($value instanceof \DateTime) {
+                         $value = $value->format('Y-m-d');
+                     }
+
+                     if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                         throw new \InvalidArgumentException('The "borrowerBirthDate" must be formatted as described in documentation "YYYY-MM-DD"');
+                     }
+
+                     return $value;
+                 })
+             ->setDefined('coBorrowerBirthDate')->setAllowedTypes('coBorrowerBirthDate', [\DateTimeInterface::class, 'string'])
+                 ->setNormalizer('coBorrowerBirthDate', function (Options $options, $value) {
+                     if ($value instanceof \DateTime) {
+                         $value = $value->format('Y-m-d');
+                     }
+
+                     if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                         throw new \InvalidArgumentException('The "coBorrowerBirthDate" must be formatted as described in documentation "YYYY-MM-DD"');
+                     }
+
+                     return $value;
+                 })
+             ->setDefined('scaleCode')->setAllowedTypes('scaleCode', ['string'])
+             ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
+             ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
+             ->setDefined('offerDate')->setAllowedTypes('offerDate', [\DateTimeInterface::class, 'string'])
+                 ->setNormalizer('offerDate', function (Options $options, $value) {
+                     if ($value instanceof \DateTime) {
+                         $value = $value->format('Y-m-d');
+                     }
+
+                     if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                         throw new \InvalidArgumentException('The "offerDate" must be formatted as described in documentation "YYYY-MM-DD"');
+                     }
+
+                     return $value;
+                 })
+         ;
+
+         $resolvedOptions = $resolver->resolve($options);
+         if (empty(array_filter($resolvedOptions, function ($a) { return null !== $a; }))) {
+             return [];
+         }
+
+         return $resolvedOptions;
+     }
+
+     private function resolveSimulatorOptions(array $options): array
+     {
+         $resolver = (new OptionsResolver())
+             ->setRequired('amount')->setAllowedTypes('amount', ['int', 'float'])
+             ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
+             ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
+         ;
+
+         return $resolver->resolve($options);
+     }
+
+    /**
+     * Options Resolver > Business token API
+     */
 
     private function resolveBusinessTokenOptions(array $options): array
     {
@@ -691,63 +855,54 @@ class SofincoCACFPaymentGatewayClient
         return $resolvedOptions;
     }
 
-    private function resolveLoanSimulationsOptions(array $options): array
+    /**
+     * Options Resolver > Partner data exchange link API
+     */
+
+    private function resolvePartnerDataExchangeLinkOptions(array $options): array
     {
         $resolver = (new OptionsResolver())
-            ->setRequired('amount')->setAllowedTypes('amount', ['null', 'int', 'float'])
-            ->setDefined('personalContributionAmount')->setAllowedTypes('personalContributionAmount', ['null', 'int', 'float'])
-            ->setDefault('dueNumbers', [])->setAllowedTypes('dueNumbers', ['array'])
-                ->setNormalizer('dueNumbers', function (Options $options, $value) {
-                    foreach ($value as $dueNumber) {
-                        if (!is_int($dueNumber)) {
-                            throw new \InvalidArgumentException('The "dueNumbers" parameter must be an array of integer');
+            ->setDefault('tokenFormat', self::BUSINESS_TOKEN_FORMAT_OPAQUE)->setAllowedValues('tokenFormat', [
+                self::BUSINESS_TOKEN_FORMAT_OPAQUE,
+                self::BUSINESS_TOKEN_FORMAT_JWS,
+                self::BUSINESS_TOKEN_FORMAT_JWE,
+            ])
+            ->setDefault('tokenDuration', self::BUSINESS_TOKEN_DURATION)->setAllowedTypes('tokenDuration', ['int'])
+            ->setRequired('businessContext')->setAllowedTypes('businessContext', ['string', 'array'])
+                ->setNormalizer('businessContext', function (Options $options, $value) {
+                    if (is_string($value)) {
+                        $value = json_decode($value, true);
+
+                        if (null === $value) {
+                            throw new \InvalidArgumentException('The "businessContext" parameter is not a valid json string');
                         }
                     }
 
-                    return $value;
+                    return json_encode($this->resolvePartnerDataExchangeLinkBusinessContextOptions($value));
                 })
-            ->setDefined('monthlyAmount')->setAllowedTypes('amount', ['int', 'float'])
-            ->setDefined('hasBorrowerInsurance')->setAllowedTypes('hasBorrowerInsurance', ['bool'])
-            ->setDefined('hasCoBorrowerInsurance')->setAllowedTypes('hasBorrowerInsurance', ['bool'])
-            ->setDefined('hasEquipmentInsurance')->setAllowedTypes('hasBorrowerInsurance', ['bool'])
-            ->setDefined('borrowerBirthDate')->setAllowedTypes('borrowerBirthDate', [\DateTimeInterface::class, 'string'])
-                ->setNormalizer('borrowerBirthDate', function (Options $options, $value) {
-                    if ($value instanceof \DateTime) {
-                        $value = $value->format('Y-m-d');
+            ->setRequired('customer')->setAllowedTypes('customer', ['string', 'array'])
+                ->setNormalizer('customer', function (Options $options, $value) {
+                    if (is_string($value)) {
+                        $value = json_decode($value, true);
+
+                        if (null === $value) {
+                            throw new \InvalidArgumentException('The "customer" parameter is not a valid json string');
+                        }
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
-                        throw new \InvalidArgumentException('The "borrowerBirthDate" must be formatted as described in documentation "YYYY-MM-DD"');
-                    }
-
-                    return $value;
+                    return json_encode($this->resolvePartnerDataExchangeLinkCustomerOptions($value));
                 })
-            ->setDefined('coBorrowerBirthDate')->setAllowedTypes('coBorrowerBirthDate', [\DateTimeInterface::class, 'string'])
-                ->setNormalizer('coBorrowerBirthDate', function (Options $options, $value) {
-                    if ($value instanceof \DateTime) {
-                        $value = $value->format('Y-m-d');
+            ->setRequired('order')->setAllowedTypes('order', ['string', 'array'])
+                ->setNormalizer('order', function (Options $options, $value) {
+                    if (is_string($value)) {
+                        $value = json_decode($value, true);
+
+                        if (null === $value) {
+                            throw new \InvalidArgumentException('The "order" parameter is not a valid json string');
+                        }
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
-                        throw new \InvalidArgumentException('The "coBorrowerBirthDate" must be formatted as described in documentation "YYYY-MM-DD"');
-                    }
-
-                    return $value;
-                })
-            ->setDefined('scaleCode')->setAllowedTypes('scaleCode', ['string'])
-            ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
-            ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
-            ->setDefined('offerDate')->setAllowedTypes('offerDate', [\DateTimeInterface::class, 'string'])
-                ->setNormalizer('offerDate', function (Options $options, $value) {
-                    if ($value instanceof \DateTime) {
-                        $value = $value->format('Y-m-d');
-                    }
-
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
-                        throw new \InvalidArgumentException('The "offerDate" must be formatted as described in documentation "YYYY-MM-DD"');
-                    }
-
-                    return $value;
+                    return json_encode($this->resolvePartnerDataExchangeLinkOrderOptions($value));
                 })
         ;
 
@@ -759,16 +914,663 @@ class SofincoCACFPaymentGatewayClient
         return $resolvedOptions;
     }
 
-    private function resolveSimulatorOptions(array $options): array
+    private function resolvePartnerDataExchangeLinkBusinessContextOptions(array $options): array
     {
         $resolver = (new OptionsResolver())
-            ->setRequired('amount')->setAllowedTypes('amount', ['int', 'float'])
-            ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
-            ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
+            ->setRequired('providerContext')->setAllowedTypes('providerContext', ['array'])
+                ->setNormalizer('providerContext', function (Options $options, $value) {
+                    return $this->resolvePartnerDataExchangeLinkBusinessProviderContextOptions($value);
+                })
+            ->setDefined('customerContext')->setAllowedTypes('customerContext', ['array'])
+                ->setNormalizer('customerContext', function (Options $options, $value) {
+                    return $this->resolvePartnerDataExchangeLinkBusinessCustomerContextOptions($value);
+                })
+            ->setDefined('offerContext')->setAllowedTypes('offerContext', ['array'])
+                ->setNormalizer('offerContext', function (Options $options, $value) {
+                    return $this->resolvePartnerDataExchangeLinkBusinessOfferContextOptions($value);
+                })
         ;
 
-        return $resolver->resolve($options);
+        return array_filter($resolver->resolve($options), function ($a) { return !empty($a); });
     }
+
+    private function resolvePartnerDataExchangeLinkBusinessProviderContextOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setDefined('businessProviderId')->setAllowedTypes('businessProviderId', ['null', 'string'])
+                ->setNormalizer('businessProviderId', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{11}/', $value)) {
+                        throw new \InvalidArgumentException('The "businessProviderId" parameter must be formatted as described in documentation "[A-Z0-9]{11}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('returnUrl')->setAllowedTypes('returnUrl', ['null', 'string'])
+                ->setNormalizer('returnUrl', function (Options $options, $value) {
+                    if (!filter_var($value, FILTER_VALIDATE_URL)) {
+                        throw new \InvalidArgumentException('The "returnUrl" parameter is not a valid URL');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('exchangeUrl')->setAllowedTypes('exchangeUrl', ['null', 'string'])
+                ->setNormalizer('exchangeUrl', function (Options $options, $value) {
+                    if (!filter_var($value, FILTER_VALIDATE_URL)) {
+                        throw new \InvalidArgumentException('The "exchangeUrl" parameter is not a valid URL');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('homeReturnUrl')->setAllowedTypes('homeReturnUrl', ['null', 'string'])
+                ->setNormalizer('homeReturnUrl', function (Options $options, $value) {
+                    if (!filter_var($value, FILTER_VALIDATE_URL)) {
+                        throw new \InvalidArgumentException('The "homeReturnUrl" parameter is not a valid URL');
+                    }
+
+                    return $value;
+                })
+        ;
+
+        $resolvedOptions = $resolver->resolve($options);
+        if (empty($resolvedOptions = array_filter($resolvedOptions, function ($a) { return null !== $a; }))) {
+            return [];
+        }
+
+        return $resolvedOptions;
+    }
+
+    private function resolvePartnerDataExchangeLinkBusinessCustomerContextOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setDefined('externalCustomerId')->setAllowedTypes('externalCustomerId', ['null', 'string'])
+                ->setNormalizer('externalCustomerId', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
+                        throw new \InvalidArgumentException('The "externalCustomerId" parameter must be formatted as described in documentation "[A-Z0-9]{0,16}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('memberAccountId')->setAllowedTypes('memberAccountId', ['null', 'string'])
+                ->setNormalizer('memberAccountId', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
+                        throw new \InvalidArgumentException('The "memberAccountId" parameter must be formatted as described in documentation "[A-Z0-9]{0,16}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('member')->setAllowedTypes('member', ['bool'])
+            ->setDefined('memberAccountDate')->setAllowedTypes('memberAccountDate', ['null', 'string'])
+                ->setNormalizer('memberAccountDate', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                        throw new \InvalidArgumentException('The "memberAccountDate" parameter must be formatted as described in documentation "[0-9]{4}-[0-9]{2}-[0-9]{2}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('lastUncancelledPurchaseDate')->setAllowedTypes('lastUncancelledPurchaseDate', ['null', 'string'])
+                ->setNormalizer('lastUncancelledPurchaseDate', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                        throw new \InvalidArgumentException('The "lastUncancelledPurchaseDate" parameter must be formatted as described in documentation "[0-9]{4}-[0-9]{2}-[0-9]{2}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('totalPurchasesNumber')->setAllowedTypes('totalPurchasesNumber', ['null', 'int', 'string'])
+                ->setNormalizer('totalPurchasesNumber', function (Options $options, $value) {
+                    if (is_int($value)) {
+                        $value = (string) $value;
+                    }
+
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                        throw new \InvalidArgumentException('The "totalPurchasesNumber" parameter must be formatted as described in documentation "[0-9]{5}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('uncancelledPurchasesNumber')->setAllowedTypes('uncancelledPurchasesNumber', ['null', 'int', 'string'])
+                ->setNormalizer('uncancelledPurchasesNumber', function (Options $options, $value) {
+                    if (is_int($value)) {
+                        $value = (string) $value;
+                    }
+
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                        throw new \InvalidArgumentException('The "uncancelledPurchasesNumber" parameter must be formatted as described in documentation "[0-9]{5}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('scoringCancelledPurchasesNumber')->setAllowedTypes('scoringCancelledPurchasesNumber', ['null', 'int', 'string'])
+                ->setNormalizer('scoringCancelledPurchasesNumber', function (Options $options, $value) {
+                    if (is_int($value)) {
+                        $value = (string) $value;
+                    }
+
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                        throw new \InvalidArgumentException('The "scoringCancelledPurchasesNumber" parameter must be formatted as described in documentation "[0-9]{5}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('civilityCode')->setAllowedTypes('civilityCode', ['null', 'int', 'string'])
+                ->setNormalizer('civilityCode', function (Options $options, $value) {
+                    $civilityCodeMapping = [
+                        'mr' => self::CUSTOMER_CIVILITY_CODE_MR,
+                        'mrs' => self::CUSTOMER_CIVILITY_CODE_MRS,
+                        'ms' => self::CUSTOMER_CIVILITY_CODE_MS,
+                    ];
+
+                    if (isset($civilityCodeMapping[$value])) {
+                        return $civilityCodeMapping[$value];
+                    }
+
+                    if (is_string($value) && 1 !== preg_match('/[123]{1}/', $value)) {
+                        throw new \InvalidArgumentException('The "civilityCode" parameter must be formatted as described in documentation "[123]{1}"');
+                    }
+
+                    return null !== $value ? (int) $value : null;
+                })
+            ->setDefined('firstName')->setAllowedTypes('firstName', ['null', 'string'])
+                ->setNormalizer('firstName', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
+                        throw new \InvalidArgumentException('The "firstName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('lastName')->setAllowedTypes('lastName', ['null', 'string'])
+                ->setNormalizer('lastName', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
+                        throw new \InvalidArgumentException('The "lastName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('birthName')->setAllowedTypes('birthName', ['null', 'string'])
+                ->setNormalizer('birthName', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
+                        throw new \InvalidArgumentException('The "birthName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('birthDate')->setAllowedTypes('birthDate', ['null', 'string'])
+                ->setNormalizer('birthDate', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                        throw new \InvalidArgumentException('The "birthDate" parameter must be formatted as described in documentation "[0-9]{4}-[0-9]{2}-[0-9]{2}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('citizenshipCode')->setAllowedTypes('citizenshipCode', ['null', 'string'])
+                ->setNormalizer('citizenshipCode', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
+                        throw new \InvalidArgumentException('The "citizenshipCode" parameter must be formatted as described in documentation "[A-Z*]{0,3}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('birthCountryCode')->setAllowedTypes('birthCountryCode', ['null', 'string'])
+                ->setNormalizer('birthCountryCode', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
+                        throw new \InvalidArgumentException('The "birthCountryCode" parameter must be formatted as described in documentation "[A-Z*]{0,3}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('birthZipCode')->setAllowedTypes('birthZipCode', ['null', 'int', 'string'])
+                ->setNormalizer('birthZipCode', function (Options $options, $value) {
+                    if (is_int($value)) {
+                        $value = (string) $value;
+                    }
+
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                        throw new \InvalidArgumentException('The "birthZipCode" parameter must be formatted as described in documentation "[0-9]{5}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('birthCity')->setAllowedTypes('birthCity', ['null', 'string'])
+                ->setNormalizer('birthCity', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                        throw new \InvalidArgumentException('The "city" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('additionalStreet')->setAllowedTypes('additionalStreet', ['null', 'string'])
+                ->setNormalizer('additionalStreet', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                        throw new \InvalidArgumentException('The "additionalStreet" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('street')->setAllowedTypes('street', ['null', 'string'])
+                ->setNormalizer('street', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                        throw new \InvalidArgumentException('The "street" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('city')->setAllowedTypes('city', ['null', 'string'])
+                ->setNormalizer('city', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                        throw new \InvalidArgumentException('The "city" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('zipCode')->setAllowedTypes('zipCode', ['null', 'int', 'string'])
+                ->setNormalizer('zipCode', function (Options $options, $value) {
+                    if (is_int($value)) {
+                        $value = (string) $value;
+                    }
+
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                        throw new \InvalidArgumentException('The "zipCode" parameter must be formatted as described in documentation "[0-9]{5}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('distributerOffice')->setAllowedTypes('distributerOffice', ['null', 'string'])
+                ->setNormalizer('distributerOffice', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                        throw new \InvalidArgumentException('The "distributerOffice" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('countryCode')->setAllowedTypes('countryCode', ['null', 'string'])
+                ->setNormalizer('countryCode', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
+                        throw new \InvalidArgumentException('The "countryCode" parameter must be formatted as described in documentation "[A-Z*]{0,3}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('phoneNumber')->setAllowedTypes('phoneNumber', ['null', 'string'])
+                ->setNormalizer('phoneNumber', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/0[1234589]{1}[0-9]{8}/', $value)) {
+                        throw new \InvalidArgumentException('The "phoneNumber" parameter must be formatted as described in documentation "0[1234589]{1}[0-9]{8}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('mobileNumber')->setAllowedTypes('mobileNumber', ['null', 'string'])
+                ->setNormalizer('mobileNumber', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/0[67]{1}[0-9]{8}/', $value)) {
+                        throw new \InvalidArgumentException('The "mobileNumber" parameter must be formatted as described in documentation "0[67]{1}[0-9]{8}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('emailAddress')->setAllowedTypes('emailAddress', ['null', 'string'])
+                ->setNormalizer('emailAddress', function (Options $options, $value) {
+                    if (is_string($value) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                        throw new \InvalidArgumentException('The "emailAddress" parameter is not a valid email"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('loyaltyCardId')->setAllowedTypes('loyaltyCardId', ['null', 'string'])
+                ->setNormalizer('loyaltyCardId', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,19}/', $value)) {
+                        throw new \InvalidArgumentException('The "loyaltyCardId" parameter must be formatted as described in documentation "[A-Z0-9]{0,19}"');
+                    }
+
+                    return $value;
+                })
+        ;
+
+        $resolvedOptions = $resolver->resolve($options);
+        if (empty($resolvedOptions = array_filter($resolvedOptions, function ($a) { return null !== $a; }))) {
+            return [];
+        }
+
+        return $resolvedOptions;
+    }
+
+    private function resolvePartnerDataExchangeLinkBusinessOfferContextOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setDefined('orderId')->setAllowedTypes('orderId', ['null', 'string'])
+                ->setNormalizer('orderId', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
+                        throw new \InvalidArgumentException('The "orderId" parameter must be formatted as described in documentation "[A-Z0-9]{0,16}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('scaleId')->setAllowedTypes('scaleId', ['null', 'string'])
+                ->setNormalizer('scaleId', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
+                        throw new \InvalidArgumentException('The "scaleId" parameter must be formatted as described in documentation "[A-Z0-9]{0,16}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('scaleIds')->setAllowedTypes('scaleIds', ['array'])
+            ->setDefined('awaitingFunding')->setAllowedTypes('awaitingFunding', ['bool'])
+            ->setDefined('deliveryChoice')->setAllowedTypes('deliveryChoice', ['null', 'string'])
+            ->setDefined('paymentChoice')->setAllowedTypes('paymentChoice', ['null', 'string'])
+            ->setDefined('equipmentCode')->setAllowedTypes('equipmentCode', ['null', 'string'])
+                ->setNormalizer('equipmentCode', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{3}/', $value)) {
+                        throw new \InvalidArgumentException('The "equipmentCode" parameter must be formatted as described in documentation "[A-Z0-9]{3}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('amount')->setAllowedTypes('amount', ['null', 'float', 'int', 'string'])
+                ->setNormalizer('amount', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
+                        throw new \InvalidArgumentException('The "amount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
+                    }
+
+                    return null !== $value ? (float) $value : null;
+                })
+            ->setDefined('orderAmount')->setAllowedTypes('orderAmount', ['null', 'float', 'int', 'string'])
+                ->setNormalizer('orderAmount', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
+                        throw new \InvalidArgumentException('The "orderAmount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
+                    }
+
+                    return null !== $value ? (float) $value : null;
+                })
+            ->setDefined('duration')->setAllowedTypes('duration', ['null', 'string'])
+                ->setNormalizer('duration', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,3}/', $value)) {
+                        throw new \InvalidArgumentException('The "duration" parameter must be formatted as described in documentation "[0-9]{0,3}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('suggestedDueNumber')->setAllowedTypes('suggestedDueNumber', ['null', 'float', 'int', 'string'])
+                ->setNormalizer('suggestedDueNumber', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,3}/', (string) $value)) {
+                        throw new \InvalidArgumentException('The "suggestedDueNumber" parameter must be formatted as described in documentation "[0-9]{0,3}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('suggestedScaleId')->setAllowedTypes('suggestedScaleId', ['null', 'string'])
+                ->setNormalizer('suggestedScaleId', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{8}/', $value)) {
+                        throw new \InvalidArgumentException('The "suggestedScaleId" parameter must be formatted as described in documentation "[A-Z0-9]{8}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('deliveryAdditionalStreet')->setAllowedTypes('deliveryAdditionalStreet', ['null', 'string'])
+                ->setNormalizer('deliveryAdditionalStreet', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                        throw new \InvalidArgumentException('The "deliveryAdditionalStreet" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,50}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('deliveryStreet')->setAllowedTypes('deliveryStreet', ['null', 'string'])
+                ->setNormalizer('deliveryStreet', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                        throw new \InvalidArgumentException('The "deliveryStreet" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('deliveryCity')->setAllowedTypes('deliveryCity', ['null', 'string'])
+                ->setNormalizer('deliveryCity', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                        throw new \InvalidArgumentException('The "deliveryCity" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,50}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('deliveryZipCode')->setAllowedTypes('deliveryZipCode', ['null', 'int', 'string'])
+                ->setNormalizer('deliveryZipCode', function (Options $options, $value) {
+                    if (is_int($value)) {
+                        $value = (string) $value;
+                    }
+
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                        throw new \InvalidArgumentException('The "deliveryZipCode" parameter must be formatted as described in documentation "[0-9]{5}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('deliveryDistributerOffice')->setAllowedTypes('deliveryDistributerOffice', ['null', 'string'])
+                ->setNormalizer('deliveryDistributerOffice', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                        throw new \InvalidArgumentException('The "deliveryDistributerOffice" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,50}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('billingAdditionalStreet')->setAllowedTypes('billingAdditionalStreet', ['null', 'string'])
+                ->setNormalizer('billingAdditionalStreet', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                        throw new \InvalidArgumentException('The "billingAdditionalStreet" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,50}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('billingStreet')->setAllowedTypes('billingStreet', ['null', 'string'])
+                ->setNormalizer('billingStreet', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                        throw new \InvalidArgumentException('The "billingStreet" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('billingCity')->setAllowedTypes('billingCity', ['null', 'string'])
+                ->setNormalizer('billingCity', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                        throw new \InvalidArgumentException('The "billingCity" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,50}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('billingZipCode')->setAllowedTypes('billingZipCode', ['null', 'int', 'string'])
+                ->setNormalizer('billingZipCode', function (Options $options, $value) {
+                    if (is_int($value)) {
+                        $value = (string) $value;
+                    }
+
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                        throw new \InvalidArgumentException('The "billingZipCode" parameter must be formatted as described in documentation "[0-9]{5}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('billingDistributerOffice')->setAllowedTypes('billingDistributerOffice', ['null', 'string'])
+                ->setNormalizer('billingDistributerOffice', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                        throw new \InvalidArgumentException('The "billingDistributerOffice" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,50}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('Cart')->setAllowedTypes('Cart', ['array'])
+                ->setNormalizer('Cart', function (Options $options, $value) {
+                    return $this->resolvePartnerDataExchangeLinkBusinessOfferContextCartOptions($value);
+                })
+        ;
+
+        $resolvedOptions = $resolver->resolve($options);
+        if (empty($resolvedOptions = array_filter($resolvedOptions, function ($a) { return null !== $a; }))) {
+            return [];
+        }
+
+        return $resolvedOptions;
+    }
+
+    private function resolvePartnerDataExchangeLinkBusinessOfferContextCartOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setDefined('products')->setAllowedTypes('products', ['array'])
+                ->setNormalizer('products', function (Options $options, $value) {
+                    $products = [];
+                    foreach ($value as $product) {
+                        $products[] = $this->resolvePartnerDataExchangeLinkBusinessOfferContextCartProductOptions($product);
+                    }
+
+                    return $products;
+                })
+            ->setDefined('totalAmount')->setAllowedTypes('totalAmount', ['null', 'float', 'int', 'string'])
+                ->setNormalizer('totalAmount', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
+                        throw new \InvalidArgumentException('The "totalAmount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
+                    }
+
+                    return null !== $value ? (float) $value : null;
+                })
+        ;
+
+        $resolvedOptions = $resolver->resolve($options);
+        if (empty($resolvedOptions = array_filter($resolvedOptions, function ($a) { return null !== $a; }))) {
+            return [];
+        }
+
+        return $resolvedOptions;
+    }
+
+    private function resolvePartnerDataExchangeLinkBusinessOfferContextCartProductOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setDefined('index')->setAllowedTypes('totalAmount', ['null', 'float', 'int', 'string'])
+                ->setNormalizer('index', function (Options $options, $value) {
+                    return null !== $value ? (int) $value : null;
+                })
+            ->setDefined('label')->setAllowedTypes('label', ['null', 'string'])
+                ->setNormalizer('label', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                        throw new \InvalidArgumentException('The "label" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('family')->setAllowedTypes('family', ['null', 'string'])
+                ->setNormalizer('family', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                        throw new \InvalidArgumentException('The "family" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('amount')->setAllowedTypes('amount', ['null', 'float', 'int', 'string'])
+                ->setNormalizer('amount', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
+                        throw new \InvalidArgumentException('The "amount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
+                    }
+
+                    return null !== $value ? (float) $value : null;
+                })
+            ->setDefined('quantity')->setAllowedTypes('quantity', ['null', 'float', 'int', 'string'])
+                ->setNormalizer('quantity', function (Options $options, $value) {
+                    return null !== $value ? (int) $value : null;
+                })
+            ->setDefined('engagementDuration')->setAllowedTypes('engagementDuration', ['null', 'float', 'int', 'string'])
+                ->setNormalizer('engagementDuration', function (Options $options, $value) {
+                    return null !== $value ? (int) $value : null;
+                })
+            ->setDefined('ean')->setAllowedTypes('ean', ['bool'])
+                ->setNormalizer('ean', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z0-9]{13}/', $value)) {
+                        throw new \InvalidArgumentException('The "ean" parameter must be formatted as described in documentation "[A-Z0-9]{13}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('isTradeForward')->setAllowedTypes('isTradeForward', ['bool'])
+        ;
+
+        $resolvedOptions = $resolver->resolve($options);
+        if (empty($resolvedOptions = array_filter($resolvedOptions, function ($a) { return null !== $a; }))) {
+            return [];
+        }
+
+        return $resolvedOptions;
+    }
+
+    private function resolvePartnerDataExchangeLinkCustomerOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setDefined('firstName')->setAllowedTypes('firstName', ['null', 'string'])
+                ->setNormalizer('firstName', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
+                        throw new \InvalidArgumentException('The "firstName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('lastName')->setAllowedTypes('lastName', ['null', 'string'])
+                ->setNormalizer('lastName', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
+                        throw new \InvalidArgumentException('The "lastName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('mobilePhoneNumber')->setAllowedTypes('mobilePhoneNumber', ['null', 'string'])
+                ->setNormalizer('mobilePhoneNumber', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9 -]{0,16}/', $value)) {
+                        throw new \InvalidArgumentException('The "lastName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('emailAddress')->setAllowedTypes('emailAddress', ['null', 'string'])
+                ->setNormalizer('emailAddress', function (Options $options, $value) {
+                    if (is_string($value) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                        throw new \InvalidArgumentException('The "emailAddress" parameter is not a valid email"');
+                    }
+
+                    return $value;
+                })
+        ;
+
+        $resolvedOptions = $resolver->resolve($options);
+        if (empty($resolvedOptions = array_filter($resolvedOptions, function ($a) { return null !== $a; }))) {
+            return [];
+        }
+
+        return $resolvedOptions;
+    }
+
+    private function resolvePartnerDataExchangeLinkOrderOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setDefined('id')->setAllowedTypes('id', ['null', 'string'])
+            ->setDefined('businessProviderId')->setAllowedTypes('businessProviderId', ['null', 'string'])
+                ->setNormalizer('businessProviderId', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{11}/', $value)) {
+                        throw new \InvalidArgumentException('The "businessProviderId" parameter must be formatted as described in documentation "[A-Z0-9]{11}"');
+                    }
+
+                    return $value;
+                })
+            ->setDefined('amount')->setAllowedTypes('amount', ['null', 'float', 'int', 'string'])
+                ->setNormalizer('amount', function (Options $options, $value) {
+                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
+                        throw new \InvalidArgumentException('The "totalAmount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
+                    }
+
+                    return null !== $value ? (float) $value : null;
+                })
+        ;
+
+        $resolvedOptions = $resolver->resolve($options);
+        if (empty($resolvedOptions = array_filter($resolvedOptions, function ($a) { return null !== $a; }))) {
+            return [];
+        }
+
+        return $resolvedOptions;
+    }
+
+
+    /**
+     * Options Resolver > Documents API
+     */
 
     private function resolveDocumentsOptions(array $options): array
     {

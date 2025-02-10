@@ -108,11 +108,25 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
     ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
+        if ($paymentGatewayConfiguration->get('use_partner_data_exchange')) {
+            $url = $this->client->getPartnerDataExchangeUrl($options);
+
+            $fields = [];
+            parse_str(parse_url($url, PHP_URL_QUERY), $fields);
+
+            return [
+                'url' => $url,
+                'options' => $fields,
+            ];
+        }
+
+        $url = $this->client->getCreditUrl($options);
+
         $fields = [];
-        parse_str(parse_url($this->client->getCreditUrl($options), PHP_URL_QUERY), $fields);
+        parse_str(parse_url($url, PHP_URL_QUERY), $fields);
 
         return [
-            'url' => $this->client->getCreditUrl($options),
+            'url' => $url,
             'options' => $fields,
         ];
     }
@@ -184,6 +198,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
                 SofincoCACFPaymentGatewayClient::DOCUMENT_STATUS_CANCELED,
                 SofincoCACFPaymentGatewayClient::DOCUMENT_STATUS_NOT_FOUND,
                 SofincoCACFPaymentGatewayClient::DOCUMENT_STATUS_ERROR,
+                SofincoCACFPaymentGatewayClient::DOCUMENT_STATUS_ABANDONNED,
             ]
         )) {
             return $gatewayResponse->setMessage('Transaction unauthorized');
@@ -206,6 +221,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
             [
                 'business_provider_id',
                 'equipment_code',
+                'use_partner_data_exchange',
             ]
         );
     }
