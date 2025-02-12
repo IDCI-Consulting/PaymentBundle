@@ -405,8 +405,9 @@ class SofincoCACFPaymentGatewayClient
 
         $data = $this->resolveContractByIdOptions($options);
         try {
-            $response = $this->client->request('POST', sprintf('%s/contracts/%s', $this->getPartnerLoanPortfolioUrl(), $contractId), [
+            $response = $this->client->request('GET', sprintf('%s/contracts/%s', $this->getPartnerLoanPortfolioUrl(), $contractId), [
                 'json' => $data,
+                'decode_content' => false,
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
@@ -437,8 +438,9 @@ class SofincoCACFPaymentGatewayClient
 
         $data = $this->resolveContractByExternalIdOptions($options);
         try {
-            $response = $this->client->request('POST', sprintf('%s/contracts', $this->getPartnerLoanPortfolioUrl()), [
+            $response = $this->client->request('GET', sprintf('%s/contracts', $this->getPartnerLoanPortfolioUrl()), [
                 'json' => $data,
+                'decode_content' => false,
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
