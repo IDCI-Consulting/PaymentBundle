@@ -171,7 +171,7 @@ class SofincoCACFPaymentGatewayClient
                 ],
             ]);
         } catch (RequestException $e) {
-            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+            $this->logRequestException($e);
 
             return null;
         }
@@ -222,9 +222,11 @@ class SofincoCACFPaymentGatewayClient
 
     public function getLoanSimulationsResponse(array $options): ?Response
     {
+        $data = $this->resolveLoanSimulationsOptions($options);
+
         try {
             return $this->client->request('POST', $this->getLoanSimulationsUrl(), [
-                'json' => $this->resolveLoanSimulationsOptions($options),
+                'json' => $data,
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
@@ -234,7 +236,7 @@ class SofincoCACFPaymentGatewayClient
                 ],
             ]);
         } catch (RequestException $e) {
-            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+            $this->logRequestException($e, $data);
 
             return null;
         }
@@ -282,15 +284,17 @@ class SofincoCACFPaymentGatewayClient
 
     public function getBusinessTokenResponse(array $options): ?Response
     {
+        $data = $this->resolveBusinessTokenOptions($options);
+
         try {
             return $this->client->request('POST', $this->getBusinessTokenUrl(), [
-                'json' => $this->resolveBusinessTokenOptions($options),
+                'json' => $data,
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                 ],
             ]);
         } catch (RequestException $e) {
-            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+            $this->logRequestException($e, $data);
 
             return null;
         }
@@ -329,9 +333,11 @@ class SofincoCACFPaymentGatewayClient
 
     public function getPartnerDataExchangeLinkResponse(array $options): ?Response
     {
+        $data = $this->resolvePartnerDataExchangeLinkOptions($options);
+
         try {
             return $this->client->request('POST', $this->getPartnerDataExchangeLinkUrl(), [
-                'json' => $this->resolvePartnerDataExchangeLinkOptions($options),
+                'json' => $data,
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
@@ -341,7 +347,7 @@ class SofincoCACFPaymentGatewayClient
                 ],
             ]);
         } catch (RequestException $e) {
-            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+            $this->logRequestException($e, $data);
 
             return null;
         }
@@ -390,23 +396,24 @@ class SofincoCACFPaymentGatewayClient
 
     public function getPartnerLoanPortfolioUrl(): string
     {
-        return sprintf('https://%s/partnerLoanPortfolio/v1/', $this->apiHostName);
+        return sprintf('https://%s/partnerLoanPortfolio/v1', $this->apiHostName);
     }
 
     public function getContractById(string $contractId, array $options): ?array
     {
         $response = null;
 
+        $data = $this->resolveContractByIdOptions($options);
         try {
             $response = $this->client->request('POST', sprintf('%s/contracts/%s', $this->getPartnerLoanPortfolioUrl(), $contractId), [
-                'json' => $this->resolveContractByIdOptions($options),
+                'json' => $data,
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
                 ],
             ]);
         } catch (RequestException $e) {
-            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+            $this->logRequestException($e, $data);
 
             return null;
         }
@@ -428,16 +435,17 @@ class SofincoCACFPaymentGatewayClient
     {
         $response = null;
 
+        $data = $this->resolveContractByExternalIdOptions($options);
         try {
             $response = $this->client->request('POST', sprintf('%s/contracts', $this->getPartnerLoanPortfolioUrl()), [
-                'json' => $this->resolveContractByExternalIdOptions($options),
+                'json' => $data,
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
                 ],
             ]);
         } catch (RequestException $e) {
-            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+            $this->logRequestException($e, $data);
 
             return null;
         }
@@ -486,7 +494,7 @@ class SofincoCACFPaymentGatewayClient
         return sprintf('https://%s/orderStatusNotification/v1/', $this->apiHostName);
     }
 
-    public function deliverOrder(string $id): ?Response
+    public function deliverContract(string $id): ?Response
     {
         $response = null;
 
@@ -498,7 +506,7 @@ class SofincoCACFPaymentGatewayClient
                 ],
             ]);
         } catch (RequestException $e) {
-            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+            $this->logRequestException($e);
 
             return null;
         }
@@ -510,7 +518,7 @@ class SofincoCACFPaymentGatewayClient
         return $response;
     }
 
-    public function cancelOrder(string $id): ?Response
+    public function cancelContract(string $id): ?Response
     {
         $response = null;
 
@@ -522,13 +530,13 @@ class SofincoCACFPaymentGatewayClient
                 ],
             ]);
         } catch (RequestException $e) {
-            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+            $this->logRequestException($e);
 
             return null;
         }
 
         if (null === $response) {
-            throw new \UnexpectedValueException('The order status notification deliver order request failed.');
+            throw new \UnexpectedValueException('The order status notification cancel order request failed.');
         }
 
         return $response;
@@ -538,22 +546,23 @@ class SofincoCACFPaymentGatewayClient
     {
         $response = null;
 
+        $data = $this->resolveValidateOrderOptions($options);
         try {
-            $response = $this->client->request('POST', sprintf('%s/contracts/%s/order/cancel', $this->getOrderStatusNotificationUrl(), $id), [
-                'json' => $this->resolveValidateOrderOptions($options),
+            $response = $this->client->request('POST', sprintf('%s/orders/%s/validate', $this->getOrderStatusNotificationUrl(), $id), [
+                'json' => $data,
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
                 ],
             ]);
         } catch (RequestException $e) {
-            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+            $this->logRequestException($e, $data);
 
             return null;
         }
 
         if (null === $response) {
-            throw new \UnexpectedValueException('The order status notification deliver order request failed.');
+            throw new \UnexpectedValueException('The order status notification validate order request failed.');
         }
 
         return $response;
@@ -596,7 +605,7 @@ class SofincoCACFPaymentGatewayClient
                 ],
             ]);
         } catch (RequestException $e) {
-            $this->logger->error($e->hasResponse() ? ((string) $e->getResponse()->getBody()) : $e->getMessage());
+            $this->logRequestException($e);
 
             return null;
         }
@@ -1940,5 +1949,19 @@ class SofincoCACFPaymentGatewayClient
         ;
 
         return $resolver->resolve($options);
+    }
+
+    private function logRequestException(RequestException $e, array $data = []): void
+    {
+        $this->logger->error(
+            sprintf(
+                'Method : %s | URL : %s | Status : %s | Data : %s | Message : %s',
+                $e->getRequest()->getMethod(),
+                $e->getRequest()->getUri(),
+                null != $e->getResponse() ? (string) $e->getResponse()->getStatusCode() : null,
+                json_encode($data),
+                null != $e->getResponse() ? (string) $e->getResponse()->getBody() : $e->getMessage()
+            )
+        );
     }
 }
