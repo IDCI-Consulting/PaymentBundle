@@ -189,7 +189,7 @@ class SofincoCACFPaymentGatewayClient
             throw new \UnexpectedValueException('The access token request failed.');
         }
 
-        $tokenData = json_decode($tokenResponse->getBody()->getContents(), true);
+        $tokenData = json_decode((string) $tokenResponse->getBody(), true);
 
         if (!is_array($tokenData)) {
             throw new \UnexpectedValueException('The access token response can\'t be parsed.');
@@ -250,7 +250,7 @@ class SofincoCACFPaymentGatewayClient
             throw new \UnexpectedValueException('The loan simulations request failed.');
         }
 
-        $loanSimulations = json_decode($loanSimulationResponse->getBody()->getContents(), true);
+        $loanSimulations = json_decode((string) $loanSimulationResponse->getBody(), true);
 
         if (!is_array($loanSimulations)) {
             throw new \UnexpectedValueException('The loanSimulationResponse response can\'t be parsed.');
@@ -308,7 +308,7 @@ class SofincoCACFPaymentGatewayClient
             throw new \UnexpectedValueException('The business token request failed.');
         }
 
-        $tokenData = json_decode($tokenResponse->getBody()->getContents(), true);
+        $tokenData = json_decode((string) $tokenResponse->getBody(), true);
 
         if (!is_array($tokenData)) {
             throw new \UnexpectedValueException('The business token response can\'t be parsed.');
@@ -361,7 +361,7 @@ class SofincoCACFPaymentGatewayClient
             throw new \UnexpectedValueException('The partner data exchange link request failed.');
         }
 
-        $partnerDataExchangeLinkData = json_decode($partnerDataExchangeLinkResponse->getBody()->getContents(), true);
+        $partnerDataExchangeLinkData = json_decode((string) $partnerDataExchangeLinkResponse->getBody(), true);
 
         if (!is_array($partnerDataExchangeLinkData)) {
             throw new \UnexpectedValueException('The business token response can\'t be parsed.');
@@ -423,7 +423,7 @@ class SofincoCACFPaymentGatewayClient
             throw new \UnexpectedValueException('The partner loan portfolio contract by id request failed.');
         }
 
-        $contractData = json_decode($response->getBody()->getContents(), true);
+        $contractData = json_decode((string) $response->getBody(), true);
 
         if (!is_array($contractData)) {
             throw new \UnexpectedValueException('The contract response can\'t be parsed.');
@@ -456,7 +456,7 @@ class SofincoCACFPaymentGatewayClient
             throw new \UnexpectedValueException('The partner loan portfolio contract by external id request failed.');
         }
 
-        $contractData = json_decode($response->getBody()->getContents(), true);
+        $contractData = json_decode((string) $response->getBody(), true);
 
         if (!is_array($contractData)) {
             throw new \UnexpectedValueException('The contract response can\'t be parsed.');
@@ -621,7 +621,7 @@ class SofincoCACFPaymentGatewayClient
             throw new \UnexpectedValueException('The loan simulations request failed.');
         }
 
-        return new Crawler($loanSimulationResponse->getBody()->getContents());
+        return new Crawler((string) $loanSimulationResponse->getBody());
     }
 
     /**
