@@ -1079,7 +1079,7 @@ class SofincoCACFPaymentGatewayClient
 
                     return json_encode($this->resolvePartnerDataExchangeLinkBusinessContextOptions($value));
                 })
-            ->setRequired('customer')->setAllowedTypes('customer', ['string', 'array'])
+            ->setDefined('customer')->setAllowedTypes('customer', ['string', 'array'])
                 ->setNormalizer('customer', function (Options $options, $value) {
                     if (is_string($value)) {
                         $value = json_decode($value, true);
@@ -1091,7 +1091,7 @@ class SofincoCACFPaymentGatewayClient
 
                     return json_encode($this->resolvePartnerDataExchangeLinkCustomerOptions($value));
                 })
-            ->setRequired('order')->setAllowedTypes('order', ['string', 'array'])
+            ->setDefined('order')->setAllowedTypes('order', ['string', 'array'])
                 ->setNormalizer('order', function (Options $options, $value) {
                     if (is_string($value)) {
                         $value = json_decode($value, true);
