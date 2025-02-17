@@ -31,7 +31,7 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
             'secretKey' => $paymentGatewayConfiguration->get('secret_key'),
         ));
 
-        $payment = Payplug\Payment::create(array_merge(
+        $payment = Payplug\Payment::create(array_replace_recursive(
             $this->resolvePaymentOptions($paymentGatewayConfiguration, $transaction, $options),
             [
                 'metadata' => [

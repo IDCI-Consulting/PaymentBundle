@@ -1,8 +1,8 @@
-{% if mode == constant('IDCI\\Bundle\\PaymentBundle\\Gateway\\PayPlugPaymentGateway::MODE_HOSTED') %}
+{% if initializationData.mode == constant('IDCI\\Bundle\\PaymentBundle\\Gateway\\PayPlugPaymentGateway::MODE_HOSTED') %}
     <form method="GET" action="{{ initializationData.payment.hosted_payment.payment_url }}">
         <input type="submit" name="payer" value="Payer">
     </form>
-{% elseif mode == constant('IDCI\\Bundle\\PaymentBundle\\Gateway\\PayPlugPaymentGateway::MODE_LIGHTBOX') %}
+{% elseif initializationData.mode == constant('IDCI\\Bundle\\PaymentBundle\\Gateway\\PayPlugPaymentGateway::MODE_LIGHTBOX') %}
     <button id="idci_step_payplug" type="submit" class="btn btn-default">Buy now</button>
 
     <script type="text/javascript" src="https://api.payplug.com/js/1.0/form.js"></script>
@@ -15,6 +15,6 @@
             })
         })
     </script>
-{% elseif mode == constant('IDCI\\Bundle\\PaymentBundle\\Gateway\\PayPlugPaymentGateway::MODE_INTEGRATED') %}
+{% elseif initializationData.mode == constant('IDCI\\Bundle\\PaymentBundle\\Gateway\\PayPlugPaymentGateway::MODE_INTEGRATED') %}
     UNSUPPORTED
 {% endif %}
