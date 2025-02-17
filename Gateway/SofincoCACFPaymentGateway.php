@@ -35,9 +35,10 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options
     ): array {
-        return [
+        return array_replace_recursive([
             'businessContext' => [
                 'providerContext' => [
                     'businessProviderId' => $paymentGatewayConfiguration->get('business_provider_id'),
@@ -46,56 +47,15 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
                 ],
                 'customerContext' => [
                     'externalCustomerId' => $transaction->getCustomerId(),
-                    'civilityCode' => $transaction->getMetadata('customerContext.civilityCode'),
-                    'firstName' => $transaction->getMetadata('customerContext.firstName'),
-                    'lastName' => $transaction->getMetadata('customerContext.lastName'),
-                    'birthName' => $transaction->getMetadata('customerContext.birthName'),
-                    'birthDate' => $transaction->getMetadata('customerContext.birthDate'),
-                    'citizenshipCode' => $transaction->getMetadata('customerContext.citizenshipCode'),
-                    'birthCountryCode' => $transaction->getMetadata('customerContext.birthCountryCode'),
-                    'additionalStreet' => $transaction->getMetadata('customerContext.additionalStreet'),
-                    'street' => $transaction->getMetadata('customerContext.street'),
-                    'city' => $transaction->getMetadata('customerContext.city'),
-                    'zipCode' => $transaction->getMetadata('customerContext.zipCode'),
-                    'distributerOffice' => $transaction->getMetadata('customerContext.distributerOffice'),
-                    'countryCode' => $transaction->getMetadata('customerContext.countryCode'),
-                    'phoneNumber' => $transaction->getMetadata('customerContext.phoneNumber'),
-                    'mobileNumber' => $transaction->getMetadata('customerContext.mobileNumber'),
                     'emailAddress' => $transaction->getCustomerEmail(),
-                    'loyaltyCardId' => $transaction->getMetadata('customerContext.loyaltyCardId'),
-                ],
-                'coBorrowerContext' => [
-                    'externalCustomerId' => $transaction->getMetadata('coBorrowerContext.externalCustomerId'),
-                    'civilityCode' => $transaction->getMetadata('coBorrowerContext.civilityCode'),
-                    'firstName' => $transaction->getMetadata('coBorrowerContext.firstName'),
-                    'lastName' => $transaction->getMetadata('coBorrowerContext.lastName'),
-                    'birthName' => $transaction->getMetadata('coBorrowerContext.birthName'),
-                    'birthDate' => $transaction->getMetadata('coBorrowerContext.birthDate'),
-                    'citizenshipCode' => $transaction->getMetadata('coBorrowerContext.citizenshipCode'),
-                    'birthCountryCode' => $transaction->getMetadata('coBorrowerContext.birthCountryCode'),
-                    'additionalStreet' => $transaction->getMetadata('coBorrowerContext.additionalStreet'),
-                    'street' => $transaction->getMetadata('coBorrowerContext.street'),
-                    'city' => $transaction->getMetadata('coBorrowerContext.city'),
-                    'zipCode' => $transaction->getMetadata('coBorrowerContext.zipCode'),
-                    'distributerOffice' => $transaction->getMetadata('coBorrowerContext.distributerOffice'),
-                    'countryCode' => $transaction->getMetadata('coBorrowerContext.countryCode'),
-                    'phoneNumber' => $transaction->getMetadata('coBorrowerContext.phoneNumber'),
-                    'mobileNumber' => $transaction->getMetadata('coBorrowerContext.mobileNumber'),
-                    'emailAddress' => $transaction->getMetadata('coBorrowerContext.emailAddress'),
-                    'loyaltyCardId' => $transaction->getMetadata('coBorrowerContext.loyaltyCardId'),
                 ],
                 'offerContext' => [
                     'orderId' => $transaction->getId(),
-                    'scaleId' => $transaction->getMetadata('offerContext.scaleId'),
                     'equipmentCode' => $paymentGatewayConfiguration->get('equipment_code'),
                     'amount' => $transaction->getAmount(),
-                    'orderAmount' => $transaction->getMetadata('offerContext.orderAmount'),
-                    'personalContributionAmount' => $transaction->getMetadata('offerContext.personalContributionAmount'),
-                    'duration' => $transaction->getMetadata('offerContext.duration'),
-                    'preScoringCode' => $transaction->getMetadata('offerContext.preScoringCode'),
                 ],
             ],
-        ];
+        ], $options);
     }
 
     /**
@@ -106,13 +66,27 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
         Transaction $transaction,
         array $options = []
     ): array {
-        $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
+        $options = $this->buildOptions($paymentGatewayConfiguration, $transaction, $options);
+
+        if ($paymentGatewayConfiguration->get('use_partner_data_exchange')) {
+            $url = $this->client->getPartnerDataExchangeUrl($options);
+
+            $fields = [];
+            parse_str(parse_url($url, PHP_URL_QUERY), $fields);
+
+            return [
+                'url' => $url,
+                'options' => $fields,
+            ];
+        }
+
+        $url = $this->client->getCreditUrl($options);
 
         $fields = [];
-        parse_str(parse_url($this->client->getCreditUrl($options), PHP_URL_QUERY), $fields);
+        parse_str(parse_url($url, PHP_URL_QUERY), $fields);
 
         return [
-            'url' => $this->client->getCreditUrl($options),
+            'url' => $url,
             'options' => $fields,
         ];
     }
@@ -125,7 +99,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
         Transaction $transaction,
         array $options = []
     ): string {
-        $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
+        $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction, $options);
 
         return $this->templating->render('@IDCIPayment/Gateway/sofinco_cacf.html.twig', [
             'initializationData' => $initializationData,
@@ -184,6 +158,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
                 SofincoCACFPaymentGatewayClient::DOCUMENT_STATUS_CANCELED,
                 SofincoCACFPaymentGatewayClient::DOCUMENT_STATUS_NOT_FOUND,
                 SofincoCACFPaymentGatewayClient::DOCUMENT_STATUS_ERROR,
+                SofincoCACFPaymentGatewayClient::DOCUMENT_STATUS_ABANDONNED,
             ]
         )) {
             return $gatewayResponse->setMessage('Transaction unauthorized');
@@ -206,6 +181,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
             [
                 'business_provider_id',
                 'equipment_code',
+                'use_partner_data_exchange',
             ]
         );
     }

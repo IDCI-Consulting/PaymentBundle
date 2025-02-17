@@ -171,5 +171,8 @@ services:
             $serverHostName: '%idci_payment.sofinco_cacf.server_host_name%'
             $apiHostName: '%idci_payment.sofinco_cacf.api_host_name%'
             $weblongHostName: '%idci_payment.sofinco_cacf.weblong_host_name%'
+            $contextApplicationId: '%idci_payment.sofinco_cacf.context_application_id%'
+            $contextPartnerId: '%idci_payment.sofinco_cacf.context_partner_id%'
+            $contextSourceId: '%idci_payment.sofinco_cacf.context_source_id%'
         calls:
             - [setCache, ['@?cache.idci_payment']]
