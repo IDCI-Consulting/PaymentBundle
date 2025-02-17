@@ -42,7 +42,8 @@ class ApplePayPaymentGatewayController extends AbstractController
     }
 
     /**
-     * @Route("/.well-known/apple-developer-merchantid-domain-association.txt", name="domain_verify", methods={"GET"})
+     * @Route("/.well-known/apple-developer-merchantid-domain-association", name="domain_verify", methods={"GET"})
+     * @Route("/.well-known/apple-developer-merchantid-domain-association.{ext}", name="domain_verify_with_ext", methods={"GET"}, requirements={"ext"="^[a-z]+$"})
      */
     public function domainVerifyAction(Request $request)
     {
