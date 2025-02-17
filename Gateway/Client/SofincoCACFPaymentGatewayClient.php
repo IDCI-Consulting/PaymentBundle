@@ -19,10 +19,6 @@ class SofincoCACFPaymentGatewayClient
     const BUSINESS_TOKEN_FORMAT_JWS = 'JWS';
     const BUSINESS_TOKEN_FORMAT_JWE = 'JWE';
 
-    const CONTEXT_APPLICATION_ID = 'creditPartner';
-    const CONTEXT_PARTNER_ID = 'web_em';
-    const CONTEXT_SOURCE_ID = 'vac';
-
     const CUSTOMER_CIVILITY_CODE_MR = 1;
     const CUSTOMER_CIVILITY_CODE_MRS = 2;
     const CUSTOMER_CIVILITY_CODE_MS = 3;
@@ -95,6 +91,21 @@ class SofincoCACFPaymentGatewayClient
      */
     private $weblongHostName;
 
+    /**
+     * @var string
+     */
+    private $contextApplicationId;
+
+    /**
+     * @var string
+     */
+    private $contextPartnerId;
+
+    /**
+     * @var string
+     */
+    private $contextSourceId;
+
     public function __construct(
         Environment $twig,
         LoggerInterface $logger,
@@ -102,7 +113,10 @@ class SofincoCACFPaymentGatewayClient
         ?string $secretId,
         ?string $serverHostName,
         ?string $apiHostName,
-        ?string $weblongHostName
+        ?string $weblongHostName,
+        ?string $contextApplicationId,
+        ?string $contextPartnerId,
+        ?string $contextSourceId
     ) {
         $this->twig = $twig;
         $this->logger = $logger;
@@ -113,6 +127,9 @@ class SofincoCACFPaymentGatewayClient
         $this->serverHostName = $serverHostName;
         $this->apiHostName = $apiHostName;
         $this->weblongHostName = $weblongHostName;
+        $this->contextApplicationId = $contextApplicationId;
+        $this->contextPartnerId = $contextPartnerId;
+        $this->contextSourceId = $contextSourceId;
     }
 
     /**
@@ -230,9 +247,9 @@ class SofincoCACFPaymentGatewayClient
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
-                    'Context-Applicationid' => self::CONTEXT_APPLICATION_ID,
-                    'Context-Partnerid' => self::CONTEXT_PARTNER_ID,
-                    'Context-Sourceid' => self::CONTEXT_SOURCE_ID,
+                    'Context-Applicationid' => $this->contextApplicationId,
+                    'Context-Partnerid' => $this->contextPartnerId,
+                    'Context-Sourceid' => $this->contextSourceId,
                 ],
             ]);
         } catch (RequestException $e) {
@@ -266,7 +283,7 @@ class SofincoCACFPaymentGatewayClient
         return sprintf(
             'https://%s/simulateur/?Q6=%s&X1=simu_vac&s3=%s&a9=%s&n2=%s',
             $this->serverHostName,
-            self::CONTEXT_PARTNER_ID,
+            $this->contextPartnerId,
             $resolvedOptions['amount'],
             $resolvedOptions['businessProviderId'],
             $resolvedOptions['equipmentCode']
@@ -341,9 +358,9 @@ class SofincoCACFPaymentGatewayClient
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
-                    'Context-Applicationid' => self::CONTEXT_APPLICATION_ID,
-                    'Context-Partnerid' => self::CONTEXT_PARTNER_ID,
-                    'Context-Sourceid' => self::CONTEXT_SOURCE_ID,
+                    'Context-Applicationid' => $this->contextApplicationId,
+                    'Context-Partnerid' => $this->contextPartnerId,
+                    'Context-Sourceid' => $this->contextSourceId,
                 ],
             ]);
         } catch (RequestException $e) {
@@ -384,8 +401,8 @@ class SofincoCACFPaymentGatewayClient
         return sprintf(
             'https://%s/creditpartner/?q6=%s&x1=%s&token=%s',
             $this->serverHostName,
-            self::CONTEXT_PARTNER_ID,
-            self::CONTEXT_SOURCE_ID,
+            $this->contextPartnerId,
+            $this->contextSourceId,
             $this->getBusinessToken($options)
         );
     }
@@ -601,9 +618,9 @@ class SofincoCACFPaymentGatewayClient
             return $this->client->request('POST', $this->getDocumentsUrl(), [
                 'body' => $this->twig->render(sprintf('@IDCIPayment/Gateway/sofinco/%s.html.twig', $templateName), $options),
                 'headers' => [
-                    'Context-Applicationid' => self::CONTEXT_APPLICATION_ID,
-                    'Context-Partnerid' => self::CONTEXT_PARTNER_ID,
-                    'Context-Sourceid' => self::CONTEXT_SOURCE_ID,
+                    'Context-Applicationid' => $this->contextApplicationId,
+                    'Context-Partnerid' => $this->contextPartnerId,
+                    'Context-Sourceid' => $this->contextSourceId,
                 ],
             ]);
         } catch (RequestException $e) {
