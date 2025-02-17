@@ -89,22 +89,27 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
             ->setStatus(PaymentStatus::STATUS_FAILED)
         ;
 
-        if (empty($request->request->all())) {
+        $data = json_decode($request->getContent(), true);
+
+        if (null === $data) {
             return $gatewayResponse->setMessage('The request do not contains required post data');
         }
 
-        $params = $request->request->all();
+        Payplug\Payplug::init(array(
+            'apiVersion' => $paymentGatewayConfiguration->get('version'),
+            'secretKey' => $paymentGatewayConfiguration->get('secret_key'),
+        ));
 
-        // TODO: Retrieve payment from Payplug to improve confiance in "is_paid" bool
+        $payment = \Payplug\Payment::retrieve($data['id']);
 
         $gatewayResponse
-            ->setTransactionUuid($params['metadata']['transaction_id'])
-            ->setAmount($params['amount'])
-            ->setCurrencyCode($params['currency'])
-            ->setRaw($params)
+            ->setTransactionUuid($payment->metadata['transaction_id'])
+            ->setAmount($payment->amount)
+            ->setCurrencyCode($payment->currency)
+            ->setRaw($this->transformPaymentToArray($payment))
         ;
 
-        if (!$params['is_paid']) {
+        if (!$payment->is_paid) {
             return $gatewayResponse->setMessage('Transaction unauthorized');
         }
 
@@ -185,6 +190,24 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         ;
 
         return array_filter($resolver->resolve($options));
+    }
+
+    private function transformPaymentToArray(\Payplug\Resource\Payment $payment): array
+    {
+        $reflectionClass = new \ReflectionClass($payment);
+        $method = $reflectionClass->getMethod('getAttributes');
+        $method->setAccessible(true);
+
+        $paymentArray = $method->invoke($payment);
+        foreach ($paymentArray as $key => $value) {
+            if (!is_object($value)) {
+                continue;
+            }
+
+            $paymentArray[$key] = $method->invoke($value);
+        }
+
+        return $paymentArray;
     }
 
     /**
