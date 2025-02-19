@@ -106,7 +106,7 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
             ->setTransactionUuid($payment->metadata['transaction_id'])
             ->setAmount($payment->amount)
             ->setCurrencyCode($payment->currency)
-            ->setRaw($this->transformPaymentToArray($payment))
+            ->setRaw(self::transformPaymentToArray($payment))
         ;
 
         if (!$payment->is_paid) {
@@ -192,7 +192,7 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         return array_filter($resolver->resolve($options));
     }
 
-    private function transformPaymentToArray(\Payplug\Resource\Payment $payment): array
+    public static function transformPaymentToArray(\Payplug\Resource\Payment $payment): array
     {
         $reflectionClass = new \ReflectionClass($payment);
         $method = $reflectionClass->getMethod('getAttributes');
