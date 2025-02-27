@@ -176,7 +176,7 @@ idci_payment:
                 mode: one_click
 ```
 
-Then when creating your transaction you can pass extraData from the `applicationData`, here is an example to create a transaction in one click context for a cart:
+Then when creating your transaction you can pass extraData from the `applicationData` or `customData` fields (applicationData will be passed to apple pay for token verfication and customData is never used in apple pay), here is an example to create a transaction in one click context for a cart:
 
 ```php
 <?php
@@ -213,7 +213,7 @@ $htmlView = $paymentContext->buildHTMLView([
         ]
     ],
     'lineItems' => $lineItems,
-    'applicationData' => [
+    'customData' => [
         'cart' => $cart['id'],
     ],
 ]);
@@ -242,9 +242,9 @@ class ApplePayPaymentGatewayEventSubscriber implements EventSubscriberInterface
     }
     private function createContextFromCart(OneClickContextEvent $oneClickContextEvent)
     {
-        $applicationData = json_decode($oneClickContextEvent->getData()['paymentRequest']['applicationData'] ?? '{}', true);
+        $customData = json_decode($oneClickContextEvent->getData()['customData'] ?? '{}', true);
 
-        if (!isset($applicationData['cart'])) {
+        if (!isset($customData['cart'])) {
             return;
         }
 
@@ -258,7 +258,7 @@ class ApplePayPaymentGatewayEventSubscriber implements EventSubscriberInterface
         ]);
 
         $this->createTransaction([
-            'reference' => $applicationData['transaction_id']
+            'reference' => $customData['transaction_id']
             // ...
         ]);
     }
