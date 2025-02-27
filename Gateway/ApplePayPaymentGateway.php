@@ -215,16 +215,16 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
 
         $data = json_decode($request->getContent(), true);
         $paymentToken = $data['paymentToken'];
-        $applicationData = json_decode($data['paymentRequest']['applicationData'] ?? '{}', true);
+        $customData = json_decode($data['customData'] ?? '{}', true);
 
-        if (self::MODE_ONE_CLICK === $applicationData['mode']) {
+        if (self::MODE_ONE_CLICK === $customData['mode']) {
             $this->dispatcher->dispatch(new OneClickContextEvent($request, $paymentGatewayConfiguration, $data), OneClickContextEvents::APPLE_PAY);
         }
 
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
-            ->setTransactionUuid($applicationData['transaction_id'] ?? null)
+            ->setTransactionUuid($customData['transaction_id'] ?? null)
             ->setCurrencyCode($data['paymentRequest']['currencyCode'])
             ->setAmount(((float) $data['paymentRequest']['total']['amount']) * 100)
             ->setPaymentMethod($paymentToken['paymentMethod']['network'])
@@ -305,20 +305,28 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
             })
             ->setDefault('applicationData', '{}')->setAllowedTypes('applicationData', ['string', 'array'])
                 ->setNormalizer('applicationData', function (Options $options, $applicationData) use ($paymentGatewayConfiguration, $transaction) {
-                    if (!is_array($applicationData)) {
-                        $applicationData = json_decode($applicationData, true);
+                    if (is_array($applicationData)) {
+                        return json_encode($applicationData);
+                    }
 
-                        if (null === $applicationData) {
-                            throw new \LogicException('The parameter applicationData must be json if a string is passed.');
+                    return $applicationData;
+                })
+            ->setDefault('customData', '{}')->setAllowedTypes('customData', ['string', 'array'])
+                ->setNormalizer('customData', function (Options $options, $customData) use ($paymentGatewayConfiguration, $transaction) {
+                    if (!is_array($customData)) {
+                        $customData = json_decode($customData, true);
+
+                        if (null === $customData) {
+                            throw new \LogicException('The parameter customData must be json if a string is passed.');
                         }
                     }
 
-                    $applicationData = array_merge([
+                    $customData = array_merge([
                         'transaction_id' => $transaction->getId(),
                         'mode' => $paymentGatewayConfiguration->get('mode'),
-                    ], $applicationData);
+                    ], $customData);
 
-                    return json_encode($applicationData);
+                    return json_encode($customData);
                 })
             ->setDefined('supportedCountries')->setAllowedValues('supportedCountries', Countries::getCountryCodes())
             ->setDefined('supportsCouponCode')->setAllowedTypes('supportsCouponCode', ['bool'])

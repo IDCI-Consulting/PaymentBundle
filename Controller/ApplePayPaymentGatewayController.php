@@ -67,15 +67,17 @@ class ApplePayPaymentGatewayController extends AbstractController
         ;
 
         $data = json_decode($request->getContent(), true);
+        $customData = json_decode($data['customData'], true);
 
-        $event = new ApplePayPaymentGatewaySessionEvent($request, $paymentContext, $data['validationUrl'], $data['paymentRequest']);
+        $event = new ApplePayPaymentGatewaySessionEvent($request, $paymentContext, $data['validationUrl'], $data['paymentRequest'], $customData);
         $this->dispatcher->dispatch($event, ApplePayPaymentGatewayEvents::CREATE_SESSION);
 
         if (null !== $event->getSessionData()) {
             return new Response(
                 json_encode([
                     'paymentRequest' => $event->getPaymentRequest(),
-                    'sessionData' => json_decode($event->getSessionData())
+                    'sessionData' => json_decode($event->getSessionData()),
+                    'customData' => json_encode($event->getCustomData()),
                 ]),
                 Response::HTTP_OK,
                 [
@@ -109,7 +111,8 @@ class ApplePayPaymentGatewayController extends AbstractController
         return new Response(
             json_encode([
                 'paymentRequest' => $event->getPaymentRequest(),
-                'sessionData' => json_decode($sessionData)
+                'sessionData' => json_decode($sessionData),
+                'customData' => json_encode($event->getCustomData()),
             ]),
             Response::HTTP_OK,
             [

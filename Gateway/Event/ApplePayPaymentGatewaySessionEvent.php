@@ -28,6 +28,11 @@ class ApplePayPaymentGatewaySessionEvent
     protected $paymentRequest = [];
 
     /**
+     * @var array
+     */
+    protected $customData = [];
+
+    /**
      * @var string
      */
     protected $sessionData = null;
@@ -40,12 +45,14 @@ class ApplePayPaymentGatewaySessionEvent
         PaymentContextInterface $paymentContext,
         string $validationUrl,
         array &$paymentRequest = [],
+        array &$customData = [],
         string &$sessionData = null
     ) {
         $this->request = $request;
         $this->paymentContext = $paymentContext;
         $this->validationUrl = $validationUrl;
         $this->paymentRequest = &$paymentRequest;
+        $this->customData = &$customData;
         $this->sessionData = &$sessionData;
     }
 
@@ -87,6 +94,24 @@ class ApplePayPaymentGatewaySessionEvent
     public function setPaymentRequest(array $paymentRequest): self
     {
         $this->paymentRequest = $paymentRequest;
+
+        return $this;
+    }
+
+    /**
+     * Get custom data.
+     */
+    public function getCustomData(): array
+    {
+        return $this->customData;
+    }
+
+    /**
+     * Set custom data
+     */
+    public function setCustomData(array $customData): self
+    {
+        $this->customData = $customData;
 
         return $this;
     }

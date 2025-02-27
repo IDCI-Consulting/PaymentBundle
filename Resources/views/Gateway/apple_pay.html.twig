@@ -2,7 +2,8 @@
 <script src="https://applepay.cdn-apple.com/jsapi/v1.1.0/apple-pay-sdk.js"></script>
 <script>
     function createApplePaySession() {
-        var applePayPaymentRequest = {{ apple_pay_payment_request|json_encode|raw }};
+        var applePayPaymentRequest = {{ apple_pay_payment_request|filter((v, k) => k != 'customData')|json_encode|raw }};
+        var customData = {{ apple_pay_payment_request.customData|json_encode|raw }};
         var selectedShippingMethod = {};
         var orderAmount = '{{ apple_pay_payment_request.total.amount }}';
 
@@ -16,7 +17,7 @@
 
             let options = {
                 method: 'POST',
-                body: JSON.stringify({ validationUrl: event.validationURL, paymentRequest: applePayPaymentRequest}),
+                body: JSON.stringify({ validationUrl: event.validationURL, paymentRequest: applePayPaymentRequest, customData: customData}),
                 credentials: 'include',
                 headers: headers
             };
@@ -25,6 +26,7 @@
                 return response.json();
             }).then((data) => {
                 applePayPaymentRequest = data.paymentRequest;
+                customData = data.customData;
                 appleSession.completeMerchantValidation(data.sessionData);
             }).catch(function (error) {
                 console.error('Merchant validation unsuccessful: ' + JSON.stringify(error));
@@ -57,6 +59,7 @@
                 billingContact: event.payment.billingContact ?? null,
                 shippingContact: event.payment.shippingContact ?? null,
                 selectedShippingMethod: selectedShippingMethod,
+                customData: customData
             };
 
             let headers = new Headers();
@@ -86,6 +89,7 @@
                         'amount': orderAmount,
                         'request': applePayPaymentRequest,
                         'session': appleSession,
+                        'customData': customData,
                         'data': data
                     });
                 }
@@ -100,6 +104,7 @@
                     'amount': orderAmount,
                     'request': applePayPaymentRequest,
                     'session': appleSession,
+                    'customData': customData,
                     'data': data
                 });
             }).catch(function (error) {
@@ -114,6 +119,7 @@
                 'amount': orderAmount,
                 'request': applePayPaymentRequest,
                 'session': appleSession,
+                'customData': customData,
             });
         }
 
