@@ -4,6 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use IDCI\Bundle\PaymentBundle\Gateway\Event\ApplePayPaymentGatewayBuildRequestEvent;
 use IDCI\Bundle\PaymentBundle\Gateway\Event\ApplePayPaymentGatewayEvent;
 use IDCI\Bundle\PaymentBundle\Gateway\Event\ApplePayPaymentGatewayEvents;
 use IDCI\Bundle\PaymentBundle\Gateway\Event\OneClickContextEvent;
@@ -169,7 +170,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
             'return_url' => $paymentGatewayConfiguration->get('return_url'),
             'configuration_alias' => $paymentGatewayConfiguration->getAlias(),
             'version' => $paymentGatewayConfiguration->get('version'),
-            'apple_pay_payment_request' => $this->resolveInitializationOptions(
+            'apple_pay_payment_request' => $this->resolveApplePayPaymentRequestOptions(
                 $paymentGatewayConfiguration,
                 $transaction,
                 $options
@@ -247,11 +248,13 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse;
     }
 
-    private function resolveInitializationOptions(
+    private function resolveApplePayPaymentRequestOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options
     ): array {
+        $this->dispatcher->dispatch(new ApplePayPaymentGatewayBuildRequestEvent($paymentGatewayConfiguration, $options), ApplePayPaymentGatewayEvents::PRE_BUILD_REQUEST);
+
         // @see https://developer.apple.com/documentation/apple_pay_on_the_web/applepaypaymentrequest
         $resolver = (new OptionsResolver())
             ->setDefault('merchantCapabilities', $paymentGatewayConfiguration->get('merchant_capabilities'))->setAllowedTypes('merchantCapabilities', ['array'])
@@ -525,7 +528,11 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
             })
         ;
 
-        return array_filter($resolver->resolve($options));
+        $options = array_filter($resolver->resolve($options));
+
+        $this->dispatcher->dispatch(new ApplePayPaymentGatewayBuildRequestEvent($paymentGatewayConfiguration, $options), ApplePayPaymentGatewayEvents::POST_BUILD_REQUEST);
+
+        return $options;
     }
 
     /**
