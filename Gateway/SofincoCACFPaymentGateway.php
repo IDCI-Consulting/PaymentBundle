@@ -131,7 +131,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
 
         $requestData = json_decode($request->getContent(), true);
 
-        if (json_last_error()) {
+        if (\json_last_error()) {
             throw new \UnexpectedValueException(sprintf('Sofinco - JSON Error: %s', json_last_error_msg()));
         }
 
@@ -139,7 +139,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
             throw new \UnexpectedValueException('The query parameter transactionId was not found.');
         }
 
-        if (strtoupper($request->query->get('transactionId')) !== $requestData['ORDER_ID']) {
+        if (\strtoupper($request->query->get('transactionId')) !== \strtoupper($requestData['ORDER_ID'])) {
             throw new \UnexpectedValueException(sprintf('The transaction/order id mismatch in the data (query: %s, body: %s).', $request->query->get('transactionId'), $requestData['ORDER_ID']));
         }
 
