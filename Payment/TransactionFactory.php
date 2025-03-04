@@ -72,6 +72,7 @@ class TransactionFactory
                 'metadata' => [],
                 'raw' => [],
                 'status' => PaymentStatus::STATUS_CREATED,
+                'logged' => true,
             ])
             ->setAllowedTypes('item_id', ['int', 'string'])
             ->setAllowedTypes('number', ['null', 'int'])
@@ -85,6 +86,7 @@ class TransactionFactory
             ->setAllowedTypes('metadata', ['null', 'array'])
             ->setAllowedTypes('raw', ['null', 'array'])
             ->setAllowedTypes('status', ['string'])
+            ->setAllowedTypes('logged', ['bool'])
             ->setAllowedValues('status', [
                 PaymentStatus::STATUS_APPROVED,
                 PaymentStatus::STATUS_CANCELED,

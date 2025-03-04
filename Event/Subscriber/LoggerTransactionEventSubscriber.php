@@ -9,6 +9,11 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class LoggerTransactionEventSubscriber implements EventSubscriberInterface
 {
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @var bool
      */
     private $enabled;
@@ -45,7 +50,7 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
 
     public function approve(TransactionEvent $transactionEvent)
     {
-        if (!$this->enabled) {
+        if (!$this->enabled || !$transactionEvent->getTransaction()->isLogged()) {
             return;
         }
 
@@ -54,7 +59,7 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
 
     public function cancel(TransactionEvent $transactionEvent)
     {
-        if (!$this->enabled) {
+        if (!$this->enabled || !$transactionEvent->getTransaction()->isLogged()) {
             return;
         }
 
@@ -63,7 +68,7 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
 
     public function create(TransactionEvent $transactionEvent)
     {
-        if (!$this->enabled) {
+        if (!$this->enabled || !$transactionEvent->getTransaction()->isLogged()) {
             return;
         }
 
@@ -72,7 +77,7 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
 
     public function fail(TransactionEvent $transactionEvent)
     {
-        if (!$this->enabled) {
+        if (!$this->enabled || !$transactionEvent->getTransaction()->isLogged()) {
             return;
         }
 
@@ -81,7 +86,7 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
 
     public function pend(TransactionEvent $transactionEvent)
     {
-        if (!$this->enabled) {
+        if (!$this->enabled || !$transactionEvent->getTransaction()->isLogged()) {
             return;
         }
 
@@ -90,7 +95,7 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
 
     public function unverify(TransactionEvent $transactionEvent)
     {
-        if (!$this->enabled) {
+        if (!$this->enabled || !$transactionEvent->getTransaction()->isLogged()) {
             return;
         }
 

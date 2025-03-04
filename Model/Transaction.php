@@ -81,6 +81,11 @@ class Transaction
      */
     protected $updatedAt;
 
+    /**
+     * @var bool
+     */
+    protected $logged = true;
+
     public function __construct()
     {
         $this->id = Flaky::id(62);
@@ -305,6 +310,18 @@ class Transaction
     public function setUpdatedAt(\DateTime $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function isLogged(): bool
+    {
+        return $this->logged;
+    }
+
+    public function setLogged(bool $logged): self
+    {
+        $this->logged = $logged;
 
         return $this;
     }

@@ -22,6 +22,11 @@ class PaymentGatewayController extends AbstractController
      */
     private $paymentManager;
 
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
     public function __construct(PaymentManager $paymentManager, LoggerInterface $logger)
     {
         $this->paymentManager = $paymentManager;
