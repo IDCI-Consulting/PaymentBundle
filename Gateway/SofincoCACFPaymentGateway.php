@@ -3,6 +3,8 @@
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use IDCI\Bundle\PaymentBundle\Gateway\Client\SofincoCACFPaymentGatewayClient;
+use IDCI\Bundle\PaymentBundle\Gateway\Event\PaymentGatewayEvent;
+use IDCI\Bundle\PaymentBundle\Gateway\Event\PaymentGatewayEvents;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
@@ -38,7 +40,9 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
         Transaction $transaction,
         array $options
     ): array {
-        return array_replace_recursive([
+        $this->dispatcher->dispatch(new PaymentGatewayEvent($transaction, $paymentGatewayConfiguration, $options), PaymentGatewayEvents::PRE_CONFIGURE_OPTIONS);
+
+        $options = array_replace_recursive([
             'businessContext' => [
                 'providerContext' => [
                     'businessProviderId' => $paymentGatewayConfiguration->get('business_provider_id'),
@@ -56,6 +60,10 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
                 ],
             ],
         ], $options);
+
+        $this->dispatcher->dispatch(new PaymentGatewayEvent($transaction, $paymentGatewayConfiguration, $options), PaymentGatewayEvents::POST_CONFIGURE_OPTIONS);
+
+        return $options;
     }
 
     /**
