@@ -44,6 +44,7 @@ class TransactionFactory
             ->setDescription($resolvedParameters['description'])
             ->setMetadata($resolvedParameters['metadata'])
             ->setRaw($resolvedParameters['raw'])
+            ->setLogged($resolvedParameters['logged'])
         ;
     }
 
