@@ -510,7 +510,7 @@ class SofincoCACFPaymentGatewayClient
 
     public function getOrderStatusNotificationUrl(): string
     {
-        return sprintf('https://%s/orderStatusNotification/v1/', $this->apiHostName);
+        return sprintf('https://%s/orderStatusNotification/v1', $this->apiHostName);
     }
 
     public function deliverContract(string $id): ?Response
