@@ -62,11 +62,6 @@
                 customData: customData
             };
 
-            console.log(JSON.stringify(tokenData));
-            appleSession.abort();
-
-            return;
-
             let headers = new Headers();
             headers.append('X-Requested-With', 'XMLHttpRequest');
             headers.append('Content-Type', 'application/json; charset=utf-8');
