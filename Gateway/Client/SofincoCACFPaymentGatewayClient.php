@@ -513,12 +513,14 @@ class SofincoCACFPaymentGatewayClient
         return sprintf('https://%s/orderStatusNotification/v1', $this->apiHostName);
     }
 
-    public function deliverContract(string $id): ?Response
+    public function deliverContract(string $id, array $options): ?Response
     {
         $response = null;
 
+        $data = $this->resolveDeliverContractOptions($options);
         try {
             $response = $this->client->request('POST', sprintf('%s/contracts/%s/order/deliver', $this->getOrderStatusNotificationUrl(), $id), [
+                'query' => $data,
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
@@ -531,18 +533,20 @@ class SofincoCACFPaymentGatewayClient
         }
 
         if (null === $response) {
-            throw new \UnexpectedValueException('The order status notification deliver order request failed.');
+            throw new \UnexpectedValueException('The order status notification deliver contract request failed.');
         }
 
         return $response;
     }
 
-    public function cancelContract(string $id): ?Response
+    public function cancelContract(string $id, array $options): ?Response
     {
         $response = null;
 
+        $data = $this->resolveCancelContractOptions($options);
         try {
             $response = $this->client->request('POST', sprintf('%s/contracts/%s/order/cancel', $this->getOrderStatusNotificationUrl(), $id), [
+                'query' => $data,
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
@@ -555,7 +559,7 @@ class SofincoCACFPaymentGatewayClient
         }
 
         if (null === $response) {
-            throw new \UnexpectedValueException('The order status notification cancel order request failed.');
+            throw new \UnexpectedValueException('The order status notification cancel contract request failed.');
         }
 
         return $response;
@@ -568,7 +572,7 @@ class SofincoCACFPaymentGatewayClient
         $data = $this->resolveValidateOrderOptions($options);
         try {
             $response = $this->client->request('POST', sprintf('%s/orders/%s/validate', $this->getOrderStatusNotificationUrl(), $id), [
-                'json' => $data,
+                'query' => $data,
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
                     'Content-Type' => 'application/json',
@@ -587,10 +591,69 @@ class SofincoCACFPaymentGatewayClient
         return $response;
     }
 
+    public function cancelOrder(string $id, array $options): ?Response
+    {
+        $response = null;
+
+        $data = $this->resolveCancelOrderOptions($options);
+        try {
+            $response = $this->client->request('POST', sprintf('%s/orders/%s/cancel', $this->getOrderStatusNotificationUrl(), $id), [
+                'query' => $data,
+                'headers' => [
+                    'Authorization' => sprintf('Bearer %s', $this->getAccessToken()),
+                    'Content-Type' => 'application/json',
+                ],
+            ]);
+        } catch (RequestException $e) {
+            $this->logRequestException($e, $data);
+
+            return null;
+        }
+
+        if (null === $response) {
+            throw new \UnexpectedValueException('The order status notification cancel order request failed.');
+        }
+
+        return $response;
+    }
+
+    private function resolveDeliverContractOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
+            ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
+            ->setRequired('orderId')->setAllowedTypes('orderId', ['string'])
+        ;
+
+        return $resolver->resolve($options);
+    }
+
+    private function resolveCancelContractOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
+            ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
+            ->setRequired('orderId')->setAllowedTypes('orderId', ['string'])
+        ;
+
+        return $resolver->resolve($options);
+    }
+
     private function resolveValidateOrderOptions(array $options): array
     {
         $resolver = (new OptionsResolver())
             ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
+            ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
+        ;
+
+        return $resolver->resolve($options);
+    }
+
+    private function resolveCancelOrderOptions(array $options): array
+    {
+        $resolver = (new OptionsResolver())
+            ->setRequired('businessProviderId')->setAllowedTypes('businessProviderId', ['string'])
+            ->setRequired('equipmentCode')->setAllowedTypes('equipmentCode', ['string'])
         ;
 
         return $resolver->resolve($options);
