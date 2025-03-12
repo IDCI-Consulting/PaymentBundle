@@ -186,6 +186,7 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
                 ;
             })
             ->setDefault('notification_url', $paymentGatewayConfiguration->get('callback_url'))->setAllowedTypes('notification_url', ['string'])
+            ->setDefined('payment_method')->setAllowedTypes('payment_method', ['string'])
             ->setDefined('metadata')->setAllowedTypes('metadata', ['array'])
         ;
 
