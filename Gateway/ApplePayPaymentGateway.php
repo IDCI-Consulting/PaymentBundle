@@ -378,6 +378,10 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
             ->setDefined('shippingType')->setAllowedTypes('shippingType', ['string'])
             ->setDefined('shippingMethods')->setAllowedTypes('shippingMethods', ['array'])
                 ->setNormalizer('shippingMethods', function (Options $options, $shippingMethods) {
+                    if (!isset($options['shippingMethods'])) {
+                        return;
+                    }
+
                     foreach ($shippingMethods as &$shippingMethod) {
                         $shippingMethodResolver = (new OptionsResolver())
                             ->setDefined('label')->setAllowedTypes('label', ['string'])

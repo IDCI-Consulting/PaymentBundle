@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use IDCI\Bundle\PaymentBundle\Exception\Gateway\Sofinco\InvalidOptionsException;
 use IDCI\Bundle\PaymentBundle\Gateway\Client\SofincoCACFPaymentGatewayClient;
 use IDCI\Bundle\PaymentBundle\Gateway\Event\PaymentGatewayEvent;
 use IDCI\Bundle\PaymentBundle\Gateway\Event\PaymentGatewayEvents;
@@ -9,6 +10,7 @@ use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Twig\Environment;
@@ -20,14 +22,21 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
      */
     private $client;
 
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
     public function __construct(
         Environment $templating,
         EventDispatcherInterface $dispatcher,
-        SofincoCACFPaymentGatewayClient $client
+        SofincoCACFPaymentGatewayClient $client,
+        LoggerInterface $logger
     ) {
         parent::__construct($templating, $dispatcher);
 
         $this->client = $client;
+        $this->logger = $logger;
     }
 
     /**
@@ -77,7 +86,13 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction, $options);
 
         if ($paymentGatewayConfiguration->get('use_partner_data_exchange')) {
-            $url = $this->client->getPartnerDataExchangeUrl($options);
+            try {
+                $url = $this->client->getPartnerDataExchangeUrl($options);
+            } catch (\InvalidArgumentException $e) {
+                $this->logger->error(sprintf('%s error: %s', self::class, $e->getMessage()));
+
+                throw new InvalidOptionsException();
+            }
 
             $fields = [];
             parse_str(parse_url($url, PHP_URL_QUERY), $fields);
@@ -88,7 +103,13 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
             ];
         }
 
-        $url = $this->client->getCreditUrl($options);
+        try {
+            $url = $this->client->getCreditUrl($options);
+        } catch (\InvalidArgumentException $e) {
+            $this->logger->error(sprintf('%s error: %s', self::class, $e->getMessage()));
+
+            throw new InvalidOptionsException();
+        }
 
         $fields = [];
         parse_str(parse_url($url, PHP_URL_QUERY), $fields);
