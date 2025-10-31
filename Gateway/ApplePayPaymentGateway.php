@@ -227,7 +227,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
             ->setStatus(PaymentStatus::STATUS_FAILED)
             ->setTransactionUuid($customData['transaction_id'] ?? null)
             ->setCurrencyCode($data['paymentRequest']['currencyCode'])
-            ->setAmount(((float) $data['paymentRequest']['total']['amount']) * 100)
+            ->setAmount(round(((float) $data['paymentRequest']['total']['amount']) * 100))
             ->setPaymentMethod($paymentToken['paymentMethod']['network'])
             ->setRaw($data)
         ;
