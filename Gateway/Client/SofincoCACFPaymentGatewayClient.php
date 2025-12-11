@@ -737,7 +737,7 @@ class SofincoCACFPaymentGatewayClient
                         $value = $value->format('Y-m-d');
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
                         throw new \InvalidArgumentException('The "borrowerBirthDate" must be formatted as described in documentation "YYYY-MM-DD"');
                     }
 
@@ -749,7 +749,7 @@ class SofincoCACFPaymentGatewayClient
                         $value = $value->format('Y-m-d');
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
                         throw new \InvalidArgumentException('The "coBorrowerBirthDate" must be formatted as described in documentation "YYYY-MM-DD"');
                     }
 
@@ -764,7 +764,7 @@ class SofincoCACFPaymentGatewayClient
                         $value = $value->format('Y-m-d');
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
                         throw new \InvalidArgumentException('The "offerDate" must be formatted as described in documentation "YYYY-MM-DD"');
                     }
 
@@ -856,7 +856,7 @@ class SofincoCACFPaymentGatewayClient
         $resolver = (new OptionsResolver())
             ->setDefined('businessProviderId')->setAllowedTypes('businessProviderId', ['null', 'string'])
                 ->setNormalizer('businessProviderId', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{11}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{11}/', $value)) {
                         throw new \InvalidArgumentException('The "businessProviderId" parameter must be formatted as described in documentation "[A-Z0-9]{11}"');
                     }
 
@@ -893,7 +893,7 @@ class SofincoCACFPaymentGatewayClient
         $resolver = (new OptionsResolver())
             ->setDefined('externalCustomerId')->setAllowedTypes('externalCustomerId', ['null', 'string'])
                 ->setNormalizer('externalCustomerId', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
                         throw new \InvalidArgumentException('The "externalCustomerId" parameter must be formatted as described in documentation "[A-Z0-9]{0,16}"');
                     }
 
@@ -911,7 +911,7 @@ class SofincoCACFPaymentGatewayClient
                         return $civilityCodeMapping[$value];
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[123]{1}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[123]{1}/', $value)) {
                         throw new \InvalidArgumentException('The "civilityCode" parameter must be formatted as described in documentation "[123]{1}"');
                     }
 
@@ -919,7 +919,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('firstName')->setAllowedTypes('firstName', ['null', 'string'])
                 ->setNormalizer('firstName', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
                         throw new \InvalidArgumentException('The "firstName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
                     }
 
@@ -927,7 +927,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('lastName')->setAllowedTypes('lastName', ['null', 'string'])
                 ->setNormalizer('lastName', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
                         throw new \InvalidArgumentException('The "lastName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
                     }
 
@@ -935,7 +935,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('birthName')->setAllowedTypes('birthName', ['null', 'string'])
                 ->setNormalizer('birthName', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
                         throw new \InvalidArgumentException('The "birthName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
                     }
 
@@ -943,7 +943,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('birthDate')->setAllowedTypes('birthDate', ['null', 'string'])
                 ->setNormalizer('birthDate', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
                         throw new \InvalidArgumentException('The "birthDate" parameter must be formatted as described in documentation "[0-9]{4}-[0-9]{2}-[0-9]{2}"');
                     }
 
@@ -951,7 +951,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('citizenshipCode')->setAllowedTypes('citizenshipCode', ['null', 'string'])
                 ->setNormalizer('citizenshipCode', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
                         throw new \InvalidArgumentException('The "citizenshipCode" parameter must be formatted as described in documentation "[A-Z*]{0,3}"');
                     }
 
@@ -959,7 +959,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('birthCountryCode')->setAllowedTypes('birthCountryCode', ['null', 'string'])
                 ->setNormalizer('birthCountryCode', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
                         throw new \InvalidArgumentException('The "birthCountryCode" parameter must be formatted as described in documentation "[A-Z*]{0,3}"');
                     }
 
@@ -967,7 +967,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('additionalStreet')->setAllowedTypes('additionalStreet', ['null', 'string'])
                 ->setNormalizer('additionalStreet', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
                         throw new \InvalidArgumentException('The "additionalStreet" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
                     }
 
@@ -975,7 +975,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('street')->setAllowedTypes('street', ['null', 'string'])
                 ->setNormalizer('street', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
                         throw new \InvalidArgumentException('The "street" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
                     }
 
@@ -983,7 +983,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('city')->setAllowedTypes('city', ['null', 'string'])
                 ->setNormalizer('city', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
                         throw new \InvalidArgumentException('The "city" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
                     }
 
@@ -995,7 +995,7 @@ class SofincoCACFPaymentGatewayClient
                         $value = (string) $value;
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
                         throw new \InvalidArgumentException('The "zipCode" parameter must be formatted as described in documentation "[0-9]{5}"');
                     }
 
@@ -1003,7 +1003,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('distributerOffice')->setAllowedTypes('distributerOffice', ['null', 'string'])
                 ->setNormalizer('distributerOffice', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
                         throw new \InvalidArgumentException('The "distributerOffice" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
                     }
 
@@ -1011,7 +1011,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('countryCode')->setAllowedTypes('countryCode', ['null', 'string'])
                 ->setNormalizer('countryCode', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
                         throw new \InvalidArgumentException('The "countryCode" parameter must be formatted as described in documentation "[A-Z*]{0,3}"');
                     }
 
@@ -1019,7 +1019,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('phoneNumber')->setAllowedTypes('phoneNumber', ['null', 'string'])
                 ->setNormalizer('phoneNumber', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/0[1234589]{1}[0-9]{8}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/0[1234589]{1}[0-9]{8}/', $value)) {
                         throw new \InvalidArgumentException('The "phoneNumber" parameter must be formatted as described in documentation "0[1234589]{1}[0-9]{8}"');
                     }
 
@@ -1027,7 +1027,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('mobileNumber')->setAllowedTypes('mobileNumber', ['null', 'string'])
                 ->setNormalizer('mobileNumber', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/0[67]{1}[0-9]{8}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/0[67]{1}[0-9]{8}/', $value)) {
                         throw new \InvalidArgumentException('The "mobileNumber" parameter must be formatted as described in documentation "0[67]{1}[0-9]{8}"');
                     }
 
@@ -1035,7 +1035,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('emailAddress')->setAllowedTypes('emailAddress', ['null', 'string'])
                 ->setNormalizer('emailAddress', function (Options $options, $value) {
-                    if (is_string($value) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                    if (is_string($value) && !empty($value) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
                         throw new \InvalidArgumentException('The "emailAddress" parameter is not a valid email"');
                     }
 
@@ -1043,7 +1043,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('loyaltyCardId')->setAllowedTypes('loyaltyCardId', ['null', 'string'])
                 ->setNormalizer('loyaltyCardId', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,19}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{0,19}/', $value)) {
                         throw new \InvalidArgumentException('The "loyaltyCardId" parameter must be formatted as described in documentation "[A-Z0-9]{0,19}"');
                     }
 
@@ -1064,7 +1064,7 @@ class SofincoCACFPaymentGatewayClient
         $resolver = (new OptionsResolver())
             ->setDefined('orderId')->setAllowedTypes('orderId', ['null', 'string'])
                 ->setNormalizer('orderId', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
                         throw new \InvalidArgumentException('The "orderId" parameter must be formatted as described in documentation "[A-Z0-9]{0,16}"');
                     }
 
@@ -1072,7 +1072,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('scaleId')->setAllowedTypes('scaleId', ['null', 'string'])
                 ->setNormalizer('scaleId', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
                         throw new \InvalidArgumentException('The "scaleId" parameter must be formatted as described in documentation "[A-Z0-9]{0,16}"');
                     }
 
@@ -1080,7 +1080,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('equipmentCode')->setAllowedTypes('equipmentCode', ['null', 'string'])
                 ->setNormalizer('equipmentCode', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{3}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{3}/', $value)) {
                         throw new \InvalidArgumentException('The "equipmentCode" parameter must be formatted as described in documentation "[A-Z0-9]{3}"');
                     }
 
@@ -1088,7 +1088,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('amount')->setAllowedTypes('amount', ['null', 'float', 'int', 'string'])
                 ->setNormalizer('amount', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
                         throw new \InvalidArgumentException('The "amount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
                     }
 
@@ -1096,7 +1096,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('orderAmount')->setAllowedTypes('orderAmount', ['null', 'float', 'int', 'string'])
                 ->setNormalizer('orderAmount', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
                         throw new \InvalidArgumentException('The "orderAmount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
                     }
 
@@ -1104,7 +1104,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('personalContributionAmount')->setAllowedTypes('personalContributionAmount', ['null', 'float', 'int', 'string'])
                 ->setNormalizer('personalContributionAmount', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
                         throw new \InvalidArgumentException('The "personalContributionAmount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
                     }
 
@@ -1112,7 +1112,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('duration')->setAllowedTypes('duration', ['null', 'string'])
                 ->setNormalizer('duration', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,3}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{0,3}/', $value)) {
                         throw new \InvalidArgumentException('The "duration" parameter must be formatted as described in documentation "[0-9]{0,3}"');
                     }
 
@@ -1120,7 +1120,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('preScoringCode')->setAllowedTypes('preScoringCode', ['null', 'string'])
                 ->setNormalizer('preScoringCode', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{1}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{1}/', $value)) {
                         throw new \InvalidArgumentException('The "preScoringCode" parameter must be formatted as described in documentation "[0-9]{1}"');
                     }
 
@@ -1220,7 +1220,7 @@ class SofincoCACFPaymentGatewayClient
         $resolver = (new OptionsResolver())
             ->setDefined('businessProviderId')->setAllowedTypes('businessProviderId', ['null', 'string'])
                 ->setNormalizer('businessProviderId', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{11}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{11}/', $value)) {
                         throw new \InvalidArgumentException('The "businessProviderId" parameter must be formatted as described in documentation "[A-Z0-9]{11}"');
                     }
 
@@ -1265,7 +1265,7 @@ class SofincoCACFPaymentGatewayClient
         $resolver = (new OptionsResolver())
             ->setDefined('externalCustomerId')->setAllowedTypes('externalCustomerId', ['null', 'string'])
                 ->setNormalizer('externalCustomerId', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
                         throw new \InvalidArgumentException('The "externalCustomerId" parameter must be formatted as described in documentation "[A-Z0-9]{0,16}"');
                     }
 
@@ -1273,7 +1273,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('memberAccountId')->setAllowedTypes('memberAccountId', ['null', 'string'])
                 ->setNormalizer('memberAccountId', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
                         throw new \InvalidArgumentException('The "memberAccountId" parameter must be formatted as described in documentation "[A-Z0-9]{0,16}"');
                     }
 
@@ -1282,7 +1282,7 @@ class SofincoCACFPaymentGatewayClient
             ->setDefined('member')->setAllowedTypes('member', ['bool'])
             ->setDefined('memberAccountDate')->setAllowedTypes('memberAccountDate', ['null', 'string'])
                 ->setNormalizer('memberAccountDate', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
                         throw new \InvalidArgumentException('The "memberAccountDate" parameter must be formatted as described in documentation "[0-9]{4}-[0-9]{2}-[0-9]{2}"');
                     }
 
@@ -1290,7 +1290,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('lastUncancelledPurchaseDate')->setAllowedTypes('lastUncancelledPurchaseDate', ['null', 'string'])
                 ->setNormalizer('lastUncancelledPurchaseDate', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
                         throw new \InvalidArgumentException('The "lastUncancelledPurchaseDate" parameter must be formatted as described in documentation "[0-9]{4}-[0-9]{2}-[0-9]{2}"');
                     }
 
@@ -1302,7 +1302,7 @@ class SofincoCACFPaymentGatewayClient
                         $value = (string) $value;
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
                         throw new \InvalidArgumentException('The "totalPurchasesNumber" parameter must be formatted as described in documentation "[0-9]{5}"');
                     }
 
@@ -1314,7 +1314,7 @@ class SofincoCACFPaymentGatewayClient
                         $value = (string) $value;
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
                         throw new \InvalidArgumentException('The "uncancelledPurchasesNumber" parameter must be formatted as described in documentation "[0-9]{5}"');
                     }
 
@@ -1326,7 +1326,7 @@ class SofincoCACFPaymentGatewayClient
                         $value = (string) $value;
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
                         throw new \InvalidArgumentException('The "scoringCancelledPurchasesNumber" parameter must be formatted as described in documentation "[0-9]{5}"');
                     }
 
@@ -1344,7 +1344,7 @@ class SofincoCACFPaymentGatewayClient
                         return $civilityCodeMapping[$value];
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[123]{1}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[123]{1}/', $value)) {
                         throw new \InvalidArgumentException('The "civilityCode" parameter must be formatted as described in documentation "[123]{1}"');
                     }
 
@@ -1352,7 +1352,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('firstName')->setAllowedTypes('firstName', ['null', 'string'])
                 ->setNormalizer('firstName', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
                         throw new \InvalidArgumentException('The "firstName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
                     }
 
@@ -1360,7 +1360,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('lastName')->setAllowedTypes('lastName', ['null', 'string'])
                 ->setNormalizer('lastName', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
                         throw new \InvalidArgumentException('The "lastName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
                     }
 
@@ -1368,7 +1368,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('birthName')->setAllowedTypes('birthName', ['null', 'string'])
                 ->setNormalizer('birthName', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
                         throw new \InvalidArgumentException('The "birthName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
                     }
 
@@ -1376,7 +1376,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('birthDate')->setAllowedTypes('birthDate', ['null', 'string'])
                 ->setNormalizer('birthDate', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $value)) {
                         throw new \InvalidArgumentException('The "birthDate" parameter must be formatted as described in documentation "[0-9]{4}-[0-9]{2}-[0-9]{2}"');
                     }
 
@@ -1384,7 +1384,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('citizenshipCode')->setAllowedTypes('citizenshipCode', ['null', 'string'])
                 ->setNormalizer('citizenshipCode', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
                         throw new \InvalidArgumentException('The "citizenshipCode" parameter must be formatted as described in documentation "[A-Z*]{0,3}"');
                     }
 
@@ -1392,7 +1392,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('birthCountryCode')->setAllowedTypes('birthCountryCode', ['null', 'string'])
                 ->setNormalizer('birthCountryCode', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
                         throw new \InvalidArgumentException('The "birthCountryCode" parameter must be formatted as described in documentation "[A-Z*]{0,3}"');
                     }
 
@@ -1404,7 +1404,7 @@ class SofincoCACFPaymentGatewayClient
                         $value = (string) $value;
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
                         throw new \InvalidArgumentException('The "birthZipCode" parameter must be formatted as described in documentation "[0-9]{5}"');
                     }
 
@@ -1412,7 +1412,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('birthCity')->setAllowedTypes('birthCity', ['null', 'string'])
                 ->setNormalizer('birthCity', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
                         throw new \InvalidArgumentException('The "city" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
                     }
 
@@ -1420,7 +1420,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('additionalStreet')->setAllowedTypes('additionalStreet', ['null', 'string'])
                 ->setNormalizer('additionalStreet', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
                         throw new \InvalidArgumentException('The "additionalStreet" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
                     }
 
@@ -1428,7 +1428,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('street')->setAllowedTypes('street', ['null', 'string'])
                 ->setNormalizer('street', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
                         throw new \InvalidArgumentException('The "street" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
                     }
 
@@ -1436,7 +1436,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('city')->setAllowedTypes('city', ['null', 'string'])
                 ->setNormalizer('city', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
                         throw new \InvalidArgumentException('The "city" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
                     }
 
@@ -1448,7 +1448,7 @@ class SofincoCACFPaymentGatewayClient
                         $value = (string) $value;
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
                         throw new \InvalidArgumentException('The "zipCode" parameter must be formatted as described in documentation "[0-9]{5}"');
                     }
 
@@ -1456,7 +1456,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('distributerOffice')->setAllowedTypes('distributerOffice', ['null', 'string'])
                 ->setNormalizer('distributerOffice', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
                         throw new \InvalidArgumentException('The "distributerOffice" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
                     }
 
@@ -1464,7 +1464,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('countryCode')->setAllowedTypes('countryCode', ['null', 'string'])
                 ->setNormalizer('countryCode', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z*]{0,3}/', $value)) {
                         throw new \InvalidArgumentException('The "countryCode" parameter must be formatted as described in documentation "[A-Z*]{0,3}"');
                     }
 
@@ -1472,7 +1472,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('phoneNumber')->setAllowedTypes('phoneNumber', ['null', 'string'])
                 ->setNormalizer('phoneNumber', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/0[1234589]{1}[0-9]{8}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/0[1234589]{1}[0-9]{8}/', $value)) {
                         throw new \InvalidArgumentException('The "phoneNumber" parameter must be formatted as described in documentation "0[1234589]{1}[0-9]{8}"');
                     }
 
@@ -1480,7 +1480,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('mobileNumber')->setAllowedTypes('mobileNumber', ['null', 'string'])
                 ->setNormalizer('mobileNumber', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/0[67]{1}[0-9]{8}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/0[67]{1}[0-9]{8}/', $value)) {
                         throw new \InvalidArgumentException('The "mobileNumber" parameter must be formatted as described in documentation "0[67]{1}[0-9]{8}"');
                     }
 
@@ -1496,7 +1496,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('loyaltyCardId')->setAllowedTypes('loyaltyCardId', ['null', 'string'])
                 ->setNormalizer('loyaltyCardId', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,19}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{0,19}/', $value)) {
                         throw new \InvalidArgumentException('The "loyaltyCardId" parameter must be formatted as described in documentation "[A-Z0-9]{0,19}"');
                     }
 
@@ -1517,7 +1517,7 @@ class SofincoCACFPaymentGatewayClient
         $resolver = (new OptionsResolver())
             ->setDefined('orderId')->setAllowedTypes('orderId', ['null', 'string'])
                 ->setNormalizer('orderId', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
                         throw new \InvalidArgumentException('The "orderId" parameter must be formatted as described in documentation "[A-Z0-9]{0,16}"');
                     }
 
@@ -1525,7 +1525,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('scaleId')->setAllowedTypes('scaleId', ['null', 'string'])
                 ->setNormalizer('scaleId', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{0,16}/', $value)) {
                         throw new \InvalidArgumentException('The "scaleId" parameter must be formatted as described in documentation "[A-Z0-9]{0,16}"');
                     }
 
@@ -1537,7 +1537,7 @@ class SofincoCACFPaymentGatewayClient
             ->setDefined('paymentChoice')->setAllowedTypes('paymentChoice', ['null', 'string'])
             ->setDefined('equipmentCode')->setAllowedTypes('equipmentCode', ['null', 'string'])
                 ->setNormalizer('equipmentCode', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{3}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{3}/', $value)) {
                         throw new \InvalidArgumentException('The "equipmentCode" parameter must be formatted as described in documentation "[A-Z0-9]{3}"');
                     }
 
@@ -1545,7 +1545,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('amount')->setAllowedTypes('amount', ['null', 'float', 'int', 'string'])
                 ->setNormalizer('amount', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
                         throw new \InvalidArgumentException('The "amount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
                     }
 
@@ -1553,7 +1553,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('orderAmount')->setAllowedTypes('orderAmount', ['null', 'float', 'int', 'string'])
                 ->setNormalizer('orderAmount', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
                         throw new \InvalidArgumentException('The "orderAmount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
                     }
 
@@ -1561,7 +1561,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('duration')->setAllowedTypes('duration', ['null', 'string'])
                 ->setNormalizer('duration', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,3}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{0,3}/', $value)) {
                         throw new \InvalidArgumentException('The "duration" parameter must be formatted as described in documentation "[0-9]{0,3}"');
                     }
 
@@ -1569,7 +1569,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('suggestedDueNumber')->setAllowedTypes('suggestedDueNumber', ['null', 'float', 'int', 'string'])
                 ->setNormalizer('suggestedDueNumber', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,3}/', (string) $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{0,3}/', (string) $value)) {
                         throw new \InvalidArgumentException('The "suggestedDueNumber" parameter must be formatted as described in documentation "[0-9]{0,3}"');
                     }
 
@@ -1577,7 +1577,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('suggestedScaleId')->setAllowedTypes('suggestedScaleId', ['null', 'string'])
                 ->setNormalizer('suggestedScaleId', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{8}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{8}/', $value)) {
                         throw new \InvalidArgumentException('The "suggestedScaleId" parameter must be formatted as described in documentation "[A-Z0-9]{8}"');
                     }
 
@@ -1585,7 +1585,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('deliveryAdditionalStreet')->setAllowedTypes('deliveryAdditionalStreet', ['null', 'string'])
                 ->setNormalizer('deliveryAdditionalStreet', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
                         throw new \InvalidArgumentException('The "deliveryAdditionalStreet" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,50}"');
                     }
 
@@ -1593,7 +1593,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('deliveryStreet')->setAllowedTypes('deliveryStreet', ['null', 'string'])
                 ->setNormalizer('deliveryStreet', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
                         throw new \InvalidArgumentException('The "deliveryStreet" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
                     }
 
@@ -1601,7 +1601,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('deliveryCity')->setAllowedTypes('deliveryCity', ['null', 'string'])
                 ->setNormalizer('deliveryCity', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
                         throw new \InvalidArgumentException('The "deliveryCity" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,50}"');
                     }
 
@@ -1613,7 +1613,7 @@ class SofincoCACFPaymentGatewayClient
                         $value = (string) $value;
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
                         throw new \InvalidArgumentException('The "deliveryZipCode" parameter must be formatted as described in documentation "[0-9]{5}"');
                     }
 
@@ -1621,7 +1621,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('deliveryDistributerOffice')->setAllowedTypes('deliveryDistributerOffice', ['null', 'string'])
                 ->setNormalizer('deliveryDistributerOffice', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
                         throw new \InvalidArgumentException('The "deliveryDistributerOffice" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,50}"');
                     }
 
@@ -1629,7 +1629,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('billingAdditionalStreet')->setAllowedTypes('billingAdditionalStreet', ['null', 'string'])
                 ->setNormalizer('billingAdditionalStreet', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
                         throw new \InvalidArgumentException('The "billingAdditionalStreet" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,50}"');
                     }
 
@@ -1637,7 +1637,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('billingStreet')->setAllowedTypes('billingStreet', ['null', 'string'])
                 ->setNormalizer('billingStreet', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
                         throw new \InvalidArgumentException('The "billingStreet" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
                     }
 
@@ -1645,7 +1645,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('billingCity')->setAllowedTypes('billingCity', ['null', 'string'])
                 ->setNormalizer('billingCity', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
                         throw new \InvalidArgumentException('The "billingCity" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,50}"');
                     }
 
@@ -1657,7 +1657,7 @@ class SofincoCACFPaymentGatewayClient
                         $value = (string) $value;
                     }
 
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{5}/', $value)) {
                         throw new \InvalidArgumentException('The "billingZipCode" parameter must be formatted as described in documentation "[0-9]{5}"');
                     }
 
@@ -1665,7 +1665,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('billingDistributerOffice')->setAllowedTypes('billingDistributerOffice', ['null', 'string'])
                 ->setNormalizer('billingDistributerOffice', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,50}/', $value)) {
                         throw new \InvalidArgumentException('The "billingDistributerOffice" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,50}"');
                     }
 
@@ -1699,7 +1699,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('totalAmount')->setAllowedTypes('totalAmount', ['null', 'float', 'int', 'string'])
                 ->setNormalizer('totalAmount', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
                         throw new \InvalidArgumentException('The "totalAmount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
                     }
 
@@ -1724,7 +1724,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('label')->setAllowedTypes('label', ['null', 'string'])
                 ->setNormalizer('label', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
                         throw new \InvalidArgumentException('The "label" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
                     }
 
@@ -1732,7 +1732,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('family')->setAllowedTypes('family', ['null', 'string'])
                 ->setNormalizer('family', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,32}/', $value)) {
                         throw new \InvalidArgumentException('The "family" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,32}"');
                     }
 
@@ -1740,7 +1740,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('amount')->setAllowedTypes('amount', ['null', 'float', 'int', 'string'])
                 ->setNormalizer('amount', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
                         throw new \InvalidArgumentException('The "amount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
                     }
 
@@ -1756,7 +1756,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('ean')->setAllowedTypes('ean', ['bool'])
                 ->setNormalizer('ean', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z0-9]{13}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z0-9]{13}/', $value)) {
                         throw new \InvalidArgumentException('The "ean" parameter must be formatted as described in documentation "[A-Z0-9]{13}"');
                     }
 
@@ -1778,7 +1778,7 @@ class SofincoCACFPaymentGatewayClient
         $resolver = (new OptionsResolver())
             ->setDefined('firstName')->setAllowedTypes('firstName', ['null', 'string'])
                 ->setNormalizer('firstName', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
                         throw new \InvalidArgumentException('The "firstName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
                     }
 
@@ -1786,7 +1786,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('lastName')->setAllowedTypes('lastName', ['null', 'string'])
                 ->setNormalizer('lastName', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[a-zA-Z \'-]{0,20}/', $value)) {
                         throw new \InvalidArgumentException('The "lastName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
                     }
 
@@ -1794,7 +1794,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('mobilePhoneNumber')->setAllowedTypes('mobilePhoneNumber', ['null', 'string'])
                 ->setNormalizer('mobilePhoneNumber', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9 -]{0,16}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9 -]{0,16}/', $value)) {
                         throw new \InvalidArgumentException('The "lastName" parameter must be formatted as described in documentation "[a-zA-Z \'-]{0,20}"');
                     }
 
@@ -1824,7 +1824,7 @@ class SofincoCACFPaymentGatewayClient
             ->setDefined('id')->setAllowedTypes('id', ['null', 'string'])
             ->setDefined('businessProviderId')->setAllowedTypes('businessProviderId', ['null', 'string'])
                 ->setNormalizer('businessProviderId', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[A-Z0-9]{11}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[A-Z0-9]{11}/', $value)) {
                         throw new \InvalidArgumentException('The "businessProviderId" parameter must be formatted as described in documentation "[A-Z0-9]{11}"');
                     }
 
@@ -1832,7 +1832,7 @@ class SofincoCACFPaymentGatewayClient
                 })
             ->setDefined('amount')->setAllowedTypes('amount', ['null', 'float', 'int', 'string'])
                 ->setNormalizer('amount', function (Options $options, $value) {
-                    if (is_string($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
+                    if (is_string($value) && !empty($value) && 1 !== preg_match('/[0-9]{0,9}/', $value)) {
                         throw new \InvalidArgumentException('The "totalAmount" parameter must be formatted as described in documentation "[0-9]{0,9}"');
                     }
 
