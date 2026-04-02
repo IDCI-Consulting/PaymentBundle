@@ -273,6 +273,10 @@ class EurekaPaymentGatewayClient
      */
     public function getSTSToken(string $username, string $password): string
     {
+        if (!class_exists(Crawler::class)) {
+            throw new \RuntimeException('EurekaPaymentGatewayClient requires "symfony/dom-crawler" package');
+        }
+
         if (null !== $this->cache && $this->cache->hasItem($this->getSTSTokenHash($username))) {
             return $this->cache->getItem($this->getSTSTokenHash($username))->get();
         }
@@ -351,6 +355,10 @@ class EurekaPaymentGatewayClient
      */
     public function getScoringToken(string $type, array $options): string
     {
+        if (!class_exists(Crawler::class)) {
+            throw new \RuntimeException('EurekaPaymentGatewayClient requires "symfony/dom-crawler" package');
+        }
+
         try {
             $tokenResponse = $this->getScoringTokenResponse($type, $options);
         } catch (\Exception $e) {

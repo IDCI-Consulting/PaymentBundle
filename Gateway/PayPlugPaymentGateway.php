@@ -26,6 +26,10 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         Transaction $transaction,
         array $options = []
     ): array {
+        if (!class_exists(Payplug::class)) {
+            throw new \RuntimeException('PayPlugPaymentGateway requires "payplug/payplug-php" package');
+        }
+
         Payplug\Payplug::init(array(
             'apiVersion' => $paymentGatewayConfiguration->get('version'),
             'secretKey' => $paymentGatewayConfiguration->get('secret_key'),

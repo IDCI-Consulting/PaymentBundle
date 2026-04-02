@@ -695,6 +695,10 @@ class SofincoCACFPaymentGatewayClient
 
     public function getDocuments(array $options): Crawler
     {
+        if (!class_exists(Crawler::class)) {
+            throw new \RuntimeException('SofincoCACFPaymentGatewayClient requires "symfony/dom-crawler" package');
+        }
+
         $loanSimulationResponse = $this->getDocumentsResponse($options);
 
         if (null === $loanSimulationResponse) {

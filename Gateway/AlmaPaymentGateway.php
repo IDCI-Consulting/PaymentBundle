@@ -33,7 +33,7 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
     private function getClient(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration)
     {
         if (!class_exists(Client::class)) {
-            throw new \RuntimeException('AlmaPaymentGateway cache requires "alma/alma-php-client" package');
+            throw new \RuntimeException('AlmaPaymentGateway requires "alma/alma-php-client" package');
         }
 
         return new Client($paymentGatewayConfiguration->get('api_key'), [

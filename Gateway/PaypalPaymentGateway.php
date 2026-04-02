@@ -27,6 +27,10 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         Transaction $transaction,
         array $options = []
     ): array {
+        if (!class_exists(PaypalPayment::class)) {
+            throw new \RuntimeException('PaypalPaymentGateway requires "paypal/rest-api-sdk-php" package');
+        }
+
         return [
             'clientId' => $paymentGatewayConfiguration->get('client_id'),
             'transaction' => $transaction,
