@@ -13,43 +13,40 @@ Add this to your ```config.yml``` file:
 
 ```yaml
 imports:
-    - {resource: '@IDCIPayment/Resources/config/step_types.yml'}
-    - {resource: '@IDCIPayment/Resources/config/event_actions.yml'}
-    - {resource: '@IDCIPayment/Resources/config/step_templates.yml'}
+    - { resource: '@IDCIPaymentBundle/Resources/config/step_types.yml' }
+    - { resource: '@IDCIPaymentBundle/Resources/config/event_actions.yml' }
+    - { resource: '@IDCIPaymentBundle/Resources/config/step_templates.yml' }
 ```
 
 And this in your ```services.yml``` file:
 ```yaml
 # PaymentBundle - Step
-
+IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepTypeInterface: '@IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType'
 IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType:
     tags:
         - { name: idci_step.step_type, alias: payment }
-IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepTypeInterface: '@IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType'
 
 # PaymentBundle - Step Event Action
-
 IDCI\Bundle\PaymentBundle\Step\Event\Action\ManageTransactionStepEventAction:
     arguments:
         $templates: '%idci_payment.templates.step%'
     tags:
-        - {name: idci_step.step_event_action, alias: manage_transaction}
+        - { name: idci_step.step_event_action, alias: manage_transaction }
 ```
 
 ## Override default twig views
 
 if you want to override default step twig template, add this to your configuration:
-
 ```yaml
 idci_payment:
     templates:
         step:
-            approved: '@IDCIPayment/PaymentStep/approved.html.twig'
-            canceled: '@IDCIPayment/PaymentStep/canceled.html.twig'
-            created: '@IDCIPayment/PaymentStep/created.html.twig'
-            failed: '@IDCIPayment/PaymentStep/failed.html.twig'
-            pending: '@IDCIPayment/PaymentStep/pending.html.twig'
-            unverified: '@IDCIPayment/PaymentStep/unverified.html.twig'
+            approved: '@IDCIPaymentBundle/PaymentStep/approved.html.twig'
+            canceled: '@IDCIPaymentBundle/PaymentStep/canceled.html.twig'
+            created: '@IDCIPaymentBundle/PaymentStep/created.html.twig'
+            failed: '@IDCIPaymentBundle/PaymentStep/failed.html.twig'
+            pending: '@IDCIPaymentBundle/PaymentStep/pending.html.twig'
+            unverified: '@IDCIPaymentBundle/PaymentStep/unverified.html.twig'
 ```
 
 You can now modify which views this bundle will use in case of payment step
