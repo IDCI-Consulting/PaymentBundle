@@ -1,1 +1,5 @@
-TODO
+<form action="{# $sipsResponse->getRedirectionUrl() #}">
+    <input type="hidden" name="redirectionVersion" value="{# $sipsResponse->getRedirectionVersion() #}">
+    <input type="hidden" name="redirectionData" value="{# $sipsResponse->getRedirectionData() #}">
+    <input type="submit" value="Go to PayPage">
+</form>

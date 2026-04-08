@@ -116,23 +116,19 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             $parameters['payment_gateway_configuration_alias']
         );
 
-        try {
-            if (isset($event->getStepEventData()['id'])) {
-                $transaction = $this->transactionManager->retrieveTransactionByUuid($event->getStepEventData()['id']);
+        if (isset($event->getStepEventData()['id'])) {
+            $transaction = $this->transactionManager->retrieveTransactionByUuid($event->getStepEventData()['id']);
 
-                if (
-                    null !== $transaction &&
-                    !in_array($transaction->getStatus(), [PaymentStatus::STATUS_FAILED, PaymentStatus::STATUS_CANCELED]) &&
-                    $transaction->getItemId() === $parameters['item_id'] &&
-                    $transaction->getAmount() === $parameters['amount'] &&
-                    $transaction->getCurrencyCode() === $parameters['currency_code'] &&
-                    $transaction->getCustomerId() === $parameters['customer_id']
-                ) {
-                    $paymentContext->setTransaction($transaction);
-                }
+            if (
+                null !== $transaction &&
+                !in_array($transaction->getStatus(), [PaymentStatus::STATUS_FAILED, PaymentStatus::STATUS_CANCELED]) &&
+                $transaction->getItemId() === $parameters['item_id'] &&
+                $transaction->getAmount() === $parameters['amount'] &&
+                $transaction->getCurrencyCode() === $parameters['currency_code'] &&
+                $transaction->getCustomerId() === $parameters['customer_id']
+            ) {
+                $paymentContext->setTransaction($transaction);
             }
-        } catch (\Exception $e) {
-            // In case retrieveTransactionByUuid return error
         }
 
         if (null === $paymentContext->getTransaction()) {
@@ -287,62 +283,45 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
     protected function setDefaultParameters(OptionsResolver $resolver)
     {
         $resolver
-            ->setRequired([
-                'payment_gateway_configuration_alias',
-                'amount',
-                'currency_code',
-                'item_id',
-            ])
-            ->setDefaults([
-                'allow_skip' => false,
-                'customer_id' => null,
-                'customer_email' => null,
-                'description' => null,
-                'metadata' => [],
-                'gateway_options' => [],
-                'success_message' => 'Your transaction succeeded.',
-                'error_message' => 'There was a problem with your transaction, please try again.',
-                'template_extra_vars' => [],
-            ])
-            ->setAllowedTypes('allow_skip', ['bool', 'string'])
-            ->setAllowedTypes('payment_gateway_configuration_alias', ['string'])
-            ->setAllowedTypes('amount', ['integer', 'string'])
-            ->setAllowedTypes('item_id', ['null', 'string'])
-            ->setAllowedTypes('currency_code', ['null', 'string'])
-            ->setAllowedTypes('customer_id', ['null', 'string'])
-            ->setAllowedTypes('customer_email', ['null', 'string'])
-            ->setAllowedTypes('description', ['null', 'string'])
-            ->setAllowedTypes('metadata', ['array'])
-            ->setAllowedTypes('gateway_options', ['array'])
-            ->setAllowedTypes('success_message', ['null', 'string'])
-            ->setAllowedTypes('error_message', ['null', 'string'])
-            ->setAllowedTypes('template_extra_vars', ['array'])
-            ->setNormalizer(
-                'allow_skip',
-                function (OptionsResolver $options, $value) {
-                    return (bool) $value;
-                }
-            )
-            ->setNormalizer(
-                'metadata',
-                function (OptionsResolver $options, $metadata) {
-                    array_walk_recursive($metadata, function (&$value, $key) {
-                        $value = json_decode($value, true) ?? $value;
-                    });
+            ->setRequired('payment_gateway_configuration_alias')->setAllowedTypes('payment_gateway_configuration_alias', ['string'])
+            ->setRequired('amount')->setAllowedTypes('amount', ['integer', 'string'])
+            ->setRequired('currency_code')->setAllowedTypes('currency_code', ['null', 'string'])
+            ->setRequired('item_id')->setAllowedTypes('item_id', ['null', 'string'])
+            ->setDefault('allow_skip', false)->setAllowedTypes('allow_skip', ['bool', 'string'])
+                ->setNormalizer(
+                    'allow_skip',
+                    function (OptionsResolver $options, $value) {
+                        return (bool) $value;
+                    }
+                )
+            ->setDefault('customer_id', null)->setAllowedTypes('customer_id', ['null', 'string'])
+            ->setDefault('customer_email', null)->setAllowedTypes('customer_email', ['null', 'string'])
+            ->setDefault('description', null)->setAllowedTypes('description', ['null', 'string'])
+            ->setDefault('metadata', [])->setAllowedTypes('metadata', ['array'])
+                ->setNormalizer(
+                    'metadata',
+                    function (OptionsResolver $options, $metadata) {
+                        array_walk_recursive($metadata, function (&$value, $key) {
+                            $value = json_decode($value, true) ?? $value;
+                        });
 
-                    return $metadata;
-                }
-            )
-            ->setNormalizer(
-                'template_extra_vars',
-                function (OptionsResolver $options, $templateExtraVars) {
-                    array_walk_recursive($templateExtraVars, function (&$value, $key) {
-                        $value = json_decode($value, true) ?? $value;
-                    });
+                        return $metadata;
+                    }
+                )
+            ->setDefault('gateway_options', [])->setAllowedTypes('gateway_options', ['array'])
+            ->setDefault('success_message', 'Your transaction succeeded.')->setAllowedTypes('success_message', ['null', 'string'])
+            ->setDefault('error_message', 'There was a problem with your transaction, please try again.')->setAllowedTypes('error_message', ['null', 'string'])
+            ->setDefault('template_extra_vars', [])->setAllowedTypes('template_extra_vars', ['array'])
+                ->setNormalizer(
+                    'template_extra_vars',
+                    function (OptionsResolver $options, $templateExtraVars) {
+                        array_walk_recursive($templateExtraVars, function (&$value, $key) {
+                            $value = json_decode($value, true) ?? $value;
+                        });
 
-                    return $templateExtraVars;
-                }
-            )
+                        return $templateExtraVars;
+                    }
+                )
         ;
     }
 }

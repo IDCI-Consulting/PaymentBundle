@@ -51,55 +51,28 @@ class TransactionFactory
     protected function configureParameters(OptionsResolver $resolver)
     {
         $currencies = (new ISO4217())->findAll();
-
         $alpha3CurrencyCodes = array_map(function ($currency) {
             return $currency->getAlpha3();
         }, $currencies);
 
         $resolver
-            ->setRequired([
-                'item_id',
-                'amount',
-                'currency_code',
-            ])
-            ->setDefaults([
-                'id' => Flaky::id(62),
-                'number' => null,
-                'gateway_configuration_alias' => null,
-                'payment_method' => null,
-                'customer_id' => null,
-                'customer_email' => null,
-                'description' => null,
-                'metadata' => [],
-                'raw' => [],
-                'status' => PaymentStatus::STATUS_CREATED,
-                'logged' => true,
-            ])
-            ->setAllowedTypes('item_id', ['int', 'string'])
-            ->setAllowedTypes('number', ['null', 'int'])
-            ->setAllowedTypes('gateway_configuration_alias', ['null', 'string'])
-            ->setAllowedTypes('payment_method', ['null', 'string'])
-            ->setAllowedTypes('amount', ['int', 'double', 'string'])
-            ->setAllowedTypes('currency_code', 'string')
-            ->setAllowedTypes('customer_id', ['null', 'int', 'string'])
-            ->setAllowedTypes('customer_email', ['null', 'string'])
-            ->setAllowedTypes('description', ['null', 'string'])
-            ->setAllowedTypes('metadata', ['null', 'array'])
-            ->setAllowedTypes('raw', ['null', 'array'])
-            ->setAllowedTypes('status', ['string'])
-            ->setAllowedTypes('logged', ['bool'])
-            ->setAllowedValues('status', [
-                PaymentStatus::STATUS_APPROVED,
-                PaymentStatus::STATUS_CANCELED,
-                PaymentStatus::STATUS_CREATED,
-                PaymentStatus::STATUS_FAILED,
-                PaymentStatus::STATUS_PENDING,
-                PaymentStatus::STATUS_UNVERIFIED,
-            ])
-            ->setAllowedValues('currency_code', $alpha3CurrencyCodes)
-            ->setNormalizer('amount', function (Options $options, $value) {
-                return (float) $value;
-            })
+            ->setRequired('item_id')->setAllowedTypes('item_id', ['int', 'string'])
+            ->setRequired('amount')->setAllowedTypes('amount', ['int', 'double', 'string'])
+                ->setNormalizer('amount', function (Options $options, $value) {
+                    return (float) $value;
+                })
+            ->setRequired('currency_code')->setAllowedValues('currency_code', $alpha3CurrencyCodes)
+            ->setDefault('id', Flaky::id(62))
+            ->setDefault('number', null)->setAllowedTypes('number', ['null', 'int'])
+            ->setDefault('gateway_configuration_alias', null)->setAllowedTypes('gateway_configuration_alias', ['null', 'string'])
+            ->setDefault('payment_method', null)->setAllowedTypes('payment_method', ['null', 'string'])
+            ->setDefault('customer_id', null)->setAllowedTypes('customer_id', ['null', 'int', 'string'])
+            ->setDefault('customer_email', null)->setAllowedTypes('customer_email', ['null', 'string'])
+            ->setDefault('description', null)->setAllowedTypes('description', ['null', 'string'])
+            ->setDefault('metadata', [])->setAllowedTypes('metadata', ['null', 'array'])
+            ->setDefault('raw', [])->setAllowedTypes('raw', ['null', 'array'])
+            ->setDefault('status', PaymentStatus::STATUS_CREATED)->setAllowedValues('status', PaymentStatus::AVAILABLE_STATUSES)
+            ->setDefault('logged', true)->setAllowedTypes('logged', ['bool'])
         ;
     }
 }
