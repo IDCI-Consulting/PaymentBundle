@@ -9,24 +9,17 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/stripe-payment-gateway", name="idci_payment_stripe_payment_gateway_")
- */
+#[Route('/stripe-payment-gateway', name: 'idci_payment_stripe_payment_gateway_')]
 class StripePaymentGatewayController extends AbstractController
 {
-    /**
-     * @var PaymentManager
-     */
-    private $paymentManager;
+    private PaymentManager $paymentManager;
 
     public function __construct(PaymentManager $paymentManager)
     {
         $this->paymentManager = $paymentManager;
     }
 
-    /**
-     * @Route("/proxy/{configuration_alias}", methods={"POST"})
-     */
+    #[Route('/proxy/{configuration_alias}', methods: ['POST'])]
     public function proxyAction(Request $request, $configuration_alias)
     {
         $paymentContext = $this

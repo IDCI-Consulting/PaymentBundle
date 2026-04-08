@@ -7,25 +7,16 @@ use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-/**
- * @Route("/payment-gateway")
- */
+#[Route('/payment-gateway')]
 class PaymentGatewayController extends AbstractController
 {
-    /**
-     * @var PaymentManager
-     */
-    private $paymentManager;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private PaymentManager $paymentManager;
+    private LoggerInterface $logger;
 
     public function __construct(PaymentManager $paymentManager, LoggerInterface $logger)
     {
@@ -33,25 +24,20 @@ class PaymentGatewayController extends AbstractController
         $this->logger = $logger;
     }
 
-    /**
-     * @Route("/{configuration_alias}/callback", name="idci_payment_payment_gateway_callback", methods={"GET", "POST"})
-     */
+    #[Route('/{configuration_alias}/callback', name: 'idci_payment_payment_gateway_callback', methods: ['GET', 'POST'])]
     public function callbackAction(Request $request, EventDispatcherInterface $dispatcher, $configuration_alias)
     {
         $data = $request->isMethod(Request::METHOD_POST) ? $request->request->all() : $request->query->all();
 
-        try {
-            $this->logger->info(
-                sprintf(
-                    '[gateway configuration alias: %s, data: %s, ip: %s, content: %s]',
-                    $configuration_alias,
-                    json_encode($data),
-                    json_encode($request->getClientIps()),
-                    $request->getContent()
-                )
-            );
-        } catch (\Exception $e) {
-        }
+        $this->logger->info(
+            sprintf(
+                '[gateway configuration alias: %s, data: %s, ip: %s, content: %s]',
+                $configuration_alias,
+                json_encode($data),
+                json_encode($request->getClientIps()),
+                $request->getContent()
+            )
+        );
 
         $paymentContext = $this
             ->paymentManager
