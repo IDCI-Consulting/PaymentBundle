@@ -122,6 +122,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             if (
                 null !== $transaction &&
                 !in_array($transaction->getStatus(), [PaymentStatus::STATUS_FAILED, PaymentStatus::STATUS_CANCELED]) &&
+                $transaction->getPaymentMethod() === $parameters['payment_method'] &&
                 $transaction->getItemId() === $parameters['item_id'] &&
                 $transaction->getAmount() === $parameters['amount'] &&
                 $transaction->getCurrencyCode() === $parameters['currency_code'] &&
@@ -133,6 +134,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
 
         if (null === $paymentContext->getTransaction()) {
             $transaction = $paymentContext->createTransaction([
+                'payment_method' => $parameters['payment_method'],
                 'item_id' => $parameters['item_id'],
                 'amount' => $parameters['amount'],
                 'currency_code' => $parameters['currency_code'],
@@ -287,6 +289,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             ->setRequired('amount')->setAllowedTypes('amount', ['integer', 'string'])
             ->setRequired('currency_code')->setAllowedTypes('currency_code', ['null', 'string'])
             ->setRequired('item_id')->setAllowedTypes('item_id', ['null', 'string'])
+            ->setDefault('payment_method', null)->setAllowedTypes('payment_method', ['null', 'string'])
             ->setDefault('allow_skip', false)->setAllowedTypes('allow_skip', ['bool', 'string'])
                 ->setNormalizer(
                     'allow_skip',
