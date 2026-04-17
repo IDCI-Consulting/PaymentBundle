@@ -20,7 +20,7 @@ class ApiTransactionController extends AbstractController
     #[Route('/{id}', methods: ['GET'])]
     public function show($id)
     {
-        $transaction = $this->transactionManager->retrieveTransactionByUuid($id);
+        $transaction = $this->transactionManager->retrieveTransactionById($id);
 
         return new JsonResponse([
             'id' => $transaction->getId(),

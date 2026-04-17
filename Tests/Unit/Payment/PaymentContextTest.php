@@ -146,7 +146,7 @@ class PaymentContextTest extends TestCase
         Request $request,
         Transaction $transaction
     ) {
-        $gatewayResponse->setTransactionUuid('dummy_uuid');
+        $gatewayResponse->setTransactionId('dummy_id');
 
         $this->paymentGateway
             ->expects($this->once())
@@ -157,8 +157,8 @@ class PaymentContextTest extends TestCase
 
         $this->transactionManager
             ->expects($this->once())
-            ->method('retrieveTransactionByUuid')
-            ->with($this->equalTo($gatewayResponse->getTransactionUuid()))
+            ->method('retrieveTransactionById')
+            ->with($this->equalTo($gatewayResponse->getTransactionId()))
             ->will($this->returnValue($transaction))
         ;
 
@@ -175,7 +175,7 @@ class PaymentContextTest extends TestCase
         Transaction $transaction
     ) {
         $gatewayResponse
-            ->setTransactionUuid('dummy_uuid')
+            ->setTransactionId('dummy_id')
             ->setAmount(50)
         ;
 
@@ -188,8 +188,8 @@ class PaymentContextTest extends TestCase
 
         $this->transactionManager
             ->expects($this->once())
-            ->method('retrieveTransactionByUuid')
-            ->with($this->equalTo($gatewayResponse->getTransactionUuid()))
+            ->method('retrieveTransactionById')
+            ->with($this->equalTo($gatewayResponse->getTransactionId()))
             ->will($this->returnValue($transaction))
         ;
 
@@ -208,7 +208,7 @@ class PaymentContextTest extends TestCase
         Transaction $transaction
     ) {
         $gatewayResponse
-            ->setTransactionUuid('dummy_uuid')
+            ->setTransactionId('dummy_id')
             ->setCurrencyCode('USD')
         ;
 
@@ -221,8 +221,8 @@ class PaymentContextTest extends TestCase
 
         $this->transactionManager
             ->expects($this->once())
-            ->method('retrieveTransactionByUuid')
-            ->with($this->equalTo($gatewayResponse->getTransactionUuid()))
+            ->method('retrieveTransactionById')
+            ->with($this->equalTo($gatewayResponse->getTransactionId()))
             ->will($this->returnValue($transaction))
         ;
 
@@ -235,7 +235,7 @@ class PaymentContextTest extends TestCase
      * @dataProvider getHandleGatewayCallbackDataProvider
      * @expectedException \UnexpectedValueException
      */
-    public function testHandleGatewayCallbackWithNoTransactionUuid(
+    public function testHandleGatewayCallbackWithNoTransactionId(
         array $parameters,
         GatewayResponse $gatewayResponse,
         Request $request,

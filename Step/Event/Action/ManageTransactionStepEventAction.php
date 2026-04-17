@@ -117,7 +117,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         );
 
         if (isset($event->getStepEventData()['id'])) {
-            $transaction = $this->transactionManager->retrieveTransactionByUuid($event->getStepEventData()['id']);
+            $transaction = $this->transactionManager->retrieveTransactionById($event->getStepEventData()['id']);
 
             if (
                 null !== $transaction &&
@@ -207,7 +207,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
 
         $transaction = $paymentContext->handleReturnCallback($request);
         if (null === $transaction) {
-            $transaction = $this->transactionManager->retrieveTransactionByUuid($transactionId);
+            $transaction = $this->transactionManager->retrieveTransactionById($transactionId);
         }
 
         $paymentContext->setTransaction($transaction);
@@ -257,7 +257,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         $request = $this->requestStack->getCurrentRequest();
 
         $transaction = isset($event->getStepEventData()['id']) ?
-            $this->transactionManager->retrieveTransactionByUuid($event->getStepEventData()['id']) :
+            $this->transactionManager->retrieveTransactionById($event->getStepEventData()['id']) :
             null
         ;
 

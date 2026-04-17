@@ -25,16 +25,16 @@ class DoctrineTransactionManager implements TransactionManagerInterface
         $this->em->flush();
     }
 
-    public function retrieveTransactionByUuid(string $transactionUuid): TransactionModel
+    public function retrieveTransactionById(string $id): TransactionModel
     {
         $transaction = $this
             ->em
             ->getRepository(Transaction::class)
-            ->findOneBy(['id' => $transactionUuid])
+            ->findOneBy(['id' => $id])
         ;
 
         if (null === $transaction) {
-            throw new NoTransactionFoundException($transactionUuid);
+            throw new NoTransactionFoundException($id);
         }
 
         return $transaction;

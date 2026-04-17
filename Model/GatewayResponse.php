@@ -7,7 +7,7 @@ class GatewayResponse
     /**
      * @var string
      */
-    private $transactionUuid;
+    private $transactionId;
 
     /**
      * @var string
@@ -47,7 +47,7 @@ class GatewayResponse
     public function toArray(): array
     {
         return [
-            'transaction_uuid' => $this->getTransactionUuid(),
+            'transaction_id' => $this->getTransactionId(),
             'amount' => $this->getAmount(),
             'status' => $this->getStatus(),
             'message' => $this->getMessage(),
@@ -55,14 +55,14 @@ class GatewayResponse
         ];
     }
 
-    public function getTransactionUuid(): ?string
+    public function getTransactionId(): ?string
     {
-        return $this->transactionUuid;
+        return $this->transactionId;
     }
 
-    public function setTransactionUuid(string $transactionUuid): self
+    public function setTransactionId(string $transactionId): self
     {
-        $this->transactionUuid = $transactionUuid;
+        $this->transactionId = $transactionId;
 
         return $this;
     }

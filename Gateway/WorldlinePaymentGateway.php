@@ -17,6 +17,8 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         Transaction $transaction,
         array $options = []
     ): array {
+        dd($paymentGatewayConfiguration, $transaction, $options);
+
         return [];
     }
 
