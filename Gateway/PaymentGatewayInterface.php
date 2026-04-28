@@ -10,15 +10,6 @@ use Symfony\Component\HttpFoundation\Request;
 interface PaymentGatewayInterface
 {
     /**
-     * Initialize payment gateway configuration.
-     */
-    public function initialize(
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction,
-        array $options = []
-    ): array;
-
-    /**
      * Build payment gateway HTML view.
      */
     public function buildHTMLView(

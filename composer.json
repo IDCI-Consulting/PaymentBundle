@@ -36,7 +36,7 @@
         "payu/apple-pay": "^1.3",
         "idci/step-bundle": ">=4.0",
         "symfony/cache": "^4.0 || ^5.0 || ^6.0",
-        "worldline/sips-payment-sdk": "^1.0"
+        "wl-online-payments-direct/sdk-php": "^8"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.0"

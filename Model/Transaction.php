@@ -262,9 +262,11 @@ class Transaction
         return $this->hasMetadata($key) ? $this->metadata[$key] : null;
     }
 
-    public function addMetadata(string $key, $value)
+    public function addMetadata(string $key, $value): self
     {
         $this->metadata[$key] = $value;
+
+        return $this;
     }
 
     public function setMetadata(array $metadata): self

@@ -71,10 +71,7 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
         return hash('sha256', mb_convert_encoding($options['build'].$options['secret'], 'UTF-8'));
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initialize(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options = []
@@ -164,7 +161,7 @@ class AtosSipsPostPaymentGateway extends AbstractPaymentGateway
         }
 
         $gatewayResponse
-            ->setTransactionUuid($returnParams['transactionReference'])
+            ->setTransactionId($returnParams['transactionReference'])
             ->setAmount($returnParams['amount'])
             ->setCurrencyCode((new ISO4217())->findByNumeric($returnParams['currencyCode'])->getAlpha3())
             ->setRaw($returnParams)

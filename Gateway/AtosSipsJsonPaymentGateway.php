@@ -86,12 +86,10 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws \UnexpectedValueException               If the initialization request has failed
      * @throws UnexpectedAtosSipsResponseCodeException If the transaction could not have been initialized
      */
-    public function initialize(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options = []
@@ -179,7 +177,7 @@ class AtosSipsJsonPaymentGateway extends AbstractPaymentGateway
         }
 
         $gatewayResponse
-            ->setTransactionUuid($returnParams['transactionReference'])
+            ->setTransactionId($returnParams['transactionReference'])
             ->setAmount($returnParams['amount'])
             ->setCurrencyCode((new ISO4217())->findByNumeric($returnParams['currencyCode'])->getAlpha3())
             ->setRaw($returnParams)

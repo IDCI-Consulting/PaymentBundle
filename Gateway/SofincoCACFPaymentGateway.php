@@ -75,10 +75,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
         return $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initialize(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options = []
@@ -173,7 +170,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
         }
 
         $gatewayResponse = (new GatewayResponse())
-            ->setTransactionUuid($request->query->get('transactionId'))
+            ->setTransactionId($request->query->get('transactionId'))
             ->setAmount($requestData['AMOUNT'] * 100)
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)

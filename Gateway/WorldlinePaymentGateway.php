@@ -2,60 +2,103 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
+use OnlinePayments\Sdk\Authentication\V1HmacAuthenticator;
+use OnlinePayments\Sdk\Client;
+use OnlinePayments\Sdk\Communicator;
+use OnlinePayments\Sdk\CommunicatorConfiguration;
+use OnlinePayments\Sdk\Domain as SdkDomain;
+use OnlinePayments\Sdk\Merchant\MerchantClientInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Worldline\Sips\Common\SipsEnvironment;
-use Worldline\Sips\Paypage\PaypageRequest;
-use Worldline\Sips\SipsClient;
 
 class WorldlinePaymentGateway extends AbstractPaymentGateway
 {
-    protected function createSipsClient(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration)
+    public const INTEGRATION_METHOD_HOSTED_CHECKOUT_PAGE = 'hosted_checkout_page';
+    public const INTEGRATION_METHOD_HOSTED_TOKENIZATION_PAGE = 'hosted_tokenization_page';
+
+    public const AVAILABLE_INTEGRATION_METHODS = [
+        self::INTEGRATION_METHOD_HOSTED_CHECKOUT_PAGE,
+        self::INTEGRATION_METHOD_HOSTED_TOKENIZATION_PAGE,
+    ];
+
+    protected function createMerchantClient(PaymentGatewayConfigurationInterface $paymentGatewayConfiguration): MerchantClientInterface
     {
-        return new SipsClient(
-            new SipsEnvironment($paymentGatewayConfiguration->get('environment')),
-            $paymentGatewayConfiguration->get('merchant_id'),
-            $paymentGatewayConfiguration->get('secret_key'),
-            $paymentGatewayConfiguration->get('key_version')
+        $communicatorConfiguration = new CommunicatorConfiguration(
+            $paymentGatewayConfiguration->get('api_key'),
+            $paymentGatewayConfiguration->get('api_secret'),
+            $paymentGatewayConfiguration->get('api_endpoint'),
+            $paymentGatewayConfiguration->get('integrator'),
+            null
         );
+
+        $authenticator = new V1HmacAuthenticator($communicatorConfiguration);
+        $communicator = new Communicator($communicatorConfiguration, $authenticator);
+        $client = new Client($communicator);
+
+        return $client->merchant($paymentGatewayConfiguration->get('merchant_id'));
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initialize(
+    protected function createOrder(Transaction $transaction): SdkDomain\Order
+    {
+        $amountOfMoney = new SdkDomain\AmountOfMoney();
+        $amountOfMoney->setAmount($transaction->getAmount());
+        $amountOfMoney->setCurrencyCode($transaction->getCurrencyCode());
+
+        $customer = new SdkDomain\Customer();
+        $customer->setMerchantCustomerId($transaction->getCustomerId());
+
+        $orderReferences = new SdkDomain\OrderReferences();
+        $orderReferences->setMerchantReference($transaction->getItemId());
+
+        $order = new SdkDomain\Order();
+        $order->setAmountOfMoney($amountOfMoney);
+        $order->setCustomer($customer);
+        $order->setReferences($orderReferences);
+
+        return $order;
+    }
+
+    protected function callHostedCheckoutPage(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction,
-        array $options = []
-    ): array {
-        $sipsClient = $this->createSipsClient($paymentGatewayConfiguration);
+        Transaction $transaction
+    ): SdkDomain\CreateHostedCheckoutResponse {
+        $merchantClient = $this->createMerchantClient($paymentGatewayConfiguration);
 
-        $paypageRequest = new PaypageRequest();
-        $paypageRequest->setAmount($transaction->getAmount());
-        $paypageRequest->setCurrencyCode($transaction->getCurrencyCode());
-        $paypageRequest->setAutomaticResponseUrl($paymentGatewayConfiguration->get('callback_url'));
-        $paypageRequest->setNormalReturnUrl($paymentGatewayConfiguration->get('return_url'));
-        $paypageRequest->setOrderChannel($paymentGatewayConfiguration->get('channel'));
-        //$paypageRequest->setCustomerId($transaction->getCustomerId());
-        //$paypageRequest->setOrderId($transaction->getItemId());
-        $paypageRequest->setTransactionReference($transaction->getId());
+        $createHostedCheckoutRequest = new SdkDomain\CreateHostedCheckoutRequest();
+        $createHostedCheckoutRequest->setOrder($this->createOrder($transaction));
 
-        $initializationResponse = $sipsClient->initialize($paypageRequest);
+        $hostedCheckoutSpecificInput = new SdkDomain\HostedCheckoutSpecificInput();
+        $hostedCheckoutSpecificInput->setReturnUrl($paymentGatewayConfiguration->get('return_url'));
+        $hostedCheckoutSpecificInput->setLocale($paymentGatewayConfiguration->get('local'));
+        $createHostedCheckoutRequest->setHostedCheckoutSpecificInput($hostedCheckoutSpecificInput);
 
-        if ('00' !== $initializationResponse->getRedirectionStatusCode()) {
-            throw new \UnexpectedValueException(sprintf(
-                'Worldline: Invalid redirection status code %s: %s',
-                $initializationResponse->getRedirectionStatusCode(),
-                $initializationResponse->getRedirectionStatusMessage()
-            ));
-        }
-        //dd($paymentGatewayConfiguration, $transaction, $options, $sipsClient, $paypageRequest, $initializationResponse);
+        $hostedCheckoutResponse = $merchantClient->hostedCheckout()->createHostedCheckout($createHostedCheckoutRequest);
 
-        return [
-            'initializationResponse' => $initializationResponse,
-        ];
+        $transaction
+            ->setStatus(PaymentStatus::STATUS_PENDING)
+            ->addMetadata('hosted_checkout_id', $hostedCheckoutResponse->getHostedCheckoutId())
+            ->addMetadata('return_mac', $hostedCheckoutResponse->getReturnMac())
+            ->addMetadata('redirect_url', $hostedCheckoutResponse->getRedirectUrl())
+        ;
+        $this->dispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
+
+        return $hostedCheckoutResponse;
+    }
+
+    protected function callHostedTokenizationPage(
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
+    ): SdkDomain\CreateHostedTokenizationResponse {
+        $merchantClient = $this->createMerchantClient($paymentGatewayConfiguration);
+
+        $createHostedTokenizationRequest = new SdkDomain\CreateHostedTokenizationRequest();
+        $createHostedTokenizationRequest->setVariant("my-custom-template.html");
+
+        return $merchantClient->hostedTokenization()->createHostedTokenization($createHostedTokenizationRequest);
     }
 
     /**
@@ -66,11 +109,29 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         Transaction $transaction,
         array $options = []
     ): string {
-        $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
+        if (!in_array($paymentGatewayConfiguration->get('integration_method'), self::AVAILABLE_INTEGRATION_METHODS)) {
+            throw new \UnexpectedValueException(sprintf(
+                'The given \'integration_method\':%s is not valid (allowed values: %s)',
+                $paymentGatewayConfiguration->get('integration_method'),
+                json_encode(self::AVAILABLE_INTEGRATION_METHODS)
+            ));
+        }
 
-        return $this->templating->render('@IDCIPayment/Gateway/worldline.html.twig', [
-            'initializationResponse' => $initializationData['initializationResponse'],
-        ]);
+        if (self::INTEGRATION_METHOD_HOSTED_CHECKOUT_PAGE === $paymentGatewayConfiguration->get('integration_method')) {
+            $hostedCheckoutResponse = $this->callHostedCheckoutPage($paymentGatewayConfiguration, $transaction);
+
+            return $this->templating->render('@IDCIPayment/Gateway/worldline/checkout.html.twig', [
+                'hostedCheckoutResponse' => $hostedCheckoutResponse,
+            ]);
+        }
+
+        if (self::INTEGRATION_METHOD_HOSTED_TOKENIZATION_PAGE === $paymentGatewayConfiguration->get('integration_method')) {
+            $hostedTokenizationResponse = $this->callHostedTokenizationPage($paymentGatewayConfiguration, $transaction);
+
+            return $this->templating->render('@IDCIPayment/Gateway/worldline/tokenization.html.twig', [
+                'hostedTokenizationResponse' => $hostedTokenizationResponse,
+            ]);
+        }
     }
 
     /**
@@ -80,7 +141,36 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
-        return new GatewayResponse();
+        if (!$request->query->has('transaction_id')) {
+            return new GatewayResponse();
+        }
+
+        $merchantClient = $this->createMerchantClient($paymentGatewayConfiguration);
+
+        $hostedCheckoutResponse = $merchantClient->hostedCheckout()->getHostedCheckout($request->query->get('hostedCheckoutId'));
+
+        //dd($hostedCheckoutResponse->getStatus());
+        $gatewayResponse = (new GatewayResponse())
+            ->setTransactionId($request->query->get('transaction_id'))
+            ->setAmount($hostedCheckoutResponse->getCreatedPaymentOutput()->getPayment()->getPaymentOutput()->getAcquiredAmount()->getAmount() / 100)
+            ->setCurrencyCode($hostedCheckoutResponse->getCreatedPaymentOutput()->getPayment()->getPaymentOutput()->getAcquiredAmount()->getCurrencyCode())
+            ->setDate(new \DateTime())
+            ->setStatus(PaymentStatus::STATUS_APPROVED)
+        ;
+
+/*
+        $request->query->get('RETURNMAC');
+        $request->query->get('hostedCheckoutId');
+
+        dd(
+            $hostedCheckoutResponse->getCreatedPaymentOutput(),
+            $hostedCheckoutResponse->getStatus(),
+        );
+
+        if ('PAYMENT_CREATED' === $hostedCheckoutResponse->getStatus())
+*/
+
+        return $gatewayResponse;
     }
 
     /**
@@ -90,10 +180,9 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
     ): GatewayResponse {
-        $sipsClient = $this->createSipsClient($paymentGatewayConfiguration);
-        $paypageResponse = $sipsClient->finalizeTransaction();
+        $merchantClient = $this->createMerchantClient($paymentGatewayConfiguration);
 
-        dd('getCallbackResponse');
+        dd('getCallbackResponse', $merchantClient);
         return new GatewayResponse();
     }
 
