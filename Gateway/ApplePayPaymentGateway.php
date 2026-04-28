@@ -158,10 +158,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
         return $decodedPaymentData;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initialize(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options = []
@@ -225,7 +222,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
         $gatewayResponse = (new GatewayResponse())
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
-            ->setTransactionUuid($customData['transaction_id'] ?? null)
+            ->setTransactionId($customData['transaction_id'] ?? null)
             ->setCurrencyCode($data['paymentRequest']['currencyCode'])
             ->setAmount(round(((float) $data['paymentRequest']['total']['amount']) * 100))
             ->setPaymentMethod($paymentToken['paymentMethod']['network'])

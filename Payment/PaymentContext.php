@@ -77,13 +77,13 @@ class PaymentContext implements PaymentContextInterface
             ->getReturnResponse($request, $this->paymentGatewayConfiguration)
         ;
 
-        if (null === $gatewayResponse->getTransactionUuid()) {
+        if (null === $gatewayResponse->getTransactionId()) {
             return null;
         }
 
         $transaction = $this
             ->transactionManager
-            ->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid())
+            ->retrieveTransactionById($gatewayResponse->getTransactionId())
         ;
 
         if (null !== $gatewayResponse->getStatus()) {
@@ -100,13 +100,13 @@ class PaymentContext implements PaymentContextInterface
             ->getCallbackResponse($request, $this->paymentGatewayConfiguration)
         ;
 
-        if (null === $gatewayResponse->getTransactionUuid()) {
-            throw new \UnexpectedValueException('No transaction uuid found for this callback');
+        if (null === $gatewayResponse->getTransactionId()) {
+            throw new \UnexpectedValueException('No transaction id found for this callback');
         }
 
         $transaction = $this
             ->transactionManager
-            ->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid())
+            ->retrieveTransactionById($gatewayResponse->getTransactionId())
         ;
 
         $status = $gatewayResponse->getStatus();
@@ -121,12 +121,9 @@ class PaymentContext implements PaymentContextInterface
         }
 
         if ($this->logger) {
-            try {
-                $this->logger->info('Gateway response: ', [
-                    'response' => json_encode($gatewayResponse->toArray()),
-                ]);
-            } catch (\Exception $e) {
-            }
+            $this->logger->info('Gateway response: ', [
+                'response' => json_encode($gatewayResponse->toArray()),
+            ]);
         }
 
         return $transaction

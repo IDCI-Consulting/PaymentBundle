@@ -82,10 +82,7 @@ class MoneticoPaymentGateway extends AbstractPaymentGateway
         return strtolower(hash_hmac('sha1', $sData, $usableKey));
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initialize(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options = []

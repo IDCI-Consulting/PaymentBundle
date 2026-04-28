@@ -32,11 +32,13 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
     /**
      * {@inheritdoc}
      */
+    /*
     abstract public function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options = []
     ): array;
+    */
 
     /**
      * {@inheritdoc}

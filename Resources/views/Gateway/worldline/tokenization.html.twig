@@ -1,0 +1,5 @@
+<form action="{{ initializationResponse.getRedirectionUrl() }}">
+    <input type="hidden" name="redirectionVersion" value="{{ initializationResponse.getRedirectionVersion() }}">
+    <input type="hidden" name="redirectionData" value="{{ initializationResponse.getRedirectionData() }}">
+    <input type="submit" value="Go to PayPage">
+</form>

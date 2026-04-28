@@ -10,24 +10,17 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/payment-gateway")
- */
+#[Route('/payment-gateway')]
 class PaymentGatewayFrontTestController extends AbstractController
 {
-    /**
-     * @var PaymentManager
-     */
-    private $paymentManager;
+    private PaymentManager $paymentManager;
 
     public function __construct(PaymentManager $paymentManager)
     {
         $this->paymentManager = $paymentManager;
     }
 
-    /**
-     * @Route("/select", methods={"GET"})
-     */
+    #[Route('/select', methods: ['GET'])]
     public function selectAction(Request $request)
     {
         $form = $this
@@ -58,9 +51,7 @@ class PaymentGatewayFrontTestController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{configuration_alias}/transaction/configure", methods={"GET"})
-     */
+    #[Route('/{configuration_alias}/transaction/configure', methods: ['GET'])]
     public function configureAction(Request $request, string $configuration_alias)
     {
         $form = $this->createForm(TransactionFormType::class, null, [
@@ -94,9 +85,7 @@ class PaymentGatewayFrontTestController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{configuration_alias}/transaction/initialize", methods={"GET"})
-     */
+    #[Route('/{configuration_alias}/transaction/initialize', methods: ['GET'])]
     public function initializeAction(Request $request, $configuration_alias)
     {
         $paymentContext = $this->paymentManager->createPaymentContextByAlias($configuration_alias);
@@ -109,14 +98,13 @@ class PaymentGatewayFrontTestController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{configuration_alias}/transaction/done", methods={"GET", "POST"})
-     */
+    #[Route('/{configuration_alias}/transaction/done', methods: ['GET', 'POST'])]
     public function doneAction(Request $request, $configuration_alias)
     {
         return $this->render('@IDCIPayment/Test/done.html.twig');
     }
 
+    #[Route('/{configuration_alias}/transaction/cancel', methods: ['GET', 'POST'])]
     public function cancelAction(Request $request, $configuration_alias)
     {
         return $this->render('@IDCIPayment/Test/cancel.html.twig');

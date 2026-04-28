@@ -125,10 +125,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initialize(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options = []
@@ -198,7 +195,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
             ->setDate(new \DateTime())
             ->setStatus(PaymentStatus::STATUS_FAILED)
             ->setAmount($request->get('amount'))
-            ->setTransactionUuid($request->get('reference'))
+            ->setTransactionId($request->get('reference'))
             ->setRaw($request->request->all())
         ;
 
