@@ -44,7 +44,8 @@ class PaymentGatewayController extends AbstractController
             ->createPaymentContextByAlias($configuration_alias)
         ;
 
-        $transaction = $paymentContext->handleGatewayCallback($request);
+        $paymentContext->handleGatewayCallback($request);
+        $transaction = $paymentContext->getTransaction();
 
         $event = [
             PaymentStatus::STATUS_APPROVED => TransactionEvent::APPROVED,

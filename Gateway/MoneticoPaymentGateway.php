@@ -116,7 +116,8 @@ class MoneticoPaymentGateway extends AbstractPaymentGateway
      */
     public function getReturnResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
     ): GatewayResponse {
         return new GatewayResponse();
     }

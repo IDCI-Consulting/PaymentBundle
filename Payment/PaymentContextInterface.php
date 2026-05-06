@@ -11,9 +11,9 @@ interface PaymentContextInterface
 {
     public function createTransaction(array $parameters): Transaction;
 
-    public function handleReturnCallback(Request $request): ?Transaction;
+    public function handleReturnCallback(Request $request);
 
-    public function handleGatewayCallback(Request $request): ?Transaction;
+    public function handleGatewayCallback(Request $request);
 
     public function hasTransaction(): bool;
 

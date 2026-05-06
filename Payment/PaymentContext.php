@@ -64,36 +64,27 @@ class PaymentContext implements PaymentContextInterface
         $parameters['gateway_configuration_alias'] = $this->paymentGatewayConfiguration->getAlias();
 
         $this->transaction = TransactionFactory::getInstance()->create($parameters);
-
         $this->dispatcher->dispatch(new TransactionEvent($this->transaction), TransactionEvent::CREATED);
 
         return $this->transaction;
     }
 
-    public function handleReturnCallback(Request $request): ?Transaction
+    public function handleReturnCallback(Request $request)
     {
         $gatewayResponse = $this
             ->paymentGateway
-            ->getReturnResponse($request, $this->paymentGatewayConfiguration)
-        ;
-
-        if (null === $gatewayResponse->getTransactionId()) {
-            return null;
-        }
-
-        $transaction = $this
-            ->transactionManager
-            ->retrieveTransactionById($gatewayResponse->getTransactionId())
+            ->getReturnResponse($request, $this->paymentGatewayConfiguration, $this->transaction)
         ;
 
         if (null !== $gatewayResponse->getStatus()) {
-            $transaction->setStatus($gatewayResponse->getStatus());
+            $this->transaction
+                ->setStatus($gatewayResponse->getStatus())
+                ->setRaw($gatewayResponse->getRaw())
+            ;
         }
-
-        return $transaction;
     }
 
-    public function handleGatewayCallback(Request $request): Transaction
+    public function handleGatewayCallback(Request $request)
     {
         $gatewayResponse = $this
             ->paymentGateway
@@ -104,18 +95,18 @@ class PaymentContext implements PaymentContextInterface
             throw new \UnexpectedValueException('No transaction id found for this callback');
         }
 
-        $transaction = $this
+        $this->transaction = $this
             ->transactionManager
             ->retrieveTransactionById($gatewayResponse->getTransactionId())
         ;
 
         $status = $gatewayResponse->getStatus();
 
-        if ($transaction->getAmount() != $gatewayResponse->getAmount()) {
+        if ($this->transaction->getAmount() != $gatewayResponse->getAmount()) {
             $status = PaymentStatus::STATUS_FAILED;
         } elseif (
             null !== $gatewayResponse->getCurrencyCode() &&
-            $transaction->getCurrencyCode() !== $gatewayResponse->getCurrencyCode()
+            $this->transaction->getCurrencyCode() !== $gatewayResponse->getCurrencyCode()
         ) {
             $status = PaymentStatus::STATUS_FAILED;
         }
@@ -126,7 +117,7 @@ class PaymentContext implements PaymentContextInterface
             ]);
         }
 
-        return $transaction
+        $this->transaction
             ->setStatus($status)
             ->setPaymentMethod($gatewayResponse->getPaymentMethod())
             ->setRaw($gatewayResponse->getRaw())

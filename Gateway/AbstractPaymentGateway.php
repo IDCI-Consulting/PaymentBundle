@@ -32,17 +32,6 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
     /**
      * {@inheritdoc}
      */
-    /*
-    abstract public function initialize(
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction,
-        array $options = []
-    ): array;
-    */
-
-    /**
-     * {@inheritdoc}
-     */
     abstract public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
@@ -54,7 +43,8 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
      */
     abstract public function getReturnResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction
     ): GatewayResponse;
 
     /**

@@ -162,7 +162,9 @@ class PaymentContextTest extends TestCase
             ->will($this->returnValue($transaction))
         ;
 
-        $this->assertEquals($transaction, $this->paymentContext->handleGatewayCallback($request));
+        $this->paymentContext->handleGatewayCallback($request)
+
+        $this->assertEquals($transaction, $this->paymentContext->getTransaction());
     }
 
     /**
@@ -193,7 +195,8 @@ class PaymentContextTest extends TestCase
             ->will($this->returnValue($transaction))
         ;
 
-        $transaction = $this->paymentContext->handleGatewayCallback($request);
+        $this->paymentContext->handleGatewayCallback($request);
+        $transaction = $this->paymentContext->getTransaction()
 
         $this->assertEquals(PaymentStatus::STATUS_FAILED, $transaction->getStatus());
     }
@@ -226,7 +229,8 @@ class PaymentContextTest extends TestCase
             ->will($this->returnValue($transaction))
         ;
 
-        $transaction = $this->paymentContext->handleGatewayCallback($request);
+        $this->paymentContext->handleGatewayCallback($request);
+        $transaction = $this->paymentContext->getTransaction();
 
         $this->assertEquals(PaymentStatus::STATUS_FAILED, $transaction->getStatus());
     }

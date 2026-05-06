@@ -20,6 +20,8 @@ use Twig\Environment;
 
 class ManageTransactionStepEventAction extends AbstractStepEventAction
 {
+    public const TRANSACTION_ID_QUERY_PARAMETER = 'transaction_id';
+
     /**
      * @var PaymentManager
      */
@@ -92,7 +94,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
                 array_merge(
                     $request->query->all(),
                     [
-                        'transaction_id' => $transaction->getId(),
+                        self::TRANSACTION_ID_QUERY_PARAMETER => $transaction->getId(),
                     ]
                 )
             )
@@ -203,19 +205,19 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             $parameters['payment_gateway_configuration_alias']
         );
 
-        $transactionId = $event->getStepEventData()['id'] ?? $request->query->get('transaction_id');
-
-        $transaction = $paymentContext->handleReturnCallback($request);
-        if (null === $transaction) {
-            $transaction = $this->transactionManager->retrieveTransactionById($transactionId);
-        }
+        $transactionId = $event->getStepEventData()['id'] ?? $request->query->get(self::TRANSACTION_ID_QUERY_PARAMETER);
+        $transaction = $this->transactionManager->retrieveTransactionById($transactionId);
 
         $paymentContext->setTransaction($transaction);
+        $paymentContext->handleReturnCallback($request);
 
+        // Useless must be done by Gateway ?
         if (PaymentStatus::STATUS_CREATED === $transaction->getStatus()) {
             $transaction->setStatus(PaymentStatus::STATUS_PENDING);
-            $this->dispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::PENDING);
         }
+
+        // Always dispatch TransactionEvent::UPDATED ... other event are useless ?
+        $this->dispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
         $options = $event->getNavigator()->getCurrentStep()->getOptions();
         $options['prevent_previous'] = false;
@@ -262,7 +264,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         ;
 
         if (
-            !$request->query->has('transaction_id') &&
+            !$request->query->has(self::TRANSACTION_ID_QUERY_PARAMETER) &&
             (
                 null === $transaction ||
                 in_array($transaction->getStatus(), [
