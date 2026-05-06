@@ -40,7 +40,7 @@ class GatewayResponse
     private $date;
 
     /**
-     * @var string
+     * @var array
      */
     private $raw;
 
