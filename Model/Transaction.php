@@ -217,7 +217,7 @@ class Transaction
         return $this->amount;
     }
 
-    public function setAmount(string $amount): self
+    public function setAmount(int $amount): self
     {
         $this->amount = $amount;
 

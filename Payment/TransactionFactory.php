@@ -57,9 +57,9 @@ class TransactionFactory
 
         $resolver
             ->setRequired('item_id')->setAllowedTypes('item_id', ['int', 'string'])
-            ->setRequired('amount')->setAllowedTypes('amount', ['int', 'double', 'string'])
+            ->setRequired('amount')->setAllowedTypes('amount', ['int', 'float', 'string'])
                 ->setNormalizer('amount', function (Options $options, $value) {
-                    return (float) $value;
+                    return (int) $value;
                 })
             ->setRequired('currency_code')->setAllowedValues('currency_code', $alpha3CurrencyCodes)
             ->setDefault('id', Flaky::id(62))

@@ -255,8 +255,8 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         }
 
         if (
-            $request->query->get('RETURNMAC') !== $transaction->getMetadata('return_mac') ||
-            $request->query->get('hostedCheckoutId') !== $transaction->getMetadata('hosted_checkout_id')
+            $request->query->get('RETURNMAC') !== $transaction->getMetadata('return_mac')
+            || $request->query->get('hostedCheckoutId') !== $transaction->getMetadata('hosted_checkout_id')
         ) {
             return new GatewayResponse();
         }
