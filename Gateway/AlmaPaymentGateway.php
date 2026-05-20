@@ -91,7 +91,8 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
     public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): GatewayResponse {
         $gatewayResponse = new GatewayResponse();
 

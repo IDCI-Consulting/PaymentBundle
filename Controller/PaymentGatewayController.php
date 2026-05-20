@@ -48,6 +48,8 @@ class PaymentGatewayController extends AbstractController
         $transaction = $paymentContext->getTransaction();
 
         $event = [
+            PaymentStatus::STATUS_CREATED => TransactionEvent::CREATED,
+            PaymentStatus::STATUS_PENDING => TransactionEvent::PENDING,
             PaymentStatus::STATUS_APPROVED => TransactionEvent::APPROVED,
             PaymentStatus::STATUS_CANCELED => TransactionEvent::CANCELED,
             PaymentStatus::STATUS_FAILED => TransactionEvent::FAILED,

@@ -44,7 +44,8 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
     abstract public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): GatewayResponse;
 
     /**

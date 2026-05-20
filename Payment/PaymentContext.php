@@ -69,19 +69,16 @@ class PaymentContext implements PaymentContextInterface
         return $this->transaction;
     }
 
-    public function handleReturnCallback(Request $request)
+    public function handleReturnCallback(Request $request, array $options = [])
     {
+        if (in_array($this->transaction->getStatus(), [TransactionEvent::APPROVED, TransactionEvent::CANCELED, TransactionEvent::FAILED])) {
+            return;
+        }
+
         $gatewayResponse = $this
             ->paymentGateway
-            ->getReturnResponse($request, $this->paymentGatewayConfiguration, $this->transaction)
+            ->getReturnResponse($request, $this->paymentGatewayConfiguration, $this->transaction, $options)
         ;
-
-        if (null !== $gatewayResponse->getStatus()) {
-            $this->transaction
-                ->setStatus($gatewayResponse->getStatus())
-                ->setRaw($gatewayResponse->getRaw())
-            ;
-        }
     }
 
     public function handleGatewayCallback(Request $request)

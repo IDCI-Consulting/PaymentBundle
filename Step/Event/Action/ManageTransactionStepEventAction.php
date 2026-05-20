@@ -209,7 +209,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         $transaction = $this->transactionManager->retrieveTransactionById($transactionId);
 
         $paymentContext->setTransaction($transaction);
-        $paymentContext->handleReturnCallback($request);
+        $paymentContext->handleReturnCallback($request, $parameters['gateway_options']);
 
         // Useless must be done by Gateway ?
         if (PaymentStatus::STATUS_CREATED === $transaction->getStatus()) {

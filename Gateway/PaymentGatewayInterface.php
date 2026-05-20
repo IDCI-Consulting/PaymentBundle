@@ -24,7 +24,8 @@ interface PaymentGatewayInterface
     public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
+        array $options = []
     ): GatewayResponse;
 
     /**
