@@ -21,6 +21,7 @@ class PaymentStepType extends AbstractStepType
 
     public function prepareNavigation(NavigatorInterface $navigator, array $options): array
     {
+        // TODO: Use constant to replace 'transaction_id'
         if (!$navigator->getRequest()->query->has('transaction_id')) {
             $options['prevent_next'] = true;
         } else {
