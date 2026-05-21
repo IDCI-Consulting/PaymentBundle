@@ -175,14 +175,6 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
 
         $hostedTokenizationResponse = $merchantClient->hostedTokenization()->createHostedTokenization($createHostedTokenizationRequest);
 
-        /*
-        $createPaymentRequest = new SdkDomain\CreatePaymentRequest();
-        $createPaymentRequest->setHostedTokenizationId($hostedTokenizationResponse->getHostedTokenizationId());
-        $createPaymentRequest->setOrder($this->createOrder($transaction, $paymentGatewayOptions));
-
-        $createPaymentResponse = $merchantClient->payments()->createPayment($createPaymentRequest);
-        */
-
         $transaction
             ->setStatus(PaymentStatus::STATUS_PENDING)
             ->addMetadata('hosted_tokenization_id', $hostedTokenizationResponse->getHostedTokenizationId())
@@ -258,8 +250,18 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
     ): GatewayResponse {
         $paymentGatewayOptions = $this->resolveGatewayOptions($options);
 
-        if ($request->query->has('hosted_tokenization_id')) {
-            $this->sendCreatePaymentRequest($request, $paymentGatewayConfiguration, $transaction, $paymentGatewayOptions);
+        if ($request->query->has('hosted_tokenization_id') && PaymentStatus::STATUS_PENDING === $transaction->getStatus()) {
+            $createPaymentResponse = $this->sendCreatePaymentRequest($request, $paymentGatewayConfiguration, $transaction, $paymentGatewayOptions);
+
+            $gatewayResponse = (new GatewayResponse())
+                ->setTransactionId($transaction->getId())
+                ->setAmount($createPaymentResponse->getPayment()->getPaymentOutput()->getAcquiredAmount()->getAmount())
+                ->setCurrencyCode($createPaymentResponse->getPayment()->getPaymentOutput()->getAcquiredAmount()->getCurrencyCode())
+                ->setDate(new \DateTime())
+                ->setStatus(self::mapPaymentStatus($createPaymentResponse->getPayment()->getStatus()))
+            ;
+
+            return $gatewayResponse;
         }
 
         if (!$request->query->has('transaction_id')) {
@@ -282,6 +284,7 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
             ->setCurrencyCode($hostedCheckoutResponse->getCreatedPaymentOutput()->getPayment()->getPaymentOutput()->getAcquiredAmount()->getCurrencyCode())
             ->setDate(new \DateTime())
             ->setStatus(self::mapPaymentStatus($hostedCheckoutResponse->getCreatedPaymentOutput()->getPayment()->getStatus()))
+            // Useless ?
             ->setRaw([
                 'return_mac' => $request->query->get('RETURNMAC'),
                 'hosted_checkout_id' => $request->query->get('hostedCheckoutId'),
@@ -325,6 +328,11 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
 
         $order = new SdkDomain\Order();
 
+        $orderReferences = new SdkDomain\OrderReferences();
+        //$orderReferences->setMerchantReference($paymentGatewayOptions['merchant_reference'] ?? $transaction->getId());
+        $orderReferences->setMerchantReference($transaction->getId());
+        $order->setReferences($orderReferences);
+
         $browserData = new SdkDomain\BrowserData();
         $browserData->setColorDepth(24);
         $browserData->setJavaScriptEnabled(false);
@@ -344,20 +352,29 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         $customerDevice->setBrowserData($browserData);
 
         $customer = new SdkDomain\Customer();
+        $customer->setMerchantCustomerId($transaction->getCustomerId());
         $customer->setDevice($customerDevice);
-
         $order->setCustomer($customer);
 
         $amountOfMoney = new SdkDomain\AmountOfMoney();
         $amountOfMoney->setAmount($transaction->getAmount());
         $amountOfMoney->setCurrencyCode($transaction->getCurrencyCode());
-
         $order->setAmountOfMoney($amountOfMoney);
 
         $createPaymentRequest->setOrder($order);
 
-        dd($createPaymentRequest);
-        dd($this->createMerchantClient($paymentGatewayConfiguration)->payments()->createPayment($createPaymentRequest));
+        $createPaymentResponse = $this->createMerchantClient($paymentGatewayConfiguration)->payments()->createPayment($createPaymentRequest);
+
+        $transaction
+            ->setRaw([
+                'hosted_tokenization_create_payment_request' => $createPaymentRequest,
+                'hosted_tokenization_create_payment_response' => $createPaymentResponse,
+            ])
+        ;
+
+        $this->dispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
+
+        return $createPaymentResponse;
     }
 
     public function processNotificationMessage(
@@ -397,7 +414,8 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
             try {
                 $captureResponse = $merchantClient->payments()->capturePayment($rawData['payment']['id'], $capturePaymentRequest);
             } catch (\Exception $e) {
-                dd($e);
+                // TODO: Use TransactionNotificationMessage (Status ERROR)
+                $captureResponse = $e->getMessage();
             }
 
             $gatewayResponse = (new GatewayResponse())
