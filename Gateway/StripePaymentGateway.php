@@ -28,10 +28,7 @@ class StripePaymentGateway extends AbstractPaymentGateway
         $this->router = $router;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initialize(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options = []
@@ -70,7 +67,9 @@ class StripePaymentGateway extends AbstractPaymentGateway
      */
     public function getReturnResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction,
+        array $options = []
     ): GatewayResponse {
         return new GatewayResponse();
     }
@@ -89,14 +88,11 @@ class StripePaymentGateway extends AbstractPaymentGateway
         }
 
         $gatewayResponse = (new GatewayResponse())
-            ->setDate(new \DateTime())
-            ->setStatus(PaymentStatus::STATUS_FAILED)
-        ;
-
-        $gatewayResponse
-            ->setTransactionUuid($request->get('transactionId'))
+            ->setTransactionId($request->get('transactionId'))
             ->setAmount($request->get('amount'))
             ->setCurrencyCode($request->get('currencyCode'))
+            ->setDate(new \DateTime())
+            ->setStatus(PaymentStatus::STATUS_FAILED)
         ;
 
         if (null !== $request->get('error')) {

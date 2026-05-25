@@ -11,25 +11,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-/**
- * @Route(name="idci_payment_apple_pay_payment_gateway_")
- */
+#[Route(name: 'idci_payment_apple_pay_payment_gateway_')]
 class ApplePayPaymentGatewayController extends AbstractController
 {
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $dispatcher;
-
-    /**
-     * @var PaymentManager
-     */
-    private $paymentManager;
-
-    /**
-     * @var string
-     */
-    private $domainVerificationDirectoryPath;
+    private EventDispatcherInterface $dispatcher;
+    private PaymentManager $paymentManager;
+    private string $domainVerificationDirectoryPath;
 
     public function __construct(
         EventDispatcherInterface $dispatcher,
@@ -41,10 +28,8 @@ class ApplePayPaymentGatewayController extends AbstractController
         $this->domainVerificationDirectoryPath = $domainVerificationDirectoryPath;
     }
 
-    /**
-     * @Route("/.well-known/apple-developer-merchantid-domain-association", name="domain_verify", methods={"GET"})
-     * @Route("/.well-known/apple-developer-merchantid-domain-association.{ext}", name="domain_verify_with_ext", methods={"GET"}, requirements={"ext"="^[a-z]+$"})
-     */
+    #[Route('/.well-known/apple-developer-merchantid-domain-association', name: 'domain_verify', methods: ['GET'])]
+    #[Route('/.well-known/apple-developer-merchantid-domain-association.{ext}', name: 'domain_verify_with_ext', methods: ['GET'], requirements: ['ext' => '^[a-z]+$'])]
     public function domainVerifyAction(Request $request)
     {
         $filePath = sprintf('%s/%s', $this->domainVerificationDirectoryPath, $request->getHost());
@@ -56,9 +41,7 @@ class ApplePayPaymentGatewayController extends AbstractController
         return new Response(file_get_contents($filePath));
     }
 
-    /**
-     * @Route("/apple-pay-payment-gateway/{configurationAlias}/session", name="create_session", methods={"POST"})
-     */
+    #[Route('/apple-pay-payment-gateway/{configurationAlias}/session', name: 'create_session', methods: ['POST'])]
     public function createSessionAction(Request $request, string $configurationAlias)
     {
         $paymentContext = $this

@@ -234,10 +234,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return hash_hmac('sha1', utf8_encode(sprintf('%s*', substr($hmacData, 1))), utf8_encode($options['secretKey']));
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initialize(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options = []
@@ -270,7 +267,9 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
      */
     public function getReturnResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction,
+        array $options = []
     ): GatewayResponse {
         return new GatewayResponse();
     }
@@ -308,7 +307,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         }
 
         $gatewayResponse
-            ->setTransactionUuid($request->request->get('orderRef'))
+            ->setTransactionId($request->request->get('orderRef'))
             ->setAmount($request->request->get('amount'))
             ->setCurrencyCode($request->request->get('currency'))
         ;

@@ -534,10 +534,10 @@
       <UML:Generalization namespace="Logical_View" parent="uDgg0vELJlP0i" visibility="public" isSpecification="false" name="" child="ufRRX6ohH67tm" discriminator="" xmi.id="uqxdTOtWM4Ozq"/>
       <UML:Interface namespace="Logical_View" visibility="public" isSpecification="false" name="TransactionManagerInterface" isRoot="false" isAbstract="true" stereotype="uvMnYdy4Udj9o" isLeaf="false" xmi.id="uxyCW5Ja20mfj">
        <UML:Classifier.feature>
-        <UML:Operation visibility="public" isSpecification="false" isQuery="false" name="retrieveTransactionByUuid" isRoot="false" isAbstract="false" isLeaf="false" xmi.id="uZdcTlyvd64gr">
+        <UML:Operation visibility="public" isSpecification="false" isQuery="false" name="retrieveTransactionById" isRoot="false" isAbstract="false" isLeaf="false" xmi.id="uZdcTlyvd64gr">
          <UML:BehavioralFeature.parameter>
           <UML:Parameter kind="return" type="u8cn9dFFwvUXm" xmi.id="u6R8WaoIhAgMd"/>
-          <UML:Parameter visibility="private" isSpecification="false" value="" name="transactionUuid" type="u6f1J6c9xkSLy" xmi.id="u5d9wldWQnVbB"/>
+          <UML:Parameter visibility="private" isSpecification="false" value="" name="transactionId" type="u6f1J6c9xkSLy" xmi.id="u5d9wldWQnVbB"/>
          </UML:BehavioralFeature.parameter>
         </UML:Operation>
         <UML:Operation visibility="public" isSpecification="false" isQuery="false" name="saveTransaction" isRoot="false" isAbstract="false" isLeaf="false" xmi.id="u9xLzGP13rz4y">
@@ -556,7 +556,7 @@
       <UML:Class namespace="Logical_View" visibility="public" isSpecification="false" name="paymentGatewayConfigurationInterface" isRoot="false" isAbstract="false" isLeaf="false" xmi.id="uWnHF5wyGE4HF"/>
       <UML:Class namespace="Logical_View" visibility="public" isSpecification="false" name="GatewayResponse" isRoot="false" isAbstract="false" isLeaf="false" xmi.id="uYLXDjKoDyxyC">
        <UML:Classifier.feature>
-        <UML:Attribute visibility="private" isSpecification="false" name="transactionUuid" type="u6f1J6c9xkSLy" xmi.id="u2xjRAVDIc5KD"/>
+        <UML:Attribute visibility="private" isSpecification="false" name="transactionId" type="u6f1J6c9xkSLy" xmi.id="u2xjRAVDIc5KD"/>
         <UML:Attribute visibility="private" isSpecification="false" name="amount" type="ulwE6qiHSibgL" xmi.id="uE7HuDDi6X4pA"/>
         <UML:Attribute visibility="private" isSpecification="false" name="currencyCode" type="u6f1J6c9xkSLy" xmi.id="u5AYwKVSyD436"/>
         <UML:Attribute visibility="private" isSpecification="false" name="status" type="u6f1J6c9xkSLy" xmi.id="uXj92bWyxCFcJ"/>

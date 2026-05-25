@@ -66,7 +66,7 @@ class ExemplePaymentGateway extends AbstractPaymentGateway
             return $gatewayResponse;
         }
 
-        $gatewayResponse->setTransactionUuid($request->get('transactionID'));
+        $gatewayResponse->setTransactionId($request->get('transactionID'));
 
         if ('failed' === $result->getState()) {
             return $gatewayResponse->setStatus(PaymentStatus::STATUS_FAILED);
@@ -86,7 +86,7 @@ class ExemplePaymentGateway extends AbstractPaymentGateway
         $amount = $paypalPayment->getTransactions()[0]->getAmount();
 
         $gatewayResponse
-            ->setTransactionUuid($request->get('transactionID'))
+            ->setTransactionId($request->get('transactionID'))
             ->setAmount($amount->total * 100)
             ->setCurrencyCode($amount->currency)
         ;

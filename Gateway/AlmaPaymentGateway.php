@@ -58,10 +58,7 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initialize(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options = []
@@ -93,7 +90,9 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
      */
     public function getReturnResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction,
+        array $options = []
     ): GatewayResponse {
         $gatewayResponse = new GatewayResponse();
 
@@ -105,7 +104,7 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
             $payment = $this->getClient($paymentGatewayConfiguration)->payments->fetch($request->query->get('pid'));
 
             $gatewayResponse
-                ->setTransactionUuid($payment->orders[0]->merchant_reference)
+                ->setTransactionId($payment->orders[0]->merchant_reference)
                 ->setAmount($payment->purchase_amount)
                 ->setRaw(get_object_vars($payment))
             ;
@@ -148,7 +147,7 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
         $payment = $this->getClient($paymentGatewayConfiguration)->payments->fetch($request->query->get('pid'));
 
         $gatewayResponse
-            ->setTransactionUuid($payment->orders[0]->merchant_reference)
+            ->setTransactionId($payment->orders[0]->merchant_reference)
             ->setAmount($payment->purchase_amount)
             ->setRaw(get_object_vars($payment))
         ;

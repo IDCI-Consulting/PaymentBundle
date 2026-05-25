@@ -64,72 +64,57 @@ class PaymentContext implements PaymentContextInterface
         $parameters['gateway_configuration_alias'] = $this->paymentGatewayConfiguration->getAlias();
 
         $this->transaction = TransactionFactory::getInstance()->create($parameters);
-
         $this->dispatcher->dispatch(new TransactionEvent($this->transaction), TransactionEvent::CREATED);
 
         return $this->transaction;
     }
 
-    public function handleReturnCallback(Request $request): ?Transaction
+    public function handleReturnCallback(Request $request, array $options = [])
     {
+        if (in_array($this->transaction->getStatus(), [TransactionEvent::APPROVED, TransactionEvent::CANCELED, TransactionEvent::FAILED])) {
+            return;
+        }
+
         $gatewayResponse = $this
             ->paymentGateway
-            ->getReturnResponse($request, $this->paymentGatewayConfiguration)
+            ->getReturnResponse($request, $this->paymentGatewayConfiguration, $this->transaction, $options)
         ;
-
-        if (null === $gatewayResponse->getTransactionUuid()) {
-            return null;
-        }
-
-        $transaction = $this
-            ->transactionManager
-            ->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid())
-        ;
-
-        if (null !== $gatewayResponse->getStatus()) {
-            $transaction->setStatus($gatewayResponse->getStatus());
-        }
-
-        return $transaction;
     }
 
-    public function handleGatewayCallback(Request $request): Transaction
+    public function handleGatewayCallback(Request $request)
     {
         $gatewayResponse = $this
             ->paymentGateway
             ->getCallbackResponse($request, $this->paymentGatewayConfiguration)
         ;
 
-        if (null === $gatewayResponse->getTransactionUuid()) {
-            throw new \UnexpectedValueException('No transaction uuid found for this callback');
+        if (null === $gatewayResponse->getTransactionId()) {
+            throw new \UnexpectedValueException('No transaction id found for this callback');
         }
 
-        $transaction = $this
+        $this->transaction = $this
             ->transactionManager
-            ->retrieveTransactionByUuid($gatewayResponse->getTransactionUuid())
+            ->retrieveTransactionById($gatewayResponse->getTransactionId())
         ;
 
         $status = $gatewayResponse->getStatus();
 
-        if ($transaction->getAmount() != $gatewayResponse->getAmount()) {
+        if ($this->transaction->getAmount() != $gatewayResponse->getAmount()) {
             $status = PaymentStatus::STATUS_FAILED;
         } elseif (
             null !== $gatewayResponse->getCurrencyCode() &&
-            $transaction->getCurrencyCode() !== $gatewayResponse->getCurrencyCode()
+            $this->transaction->getCurrencyCode() !== $gatewayResponse->getCurrencyCode()
         ) {
             $status = PaymentStatus::STATUS_FAILED;
         }
 
         if ($this->logger) {
-            try {
-                $this->logger->info('Gateway response: ', [
-                    'response' => json_encode($gatewayResponse->toArray()),
-                ]);
-            } catch (\Exception $e) {
-            }
+            $this->logger->info('Gateway response: ', [
+                'response' => json_encode($gatewayResponse->toArray()),
+            ]);
         }
 
-        return $transaction
+        $this->transaction
             ->setStatus($status)
             ->setPaymentMethod($gatewayResponse->getPaymentMethod())
             ->setRaw($gatewayResponse->getRaw())

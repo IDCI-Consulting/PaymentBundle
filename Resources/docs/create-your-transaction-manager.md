@@ -3,7 +3,7 @@ How to create your own transaction manager
 
 ## Introduction
 
-Q: What's a transaction manager ?  
+Q: What's a transaction manager ?
 A: It is used to retrieve and save your transactions with a specific stockage method (ex: Doctrine, Redis, ...)
 
 ## Learn by example (for redis)
@@ -33,12 +33,12 @@ class RedisTransactionManager implements TransactionManagerInterface
         $this->redis->set($transaction->getId(), serialize($transaction));
     }
 
-    public function retrieveTransactionByUuid(string $transactionUuid): Transaction
+    public function retrieveTransactionById(string $id): Transaction
     {
-        $transaction = $this->redis->get($transactionUuid);
+        $transaction = $this->redis->get($id);
 
         if (null === $transaction) {
-            throw new NoTransactionFoundException($transactionUuid);
+            throw new NoTransactionFoundException($id);
         }
 
         return unserialize($transaction);

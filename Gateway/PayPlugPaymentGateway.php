@@ -18,10 +18,7 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
     const MODE_LIGHTBOX = 'lightbox';
     const MODE_INTEGRATED = 'integrated';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initialize(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options = []
@@ -66,7 +63,9 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
      */
     public function getReturnResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction,
+        array $options = []
     ): GatewayResponse {
         return new GatewayResponse();
     }
@@ -103,7 +102,7 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         $payment = \Payplug\Payment::retrieve($data['id']);
 
         $gatewayResponse
-            ->setTransactionUuid($payment->metadata['transaction_id'])
+            ->setTransactionId($payment->metadata['transaction_id'])
             ->setAmount($payment->amount)
             ->setCurrencyCode($payment->currency)
             ->setRaw(self::transformPaymentToArray($payment))

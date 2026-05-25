@@ -122,6 +122,7 @@ Supported Gateways
 * [Atos Sips JSON](./Gateway/AtosSipsJsonPaymentGateway.php)
     * Mercanet ([example](./Resources/docs/example/mercanet-json.md))
     * Sogenactif ([example](./Resources/docs/example/sogenactif-json.md))
+* [Worldline](./Gateway/WorldlinePaymentGateway.php) ([example](./Resources/docs/example/worldline.md))
 
 For testing purpose:
 - [Parameters](./Resources/docs/test-parameters.md)

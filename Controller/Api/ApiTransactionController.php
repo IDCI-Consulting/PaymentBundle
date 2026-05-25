@@ -7,27 +7,20 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/transactions")
- */
+#[Route('/transactions')]
 class ApiTransactionController extends AbstractController
 {
-    /**
-     * @var TransactionManagerInterface
-     */
-    private $transactionManager;
+    private TransactionManagerInterface $transactionManager;
 
     public function __construct(TransactionManagerInterface $transactionManager)
     {
         $this->transactionManager = $transactionManager;
     }
 
-    /**
-     * @Route("/{id}", methods={"GET"})
-     */
+    #[Route('/{id}', methods: ['GET'])]
     public function show($id)
     {
-        $transaction = $this->transactionManager->retrieveTransactionByUuid($id);
+        $transaction = $this->transactionManager->retrieveTransactionById($id);
 
         return new JsonResponse([
             'id' => $transaction->getId(),

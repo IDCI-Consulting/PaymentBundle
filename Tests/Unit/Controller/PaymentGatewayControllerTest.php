@@ -2,18 +2,18 @@
 
 namespace IDCI\Bundle\PaymentBundle\Tests\Controller;
 
-use PHPUnit\Framework\TestCase;
 use Doctrine\Common\Persistence\ObjectManager;
 use IDCI\Bundle\PaymentBundle\Controller\PaymentGatewayController;
-use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Psr\Log\LoggerInterface;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
-use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
+use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContextInterface;
+use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
+use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 class PaymentGatewayControllerTest extends TestCase
 {
@@ -39,7 +39,7 @@ class PaymentGatewayControllerTest extends TestCase
         ;
 
         $paymentContext
-            ->method('handleGatewayCallback')
+            ->method('getTransaction')
             ->willReturn($this->transaction)
         ;
 

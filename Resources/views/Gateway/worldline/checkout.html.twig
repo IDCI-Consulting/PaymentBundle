@@ -1,0 +1,8 @@
+<p>Vous allez être automatiquement rediriger vers notre système de paiement.</p>
+<p>Si ce n'est pas le cas, vous pouvez cliquer que le lien suivant: <a href="{{ hosted_checkout_response.getRedirectUrl() }}" class="" id="wordline-checkout-pay-button">Payer</a></p>
+
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById("wordline-checkout-pay-button").click();
+    });
+</script>

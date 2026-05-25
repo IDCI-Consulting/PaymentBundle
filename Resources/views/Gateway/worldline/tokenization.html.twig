@@ -1,0 +1,28 @@
+<div id="div-hosted-tokenization"></div>
+<button onclick="submitForm()">Valider</button>
+<script>
+    let tokenizer = null;
+    function initTokenizer() {
+        tokenizer = new Tokenizer('{{ hosted_tokenization_response.getHostedTokenizationUrl() }}', 'div-hosted-tokenization', {hideCardholderName: false });
+
+        // Invoking tokenizer.initialize() will add the <iframe> inside the previously referenced <div> element
+        tokenizer.initialize().then(() => {
+            // Do work after initialization, if any
+        })
+        .catch(reason => {
+            // Handle iFrame load error
+        });
+    }
+
+    function submitForm() {
+        tokenizer.submitTokenization().then((result) => {
+            if (result.success) {
+                let redirect_url = window.location.href + "?transaction_id={{ transaction.id }}&hosted_tokenization_id=" + result.hostedTokenizationId;
+                window.location.href = redirect_url;
+            } else {
+                // displayErrorMessage(result.error.message);
+            }
+        });
+    }
+</script>
+<script src="{{ wordline_host }}/hostedtokenization/js/client/tokenizer.min.js" onload="initTokenizer()"></script>

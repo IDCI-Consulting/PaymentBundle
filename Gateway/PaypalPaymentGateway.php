@@ -19,10 +19,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         // 'SMART_BUTTON' => 'paypal_smart_button.html.twig',
     ];
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initialize(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options = []
@@ -68,7 +65,9 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
      */
     public function getReturnResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction,
+        array $options = []
     ): GatewayResponse {
         return new GatewayResponse();
     }
@@ -107,7 +106,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
 
         $gatewayResponse
             ->setPaymentMethod($paypalPayment->getPayer()->getPaymentMethod())
-            ->setTransactionUuid($request->get('transactionID'))
+            ->setTransactionId($request->get('transactionID'))
             ->setAmount($amount->total * 100)
             ->setCurrencyCode($amount->currency)
             ->setRaw($paypalPayment->toArray())

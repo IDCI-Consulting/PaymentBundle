@@ -89,10 +89,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         return base64_encode(hash_hmac('sha256', $rawSignature, $key, true));
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initialize(
+    private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
         array $options = []
@@ -126,7 +123,9 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
      */
     public function getReturnResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction,
+        array $options = []
     ): GatewayResponse {
         return new GatewayResponse();
     }
@@ -147,7 +146,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         $requestData = $request->request;
 
         $gatewayResponse = (new GatewayResponse())
-            ->setTransactionUuid($requestData->get('vads_order_id'))
+            ->setTransactionId($requestData->get('vads_order_id'))
             ->setAmount($requestData->get('vads_amount'))
             ->setCurrencyCode((new ISO4217())->findByNumeric($requestData->get('vads_currency'))->getAlpha3())
             ->setDate(new \DateTime())

@@ -65,15 +65,15 @@ class DoctrineTransactionTest extends TestCase
     /**
      * @expectedException \IDCI\Bundle\PaymentBundle\Exception\NoTransactionFoundException
      */
-    public function testNotRetrievedTransactionByUuid()
+    public function testNotRetrievedTransactionById()
     {
         //Wrong id is passed to the method to throw an exception
-        $this->doctrineTransactionManager->retrieveTransactionByUuid('wrong_transaction_id');
+        $this->doctrineTransactionManager->retrieveTransactionById('wrong_transaction_id');
     }
 
-    public function testRetrievedTransactionByUuid()
+    public function testRetrievedTransactionById()
     {
-        $transaction = $this->doctrineTransactionManager->retrieveTransactionByUuid('dummy_transaction_id');
+        $transaction = $this->doctrineTransactionManager->retrieveTransactionById('dummy_transaction_id');
         $this->assertInstanceOf(Transaction::class, $transaction);
     }
 }

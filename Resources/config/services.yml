@@ -156,6 +156,10 @@ services:
         tags:
             - { name: idci_payment.gateways, alias: apple_pay }
 
+    IDCI\Bundle\PaymentBundle\Gateway\WorldlinePaymentGateway:
+        tags:
+            - { name: idci_payment.gateways, alias: worldline }
+
     # Payment Gateway Clients
 
     IDCI\Bundle\PaymentBundle\Gateway\Client\EurekaPaymentGatewayClient:
