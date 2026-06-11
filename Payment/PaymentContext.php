@@ -143,6 +143,15 @@ class PaymentContext implements PaymentContextInterface
         ;
     }
 
+    public function buildReturnHTMLView(Request $request, array $options = []): ?string
+    {
+        if (!$this->hasTransaction()) {
+            throw new \LogicException('Payment context : No transaction has been initialized for this context.');
+        }
+
+        return $this->getPaymentGateway()->buildReturnHTMLView($request, $this->getPaymentGatewayConfiguration(), $this->getTransaction(), $options);
+    }
+
     public function getPaymentGatewayConfiguration(): PaymentGatewayConfigurationInterface
     {
         return $this->paymentGatewayConfiguration;

@@ -41,6 +41,18 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
     /**
      * {@inheritdoc}
      */
+    public function buildReturnHTMLView(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction,
+        array $options = []
+    ): ?string {
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     abstract public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,

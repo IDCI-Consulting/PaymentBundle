@@ -239,6 +239,27 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         }
     }
 
+    public function buildReturnHTMLView(
+        Request $request,
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
+        Transaction $transaction,
+        array $options = []
+    ): ?string {
+        if (!isset($transaction->getRaw()['hosted_tokenization_create_payment_response'])) {
+            return null;
+        }
+
+        $createPaymentResponse = $transaction->getRaw()['hosted_tokenization_create_payment_response'];
+
+        if (null === $createPaymentResponse->getMerchantAction() || 'REDIRECT' !== $createPaymentResponse->getMerchantAction()->getActionType()) {
+            return null;
+        }
+
+        return $this->templating->render('@IDCIPayment/Gateway/worldline/tokenization_3ds_redirection.html.twig', [
+            'hosted_tokenization_create_payment_response' => $createPaymentResponse,
+        ]);
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -250,9 +271,11 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
     ): GatewayResponse {
         $paymentGatewayOptions = $this->resolveGatewayOptions($options);
 
-        if ($request->query->has('hosted_tokenization_id') && PaymentStatus::STATUS_PENDING === $transaction->getStatus()) {
+        if ($request->query->has('hosted_tokenization_id') && PaymentStatus::STATUS_PENDING === $transaction->getStatus())
+        {
             $createPaymentResponse = $this->sendCreatePaymentRequest($request, $paymentGatewayConfiguration, $transaction, $paymentGatewayOptions);
 
+            // USELESS
             $gatewayResponse = (new GatewayResponse())
                 ->setTransactionId($transaction->getId())
                 ->setAmount($createPaymentResponse->getPayment()->getPaymentOutput()->getAcquiredAmount()->getAmount())
@@ -275,9 +298,11 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
             return new GatewayResponse();
         }
 
+        // Create function to getHostedCheckout + update transaction
         $merchantClient = $this->createMerchantClient($paymentGatewayConfiguration);
         $hostedCheckoutResponse = $merchantClient->hostedCheckout()->getHostedCheckout($request->query->get('hostedCheckoutId'));
 
+        // USELESS
         $gatewayResponse = (new GatewayResponse())
             ->setTransactionId($transaction->getId())
             ->setAmount($hostedCheckoutResponse->getCreatedPaymentOutput()->getPayment()->getPaymentOutput()->getAcquiredAmount()->getAmount())
@@ -315,7 +340,7 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         $createPaymentRequest->setHostedTokenizationId($request->query->get('hosted_tokenization_id'));
 
         $redirectionData = new SdkDomain\RedirectionData();
-        $redirectionData->setReturnUrl("https://yourRedirectionUrl.com");
+        $redirectionData->setReturnUrl($paymentGatewayConfiguration->get('return_url'));
 
         $threeDSecure = new SdkDomain\ThreeDSecure();
         $threeDSecure->setRedirectionData($redirectionData);
@@ -362,6 +387,10 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         $order->setAmountOfMoney($amountOfMoney);
 
         $createPaymentRequest->setOrder($order);
+
+        $feedbacks = new SdkDomain\Feedbacks();
+        $feedbacks->setWebhooksUrls([$paymentGatewayConfiguration->get('callback_url')]);
+        $createPaymentRequest->setFeedbacks($feedbacks);
 
         $createPaymentResponse = $this->createMerchantClient($paymentGatewayConfiguration)->payments()->createPayment($createPaymentRequest);
 

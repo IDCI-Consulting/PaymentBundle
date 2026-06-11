@@ -172,6 +172,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
                 array_merge(
                     $parameters['template_extra_vars'],
                     [
+                        // TODO: Call $paymentContext->buildInitializeHTMLView
                         'view' => $paymentContext->buildHTMLView($parameters['gateway_options']),
                         'transaction' => $transaction,
                     ]
@@ -209,7 +210,12 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         $transaction = $this->transactionManager->retrieveTransactionById($transactionId);
 
         $paymentContext->setTransaction($transaction);
+        $paymentGatewayConfiguration = $paymentContext->getPaymentGatewayConfiguration();
+        $paymentGatewayConfiguration
+            ->set('return_url', $this->getReturnUrl($this->requestStack->getCurrentRequest(), $transaction))
+        ;
         $paymentContext->handleReturnCallback($request, $parameters['gateway_options']);
+        $htmlView = $paymentContext->buildReturnHTMLView($request, $parameters['gateway_options']);
 
         // Useless must be done by Gateway ?
         if (PaymentStatus::STATUS_CREATED === $transaction->getStatus()) {
@@ -235,7 +241,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         }
 
         $options['transaction'] = $transaction;
-        $options['pre_step_content'] = $this->templating->render(
+        $options['pre_step_content'] = $htmlView ?? $this->templating->render(
             $this->templates[$transaction->getStatus()],
             array_merge(
                 $parameters['template_extra_vars'],
