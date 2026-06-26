@@ -1,18 +1,21 @@
 <?php
 
-namespace IDCI\Bundle\PaymentBundle\DependencyInjection;
+namespace IDCI\Bundle\PaymentBundle;
 
+use IDCI\Bundle\PaymentBundle\DependencyInjection\Compiler\PaymentGatewayCompilerPass;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
-use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
-class Configuration implements ConfigurationInterface
+class IDCIPaymentBundle extends AbstractBundle
 {
-    public function getConfigTreeBuilder()
-    {
-        $treeBuilder = new TreeBuilder('idci_payment');
+    protected string $extensionAlias = 'idci_keycloak_security';
 
-        $treeBuilder->getRootNode()
+    public function configure(DefinitionConfigurator $definition): void
+    {
+        $definition->rootNode()
             ->children()
                 ->arrayNode('templates')
                     ->children()
@@ -40,7 +43,24 @@ class Configuration implements ConfigurationInterface
                 ->booleanNode('enabled_logger_subscriber')->defaultFalse()->end()
             ->end()
         ;
+    }
 
-        return $treeBuilder;
+    public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
+    {
+        $container->import('../config/services.yaml');
+
+        $builder->setParameter('idci_payment.enabled_logger_subscriber', $config['enabled_logger_subscriber']);
+        $builder->setParameter('idci_payment.gateway_configurations', $config['gateway_configurations']);
+
+        if (isset($config['templates'])) {
+            $builder->setParameter('idci_payment.templates.step', $config['templates']['step']);
+        }
+    }
+
+    public function build(ContainerBuilder $container)
+    {
+        parent::build($container);
+
+        $container->addCompilerPass(new PaymentGatewayCompilerPass());
     }
 }

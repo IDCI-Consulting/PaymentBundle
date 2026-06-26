@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @author:  Gabriel BONDAZ <gabriel.bondaz@idci-consulting.fr>
- * @license: MIT
- */
-
 namespace IDCI\Bundle\PaymentBundle\DependencyInjection\Compiler;
 
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistry;
