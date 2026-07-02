@@ -11,7 +11,7 @@ use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
 class IDCIPaymentBundle extends AbstractBundle
 {
-    protected string $extensionAlias = 'idci_keycloak_security';
+    protected string $extensionAlias = 'idci_payment';
 
     public function configure(DefinitionConfigurator $definition): void
     {
@@ -31,6 +31,7 @@ class IDCIPaymentBundle extends AbstractBundle
                         ->end()
                     ->end()
                 ->end()
+                ->booleanNode('enabled_logger_subscriber')->defaultFalse()->end()
                 ->arrayNode('gateway_configurations')
                     ->arrayPrototype()
                         ->children()
@@ -40,7 +41,6 @@ class IDCIPaymentBundle extends AbstractBundle
                         ->end()
                     ->end()
                 ->end()
-                ->booleanNode('enabled_logger_subscriber')->defaultFalse()->end()
             ->end()
         ;
     }
@@ -57,7 +57,7 @@ class IDCIPaymentBundle extends AbstractBundle
         }
     }
 
-    public function build(ContainerBuilder $container)
+    public function build(ContainerBuilder $container): void
     {
         parent::build($container);
 
