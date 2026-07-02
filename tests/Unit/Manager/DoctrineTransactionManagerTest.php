@@ -2,11 +2,11 @@
 
 namespace IDCI\Bundle\PaymentBundle\Tests\Manager;
 
-use PHPUnit\Framework\TestCase;
 use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityRepository;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
 use IDCI\Bundle\PaymentBundle\Manager\DoctrineTransactionManager;
-use Doctrine\ORM\EntityRepository;
+use PHPUnit\Framework\TestCase;
 
 class DoctrineTransactionTest extends TestCase
 {
@@ -67,7 +67,7 @@ class DoctrineTransactionTest extends TestCase
      */
     public function testNotRetrievedTransactionById()
     {
-        //Wrong id is passed to the method to throw an exception
+        // Wrong id is passed to the method to throw an exception
         $this->doctrineTransactionManager->retrieveTransactionById('wrong_transaction_id');
     }
 

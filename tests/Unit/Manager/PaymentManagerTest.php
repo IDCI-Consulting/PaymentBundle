@@ -2,14 +2,14 @@
 
 namespace IDCI\Bundle\PaymentBundle\Tests\Manager;
 
-use PHPUnit\Framework\TestCase;
-use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityRepository;
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistryInterface;
+use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentContext;
-use Doctrine\ORM\EntityRepository;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class PaymentManagerTest extends TestCase
@@ -102,7 +102,7 @@ class PaymentManagerTest extends TestCase
      */
     public function testNotCreatedPaymentContextByAlias()
     {
-        //Wrong alias is passed to the method to throw an exception
+        // Wrong alias is passed to the method to throw an exception
         $this->paymentManager->createPaymentContextByAlias('wrong_payment_gateway_configuration_alias');
     }
 

@@ -13,10 +13,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class PaymentContext implements PaymentContextInterface
 {
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $dispatcher;
+    private EventDispatcherInterface $dispatcher;
 
     /**
      * @var PaymentGatewayConfigurationInterface
@@ -49,7 +46,7 @@ class PaymentContext implements PaymentContextInterface
         PaymentGatewayInterface $paymentGateway,
         TransactionManagerInterface $transactionManager,
         LoggerInterface $logger,
-        ?Transaction $transaction = null
+        ?Transaction $transaction = null,
     ) {
         $this->dispatcher = $dispatcher;
         $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
@@ -102,8 +99,8 @@ class PaymentContext implements PaymentContextInterface
         if ($this->transaction->getAmount() != $gatewayResponse->getAmount()) {
             $status = PaymentStatus::STATUS_FAILED;
         } elseif (
-            null !== $gatewayResponse->getCurrencyCode() &&
-            $this->transaction->getCurrencyCode() !== $gatewayResponse->getCurrencyCode()
+            null !== $gatewayResponse->getCurrencyCode()
+            && $this->transaction->getCurrencyCode() !== $gatewayResponse->getCurrencyCode()
         ) {
             $status = PaymentStatus::STATUS_FAILED;
         }

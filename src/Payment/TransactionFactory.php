@@ -10,10 +10,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TransactionFactory
 {
-    /**
-     * @var TransactionFactory
-     */
-    private static $_instance;
+    private static TransactionFactory $_instance;
 
     public static function getInstance(): self
     {

@@ -2,10 +2,10 @@
 
 namespace IDCI\Bundle\PaymentBundle\Tests\Event\Subscriber;
 
-use PHPUnit\Framework\TestCase;
-use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
-use IDCI\Bundle\PaymentBundle\Event\Subscriber\LoggerTransactionEventSubscriber;
 use IDCI\Bundle\PaymentBundle\Entity\Transaction;
+use IDCI\Bundle\PaymentBundle\Event\Subscriber\LoggerTransactionEventSubscriber;
+use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
+use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 class LoggerTransactionEventSubscriberTest extends TestCase
