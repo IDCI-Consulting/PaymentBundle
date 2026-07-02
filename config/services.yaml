@@ -6,8 +6,8 @@ services:
         public: false
 
     IDCI\Bundle\PaymentBundle\:
-        resource: '../../*'
-        exclude: '../../{Entity,Repository,Tests,Event/Subscriber}'
+        resource: '../src/*'
+        exclude: '../src/{Entity,Repository,Tests,Event/Subscriber}'
 
     # Controller
     IDCI\Bundle\PaymentBundle\Controller\PaymentGatewayController:

@@ -1,3 +1,0 @@
-idci_payment_api_transaction:
-    resource: "@IDCIPaymentBundle/Controller/Api/"
-    type: attribute

@@ -1,3 +1,0 @@
-idci_payment_payment_gateway:
-    resource: IDCI\Bundle\PaymentBundle\Controller\PaymentGatewayController
-    type: attribute

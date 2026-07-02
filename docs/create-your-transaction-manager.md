@@ -8,7 +8,7 @@ A: It is used to retrieve and save your transactions with a specific stockage me
 
 ## Learn by example (for redis)
 
-A transaction manager must implement the interface [TransactionManagerInterface](../../Manager/TransactionManagerInterface.php).
+A transaction manager must implement the interface [TransactionManagerInterface](../src/Manager/TransactionManagerInterface.php).
 This is a little exemple of manager working with Redis.
 ```php
 <?php
@@ -55,7 +55,7 @@ This method is called by the [PaymentContext](../../Payment/PaymentContext.php)
 In your configuration :
 
 ```yaml
-# services.yml
+# services.yaml
 MyBundle\Manager\RedisTransactionManager:
     arguments:
         $redis: '@snc_redis.default'

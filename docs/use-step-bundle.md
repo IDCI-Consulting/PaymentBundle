@@ -9,16 +9,16 @@ This bundle can work with [IDCIStepBundle](https://github.com/IDCI-Consulting/St
 
 Make sure you have already installed step bundle
 
-Add this to your ```config.yml``` file:
+Add this to your ```config.yaml``` file:
 
 ```yaml
 imports:
-    - { resource: '@IDCIPaymentBundle/Resources/config/step_types.yml' }
-    - { resource: '@IDCIPaymentBundle/Resources/config/event_actions.yml' }
-    - { resource: '@IDCIPaymentBundle/Resources/config/step_templates.yml' }
+    - { resource: '@IDCIPaymentBundle/config/step_types.yaml' }
+    - { resource: '@IDCIPaymentBundle/config/event_actions.yaml' }
+    - { resource: '@IDCIPaymentBundle/config/step_templates.yaml' }
 ```
 
-And this in your ```services.yml``` file:
+And this in your ```services.yaml``` file:
 ```yaml
 # PaymentBundle - Step
 IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepTypeInterface: '@IDCI\Bundle\PaymentBundle\Step\Type\PaymentStepType'

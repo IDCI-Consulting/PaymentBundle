@@ -1,0 +1,4 @@
+idci_payment_gateway_transaction_notification:
+    controller: IDCI\Bundle\PaymentBundle\Controller\PaymentGatewayController::transactionNotification
+    path: /payment-gateway/{configuration_alias}/transaction-notification
+    methods: ['GET', 'POST']

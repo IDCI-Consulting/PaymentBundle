@@ -11,7 +11,7 @@ A: (schema)
 
 ## Learn by example
 
-All of the payment gateway extends from [AbstractPaymentGateway](../../Gateway/AbstractPaymentGateway.php) so it must contains the following methods :
+All of the payment gateway extends from [AbstractPaymentGateway](../src/Gateway/AbstractPaymentGateway.php) so it must contains the following methods :
 
 ```php
 <?php
@@ -117,10 +117,10 @@ class ExemplePaymentGateway extends AbstractPaymentGateway
 }
 ```
 
-Now add the following configuration in your ```service.yml``` file:
+Now add the following configuration in your ```service.yaml``` file:
 
 ```yml
-# service.yml
+# service.yaml
 MyBundle\Gateway\ExemplePaymentGateway:
     tags:
         - { name: idci_payment.gateways, alias: exemple }
@@ -136,7 +136,7 @@ Use console command and choose your payment gateway:
 $ php bin/console app:payment-gateway-configuration:create
 ```
 
-You can also add it to your ```config.yml``` file:
+You can also add it to your ```config.yaml``` file:
 
 ```yml
 idci_payment:

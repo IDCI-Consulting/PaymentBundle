@@ -3,10 +3,10 @@ How to create your own event subscriber
 
 ## Introduction
 
-Q: Why do i need to create my own event subscriber  
+Q: Why do i need to create my own event subscriber
 A: Everytime the transaction status is modified a new event is dispatched so you can add your own logic to it (ex: send an email).
 
-Q: What kind of transaction event can i bind to ?  
+Q: What kind of transaction event can i bind to ?
 A:
 There are five possiblities, an event is dispatched when the transaction is :
 - created
@@ -17,7 +17,7 @@ There are five possiblities, an event is dispatched when the transaction is :
 
 ## Learn by example
 
-All your event subscriber must be using [TransactionEvent](../../Event/TransactionEvent.php) to be bind to it with one of the event type possibility listed above
+All your event subscriber must be using [TransactionEvent](../src/Event/TransactionEvent.php) to be bind to it with one of the event type possibility listed above
 
 ```php
 <?php
@@ -78,7 +78,7 @@ class ExempleEventSubscriber implements EventSubscriberInterface
 }
 ```
 
-Your new event subscriber will be automaticaly bind to [TransactionEvent](../../Event/TransactionEvent.php) dispatch and when the status of the transaction change your methods will be called.
+Your new event subscriber will be automaticaly bind to [TransactionEvent](../src/Event/TransactionEvent.php) dispatch and when the status of the transaction change your methods will be called.
 
 ## Usage example with swiftmailer
 

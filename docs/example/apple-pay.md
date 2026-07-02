@@ -8,7 +8,7 @@ Make sure to import routing configuration provided by the bundle before:
 
 ```yaml
 idci_payment_apple_pay:
-    resource: '@IDCIPaymentBundle/Resources/config/routing_apple_pay.yml'
+    resource: '@IDCIPaymentBundle/config/routing_apple_pay.yaml'
     prefix:   /
 ```
 
