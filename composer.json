@@ -17,6 +17,7 @@
         }
     ],
     "require": {
+        "symfony/console": "^6.0|^7.0",
         "symfony/dependency-injection": "^6.0|^7.0",
         "symfony/dom-crawler": "^6.0|^7.0",
         "symfony/framework-bundle": "^6.0|^7.0",
