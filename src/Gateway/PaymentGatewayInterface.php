@@ -15,7 +15,7 @@ interface PaymentGatewayInterface
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): string;
 
     /**
@@ -25,7 +25,7 @@ interface PaymentGatewayInterface
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): ?string;
 
     /**
@@ -35,7 +35,7 @@ interface PaymentGatewayInterface
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): GatewayResponse;
 
     /**
@@ -43,7 +43,7 @@ interface PaymentGatewayInterface
      */
     public function getCallbackResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ): GatewayResponse;
 
     /**

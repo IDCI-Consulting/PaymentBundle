@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class PaypalPaymentGateway extends AbstractPaymentGateway
 {
-    const PAYPAL_CHECKOUT_FLOW_TEMPLATE_MAPPING = [
+    public const PAYPAL_CHECKOUT_FLOW_TEMPLATE_MAPPING = [
         'PAY_NOW' => 'paypal_pay_now.html.twig',
         // 'SMART_BUTTON' => 'paypal_smart_button.html.twig',
     ];
@@ -22,7 +22,7 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
     private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): array {
         return [
             'clientId' => $paymentGatewayConfiguration->get('client_id'),
@@ -34,14 +34,12 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws \UnexpectedValueException If the payment gateway configuration use a non authorized checkout flow
      */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
@@ -60,26 +58,21 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): GatewayResponse {
         return new GatewayResponse();
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws \UnexpectedValueException If the request method is not POST
      */
     public function getCallbackResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ): GatewayResponse {
         if (!$request->isMethod(Request::METHOD_POST)) {
             throw new \UnexpectedValueException('Paypal : Payment Gateway error (Request method should be POST)');
@@ -124,9 +117,6 @@ class PaypalPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

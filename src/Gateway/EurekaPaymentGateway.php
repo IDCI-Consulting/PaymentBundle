@@ -15,8 +15,8 @@ use Twig\Environment;
 
 class EurekaPaymentGateway extends AbstractPaymentGateway
 {
-    const HMAC_TYPE_ENTRY = 'in';
-    const HMAC_TYPE_OUT = 'out';
+    public const HMAC_TYPE_ENTRY = 'in';
+    public const HMAC_TYPE_OUT = 'out';
 
     /**
      * @var string
@@ -27,7 +27,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
     public function __construct(
         Environment $templating,
         EventDispatcherInterface $dispatcher,
-        EurekaPaymentGatewayClient $eurekaPaymentGatewayClient
+        EurekaPaymentGatewayClient $eurekaPaymentGatewayClient,
     ) {
         parent::__construct($templating, $dispatcher);
 
@@ -43,7 +43,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
     ): array {
         foreach ($this->getRequiredTransactionMetadata() as $requiredTransactionMetadata) {
             if (!$transaction->hasMetadata($requiredTransactionMetadata)) {
@@ -81,7 +81,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
      */
     private function requestScoringToken(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
     ): string {
         $scoringToken = $this->eurekaPaymentGatewayClient->getScoringToken(
             $paymentGatewayConfiguration->get('score_type'),
@@ -237,7 +237,7 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
     private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
@@ -246,13 +246,10 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
@@ -262,26 +259,21 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): GatewayResponse {
         return new GatewayResponse();
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws \UnexpectedValueException If the request method is not POST
      */
     public function getCallbackResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ): GatewayResponse {
         if (!$request->isMethod('POST')) {
             throw new \UnexpectedValueException('Eureka : Payment Gateway error (Request method should be POST)');
@@ -325,9 +317,6 @@ class EurekaPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

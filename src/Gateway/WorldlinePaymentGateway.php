@@ -70,7 +70,7 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
     public function __construct(
         Environment $templating,
         EventDispatcherInterface $dispatcher,
-        UrlGeneratorInterface $router
+        UrlGeneratorInterface $router,
     ) {
         parent::__construct($templating, $dispatcher);
 
@@ -113,9 +113,9 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         $customer->setMerchantCustomerId($transaction->getCustomerId());
 
         $orderReferences = new SdkDomain\OrderReferences();
-        //$orderReferences->setMerchantReference($paymentGatewayOptions['merchant_reference'] ?? $transaction->getId());
+        // $orderReferences->setMerchantReference($paymentGatewayOptions['merchant_reference'] ?? $transaction->getId());
         $orderReferences->setMerchantReference($transaction->getId());
-        //$orderReferences->setOperationGroupReference($transaction->getId());
+        // $orderReferences->setOperationGroupReference($transaction->getId());
 
         $order = new SdkDomain\Order();
         $order->setAmountOfMoney($amountOfMoney);
@@ -128,7 +128,7 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
     protected function callHostedCheckoutPage(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $paymentGatewayOptions
+        array $paymentGatewayOptions,
     ): SdkDomain\CreateHostedCheckoutResponse {
         $merchantClient = $this->createMerchantClient($paymentGatewayConfiguration);
 
@@ -164,7 +164,7 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
     protected function callHostedTokenizationPage(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $paymentGatewayOptions
+        array $paymentGatewayOptions,
     ): SdkDomain\CreateHostedTokenizationResponse {
         $merchantClient = $this->createMerchantClient($paymentGatewayConfiguration);
 
@@ -202,22 +202,15 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         ;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): string {
         $paymentGatewayOptions = $this->resolveGatewayOptions($options);
 
         if (!in_array($paymentGatewayConfiguration->get('integration_method'), self::AVAILABLE_INTEGRATION_METHODS)) {
-            throw new \UnexpectedValueException(sprintf(
-                'The given \'integration_method\':%s is not valid (allowed values: %s)',
-                $paymentGatewayConfiguration->get('integration_method'),
-                json_encode(self::AVAILABLE_INTEGRATION_METHODS)
-            ));
+            throw new \UnexpectedValueException(sprintf('The given \'integration_method\':%s is not valid (allowed values: %s)', $paymentGatewayConfiguration->get('integration_method'), json_encode(self::AVAILABLE_INTEGRATION_METHODS)));
         }
 
         if (self::INTEGRATION_METHOD_HOSTED_CHECKOUT_PAGE === $paymentGatewayConfiguration->get('integration_method')) {
@@ -243,7 +236,7 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): ?string {
         if (!isset($transaction->getRaw()['hosted_tokenization_create_payment_response'])) {
             return null;
@@ -260,19 +253,15 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): GatewayResponse {
         $paymentGatewayOptions = $this->resolveGatewayOptions($options);
 
-        if ($request->query->has('hosted_tokenization_id') && PaymentStatus::STATUS_PENDING === $transaction->getStatus())
-        {
+        if ($request->query->has('hosted_tokenization_id') && PaymentStatus::STATUS_PENDING === $transaction->getStatus()) {
             $createPaymentResponse = $this->sendCreatePaymentRequest($request, $paymentGatewayConfiguration, $transaction, $paymentGatewayOptions);
 
             // USELESS
@@ -320,12 +309,9 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCallbackResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ): GatewayResponse {
         return $this->processNotificationMessage($request, $paymentGatewayConfiguration);
     }
@@ -334,7 +320,7 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $paymentGatewayOptions
+        array $paymentGatewayOptions,
     ) {
         $createPaymentRequest = new SdkDomain\CreatePaymentRequest();
         $createPaymentRequest->setHostedTokenizationId($request->query->get('hosted_tokenization_id'));
@@ -354,25 +340,25 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         $order = new SdkDomain\Order();
 
         $orderReferences = new SdkDomain\OrderReferences();
-        //$orderReferences->setMerchantReference($paymentGatewayOptions['merchant_reference'] ?? $transaction->getId());
+        // $orderReferences->setMerchantReference($paymentGatewayOptions['merchant_reference'] ?? $transaction->getId());
         $orderReferences->setMerchantReference($transaction->getId());
         $order->setReferences($orderReferences);
 
         $browserData = new SdkDomain\BrowserData();
         $browserData->setColorDepth(24);
         $browserData->setJavaScriptEnabled(false);
-        $browserData->setScreenHeight("1080");
-        $browserData->setScreenWidth("1920");
+        $browserData->setScreenHeight('1080');
+        $browserData->setScreenWidth('1920');
 
         $customerDevice = new SdkDomain\CustomerDevice();
         $customerDevice->setAcceptHeader(
-            "text/html,application/xhtml+xml,application/xmlq=0.9,image/webp,image/apng,*/*q=0.8,application/signed-exchangev=b3"
+            'text/html,application/xhtml+xml,application/xmlq=0.9,image/webp,image/apng,*/*q=0.8,application/signed-exchangev=b3'
         );
 
         $customerDevice->setLocale($paymentGatewayOptions['locale']);
-        //$customerDevice->setTimezoneOffsetUtcMinutes("-180");
+        // $customerDevice->setTimezoneOffsetUtcMinutes("-180");
         $customerDevice->setUserAgent(
-            "Mozilla/5.0 (Windows NT 10.0 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+            'Mozilla/5.0 (Windows NT 10.0 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'
         );
         $customerDevice->setBrowserData($browserData);
 
@@ -408,13 +394,13 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
 
     public function processNotificationMessage(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ) {
         $merchantClient = $this->createMerchantClient($paymentGatewayConfiguration);
         $rawData = json_decode($request->getContent(), true);
 
         $gatewayResponse = (new GatewayResponse())
-            //->setTransactionId($rawData['payment']['paymentOutput']['references']['operationGroupReference'])
+            // ->setTransactionId($rawData['payment']['paymentOutput']['references']['operationGroupReference'])
             ->setTransactionId($rawData['payment']['paymentOutput']['references']['merchantReference'])
             ->setAmount($rawData['payment']['paymentOutput']['acquiredAmount']['amount'])
             ->setCurrencyCode($rawData['payment']['paymentOutput']['acquiredAmount']['currencyCode'])
@@ -429,7 +415,7 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         // Capture payment if configured to do it
         if (self::PAYMENT_STATUS_PENDING_CAPTURE === $rawData['payment']['status']) {
             $capturePaymentRequest = new SdkDomain\CapturePaymentRequest();
-            //$capturePaymentRequest->setAmount($rawData['payment']['paymentOutput']['acquiredAmount']['amount']);
+            // $capturePaymentRequest->setAmount($rawData['payment']['paymentOutput']['acquiredAmount']['amount']);
             $capturePaymentRequest->setAmount($gatewayResponse->getAmount());
             $capturePaymentRequest->setIsFinal(true);
 
@@ -448,7 +434,7 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
             }
 
             $gatewayResponse = (new GatewayResponse())
-                //->setTransactionId($captureResponse->getCaptureOutput()->getReferences()->getOperationGroupReference())
+                // ->setTransactionId($captureResponse->getCaptureOutput()->getReferences()->getOperationGroupReference())
                 ->setTransactionId($captureResponse->getCaptureOutput()->getReferences()->getMerchantReference())
                 ->setAmount($captureResponse->getCaptureOutput()->getAcquiredAmount()->getAmount())
                 ->setCurrencyCode($captureResponse->getCaptureOutput()->getAcquiredAmount()->getCurrencyCode())
@@ -463,9 +449,6 @@ class WorldlinePaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

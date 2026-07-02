@@ -4,7 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Gateway\StatusCode;
 
 final class AtosSipsStatusCode
 {
-    const STATUS = [
+    public const STATUS = [
         '02' => 'Authorization limit on card exceeded',
         '03' => 'Invalid merchant contract',
         '05' => 'Authorization denied',

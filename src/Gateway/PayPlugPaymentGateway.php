@@ -14,19 +14,19 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PayPlugPaymentGateway extends AbstractPaymentGateway
 {
-    const MODE_HOSTED = 'hosted';
-    const MODE_LIGHTBOX = 'lightbox';
-    const MODE_INTEGRATED = 'integrated';
+    public const MODE_HOSTED = 'hosted';
+    public const MODE_LIGHTBOX = 'lightbox';
+    public const MODE_INTEGRATED = 'integrated';
 
     private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): array {
-        Payplug\Payplug::init(array(
+        Payplug\Payplug::init([
             'apiVersion' => $paymentGatewayConfiguration->get('version'),
             'secretKey' => $paymentGatewayConfiguration->get('secret_key'),
-        ));
+        ]);
 
         $payment = Payplug\Payment::create(array_replace_recursive(
             $this->resolvePaymentOptions($paymentGatewayConfiguration, $transaction, $options),
@@ -43,13 +43,10 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction, $options);
 
@@ -58,26 +55,21 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): GatewayResponse {
         return new GatewayResponse();
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws \UnexpectedValueException If the request method is not POST
      */
     public function getCallbackResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ): GatewayResponse {
         if (!$request->isMethod(Request::METHOD_POST)) {
             throw new \UnexpectedValueException('PayPlug : Payment Gateway error (Request method should be POST)');
@@ -94,12 +86,12 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
             return $gatewayResponse->setMessage('The request do not contains required post data');
         }
 
-        Payplug\Payplug::init(array(
+        Payplug\Payplug::init([
             'apiVersion' => $paymentGatewayConfiguration->get('version'),
             'secretKey' => $paymentGatewayConfiguration->get('secret_key'),
-        ));
+        ]);
 
-        $payment = \Payplug\Payment::retrieve($data['id']);
+        $payment = Payplug\Payment::retrieve($data['id']);
 
         $gatewayResponse
             ->setTransactionId($payment->metadata['transaction_id'])
@@ -118,12 +110,12 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
     private function resolvePaymentOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options
+        array $options,
     ): array {
         $resolver = (new OptionsResolver())
             ->setDefault('amount', $transaction->getAmount())->setAllowedTypes('amount', ['int', 'float'])
             ->setDefault('currency', $transaction->getCurrencyCode())->setAllowedTypes('currency', ['string'])
-            ->setDefault('billing', function (OptionsResolver $billingResolver) use ($paymentGatewayConfiguration, $transaction, $options) {
+            ->setDefault('billing', function (OptionsResolver $billingResolver) use ($options) {
                 if (!isset($options['billing'])) {
                     return;
                 }
@@ -148,7 +140,7 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
                     ->setDefined('language')->setAllowedTypes('language', ['string'])
                 ;
             })
-            ->setDefault('shipping', function (OptionsResolver $shippingResolver) use ($paymentGatewayConfiguration, $transaction, $options) {
+            ->setDefault('shipping', function (OptionsResolver $shippingResolver) use ($options) {
                 if (!isset($options['shipping'])) {
                     return;
                 }
@@ -173,7 +165,7 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
                     ->setDefined('language')->setAllowedTypes('language', ['string'])
                 ;
             })
-            ->setDefault('hosted_payment', function (OptionsResolver $hostedPaymentResolver) use ($paymentGatewayConfiguration, $transaction, $options) {
+            ->setDefault('hosted_payment', function (OptionsResolver $hostedPaymentResolver) use ($paymentGatewayConfiguration, $options) {
                 if (!isset($options['hosted_payment']) && !in_array($paymentGatewayConfiguration->get('mode'), [self::MODE_HOSTED, self::MODE_LIGHTBOX])) {
                     return;
                 }
@@ -192,7 +184,7 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         return array_filter($resolver->resolve($options));
     }
 
-    public static function transformPaymentToArray(\Payplug\Resource\Payment $payment): array
+    public static function transformPaymentToArray(Payplug\Resource\Payment $payment): array
     {
         $reflectionClass = new \ReflectionClass($payment);
         $method = $reflectionClass->getMethod('getAttributes');
@@ -210,9 +202,6 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         return $paymentArray;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

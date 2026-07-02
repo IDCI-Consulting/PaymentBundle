@@ -28,7 +28,7 @@ class OneClickContextEvent
     public function __construct(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        array $data = []
+        array $data = [],
     ) {
         $this->request = $request;
         $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;

@@ -2,9 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway\Event;
 
-use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
-use Symfony\Component\HttpFoundation\Request;
 
 class ApplePayPaymentGatewayBuildRequestEvent
 {
@@ -23,7 +21,7 @@ class ApplePayPaymentGatewayBuildRequestEvent
      */
     public function __construct(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        array &$options = []
+        array &$options = [],
     ) {
         $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;
         $this->options = &$options;

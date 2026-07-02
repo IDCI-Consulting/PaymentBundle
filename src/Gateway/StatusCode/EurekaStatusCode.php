@@ -4,7 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Gateway\StatusCode;
 
 final class EurekaStatusCode
 {
-    const STATUS = [
+    public const STATUS = [
         '1' => 'Refused',
         '2' => 'Refused by bank',
         '3' => 'Technical error',

@@ -23,54 +23,39 @@ abstract class AbstractPaymentGateway implements PaymentGatewayInterface
 
     public function __construct(
         Environment $templating,
-        EventDispatcherInterface $dispatcher
+        EventDispatcherInterface $dispatcher,
     ) {
         $this->templating = $templating;
         $this->dispatcher = $dispatcher;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     abstract public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): string;
 
-    /**
-     * {@inheritdoc}
-     */
     public function buildReturnHTMLView(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): ?string {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     abstract public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): GatewayResponse;
 
-    /**
-     * {@inheritdoc}
-     */
     abstract public function getCallbackResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ): GatewayResponse;
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getParameterNames(): ?array
     {
         return [

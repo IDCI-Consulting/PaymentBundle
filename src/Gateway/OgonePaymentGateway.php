@@ -26,24 +26,24 @@ class OgonePaymentGateway extends AbstractPaymentGateway
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
     ): array {
         return [
             'ACCEPTURL' => $paymentGatewayConfiguration->get('return_url'),
             'AMOUNT' => $transaction->getAmount(),
             'CANCELURL' => $paymentGatewayConfiguration->get('return_url'),
-            //'CN' => '',
+            // 'CN' => '',
             'CURRENCY' => $transaction->getCurrencyCode(),
             'DECLINEURL' => $paymentGatewayConfiguration->get('return_url'),
             'EMAIL' => $transaction->getCustomerEmail(),
             'EXCEPTIONURL' => $paymentGatewayConfiguration->get('return_url'),
             'LANGUAGE' => 'fr_FR',
             'ORDERID' => $transaction->getId(),
-            //'OWNERADDRESS' => '',
-            //'OWNERCTY' => '',
-            //'OWNERTELNO' => '',
-            //'OWNERTOWN' => '',
-            //'OWNERZIP' => '',
+            // 'OWNERADDRESS' => '',
+            // 'OWNERCTY' => '',
+            // 'OWNERTELNO' => '',
+            // 'OWNERTOWN' => '',
+            // 'OWNERZIP' => '',
             'PSPID' => $paymentGatewayConfiguration->get('client_id'),
         ];
     }
@@ -51,7 +51,7 @@ class OgonePaymentGateway extends AbstractPaymentGateway
     private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
@@ -70,13 +70,10 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         return $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
@@ -85,31 +82,22 @@ class OgonePaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): GatewayResponse {
         return new GatewayResponse();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCallbackResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ): GatewayResponse {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

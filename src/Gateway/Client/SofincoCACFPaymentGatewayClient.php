@@ -14,37 +14,37 @@ use Twig\Environment;
 
 class SofincoCACFPaymentGatewayClient
 {
-    const BUSINESS_TOKEN_DURATION = 30;
-    const BUSINESS_TOKEN_FORMAT_OPAQUE = 'OPAQUE';
-    const BUSINESS_TOKEN_FORMAT_JWS = 'JWS';
-    const BUSINESS_TOKEN_FORMAT_JWE = 'JWE';
+    public const BUSINESS_TOKEN_DURATION = 30;
+    public const BUSINESS_TOKEN_FORMAT_OPAQUE = 'OPAQUE';
+    public const BUSINESS_TOKEN_FORMAT_JWS = 'JWS';
+    public const BUSINESS_TOKEN_FORMAT_JWE = 'JWE';
 
-    const CUSTOMER_CIVILITY_CODE_MR = 1;
-    const CUSTOMER_CIVILITY_CODE_MRS = 2;
-    const CUSTOMER_CIVILITY_CODE_MS = 3;
+    public const CUSTOMER_CIVILITY_CODE_MR = 1;
+    public const CUSTOMER_CIVILITY_CODE_MRS = 2;
+    public const CUSTOMER_CIVILITY_CODE_MS = 3;
 
-    const DOCUMENT_SERVICE_NAME_A1 = 'FLUX_A1';
-    const DOCUMENT_SERVICE_NAME_B = 'FLUX_B';
-    const DOCUMENT_SERVICE_NAME_C = 'FLUX_C';
-    const DOCUMENT_SERVICE_NAME_D = 'FLUX_D';
+    public const DOCUMENT_SERVICE_NAME_A1 = 'FLUX_A1';
+    public const DOCUMENT_SERVICE_NAME_B = 'FLUX_B';
+    public const DOCUMENT_SERVICE_NAME_C = 'FLUX_C';
+    public const DOCUMENT_SERVICE_NAME_D = 'FLUX_D';
 
-    const DOCUMENT_STATUS_PENDING_1 = 'ATT';
-    const DOCUMENT_STATUS_PENDING_2 = 'AFI';
-    const DOCUMENT_STATUS_STUDY_IN_PROGRESS = 'ETU';
-    const DOCUMENT_STATUS_WAITING_FOR_CLIENT = 'CLI';
-    const DOCUMENT_STATUS_REFUSED = 'REF';
-    const DOCUMENT_STATUS_CANCELED = 'ANN';
-    const DOCUMENT_STATUS_FUNDED = 'FIN';
-    const DOCUMENT_STATUS_NOT_FOUND = 'NFD';
-    const DOCUMENT_STATUS_ERROR = 'ERR';
-    const DOCUMENT_STATUS_UNKNOWN = 'UKW';
-    const DOCUMENT_STATUS_ABANDONNED = 'ABD';
+    public const DOCUMENT_STATUS_PENDING_1 = 'ATT';
+    public const DOCUMENT_STATUS_PENDING_2 = 'AFI';
+    public const DOCUMENT_STATUS_STUDY_IN_PROGRESS = 'ETU';
+    public const DOCUMENT_STATUS_WAITING_FOR_CLIENT = 'CLI';
+    public const DOCUMENT_STATUS_REFUSED = 'REF';
+    public const DOCUMENT_STATUS_CANCELED = 'ANN';
+    public const DOCUMENT_STATUS_FUNDED = 'FIN';
+    public const DOCUMENT_STATUS_NOT_FOUND = 'NFD';
+    public const DOCUMENT_STATUS_ERROR = 'ERR';
+    public const DOCUMENT_STATUS_UNKNOWN = 'UKW';
+    public const DOCUMENT_STATUS_ABANDONNED = 'ABD';
 
-    const CONTRACT_STATUS_ACCEPTED_1 = '080';
-    const CONTRACT_STATUS_ACCEPTED_2 = '091';
-    const CONTRACT_STATUS_PRE_ACCEPTED_1 = '091';
-    const CONTRACT_STATUS_PRE_ACCEPTED_2 = '052';
-    const CONTRACT_STATUS_PENDING = '021';
+    public const CONTRACT_STATUS_ACCEPTED_1 = '080';
+    public const CONTRACT_STATUS_ACCEPTED_2 = '091';
+    public const CONTRACT_STATUS_PRE_ACCEPTED_1 = '091';
+    public const CONTRACT_STATUS_PRE_ACCEPTED_2 = '052';
+    public const CONTRACT_STATUS_PENDING = '021';
 
     /**
      * @var Environment
@@ -116,7 +116,7 @@ class SofincoCACFPaymentGatewayClient
         ?string $weblongHostName,
         ?string $contextApplicationId,
         ?string $contextPartnerId,
-        ?string $contextSourceId
+        ?string $contextSourceId,
     ) {
         $this->twig = $twig;
         $this->logger = $logger;
@@ -158,9 +158,8 @@ class SofincoCACFPaymentGatewayClient
     }
 
     /**
-     * Access token "API Manager / APIM"
+     * Access token "API Manager / APIM".
      */
-
     public function getAccessTokenHash(): string
     {
         return md5(sprintf('idci_payment.sofinco.access_token.%s', $this->clientId));
@@ -229,9 +228,8 @@ class SofincoCACFPaymentGatewayClient
     }
 
     /**
-     * Simulation API
+     * Simulation API.
      */
-
     public function getLoanSimulationsUrl(): string
     {
         return sprintf('https://%s/loanSimulation/v1/simulations/', $this->apiHostName);
@@ -291,9 +289,8 @@ class SofincoCACFPaymentGatewayClient
     }
 
     /**
-     * Business token API
+     * Business token API.
      */
-
     public function getBusinessTokenUrl(): string
     {
         return sprintf('https://%s/BusinessDataTransfer/V1/businessDataTransferTokens/', $this->apiHostName);
@@ -340,9 +337,8 @@ class SofincoCACFPaymentGatewayClient
     }
 
     /**
-     * Partner data exchange link API
+     * Partner data exchange link API.
      */
-
     public function getPartnerDataExchangeLinkUrl(): string
     {
         return sprintf('https://%s/partnerDataExchange/v1/links/', $this->apiHostName);
@@ -393,9 +389,8 @@ class SofincoCACFPaymentGatewayClient
     }
 
     /**
-     * Gateway credit URL for customer
+     * Gateway credit URL for customer.
      */
-
     public function getCreditUrl(array $options): string
     {
         return sprintf(
@@ -408,9 +403,8 @@ class SofincoCACFPaymentGatewayClient
     }
 
     /**
-     * Partner Loan Portfolio API
+     * Partner Loan Portfolio API.
      */
-
     public function getPartnerLoanPortfolioUrl(): string
     {
         return sprintf('https://%s/partnerLoanPortfolio/v1', $this->apiHostName);
@@ -505,9 +499,8 @@ class SofincoCACFPaymentGatewayClient
     }
 
     /**
-     * Order Status Notification API
+     * Order Status Notification API.
      */
-
     public function getOrderStatusNotificationUrl(): string
     {
         return sprintf('https://%s/orderStatusNotification/v1', $this->apiHostName);
@@ -660,9 +653,8 @@ class SofincoCACFPaymentGatewayClient
     }
 
     /**
-     * Documents API
+     * Documents API.
      */
-
     public function getDocumentsUrl(): string
     {
         return sprintf('https://%s/websrv/index.asp', $this->weblongHostName);
@@ -705,13 +697,12 @@ class SofincoCACFPaymentGatewayClient
     }
 
     /**
-     * Options Resolver
+     * Options Resolver.
      */
 
     /**
-     * Options Resolver > Simulation API
+     * Options Resolver > Simulation API.
      */
-
     private function resolveLoanSimulationsOptions(array $options): array
     {
         $resolver = (new OptionsResolver())
@@ -778,7 +769,7 @@ class SofincoCACFPaymentGatewayClient
         }
 
         return $resolvedOptions;
-     }
+    }
 
     private function resolveSimulatorOptions(array $options): array
     {
@@ -792,9 +783,8 @@ class SofincoCACFPaymentGatewayClient
     }
 
     /**
-     * Options Resolver > Business token API
+     * Options Resolver > Business token API.
      */
-
     private function resolveBusinessTokenOptions(array $options): array
     {
         $resolver = (new OptionsResolver())
@@ -1137,9 +1127,8 @@ class SofincoCACFPaymentGatewayClient
     }
 
     /**
-     * Options Resolver > Partner data exchange link API
+     * Options Resolver > Partner data exchange link API.
      */
-
     private function resolvePartnerDataExchangeLinkOptions(array $options): array
     {
         $resolver = (new OptionsResolver())
@@ -1848,11 +1837,9 @@ class SofincoCACFPaymentGatewayClient
         return $resolvedOptions;
     }
 
-
     /**
-     * Options Resolver > Documents API
+     * Options Resolver > Documents API.
      */
-
     private function resolveDocumentsOptions(array $options): array
     {
         $resolver = (new OptionsResolver())

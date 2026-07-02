@@ -23,7 +23,7 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
     public function __construct(
         Environment $templating,
         EventDispatcherInterface $dispatcher,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         parent::__construct($templating, $dispatcher);
 
@@ -43,7 +43,7 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
 
     private function createPayment(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
     ) {
         try {
             return $this->getClient($paymentGatewayConfiguration)->payments->create(
@@ -61,7 +61,7 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
     private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): array {
         $payment = $this->createPayment($paymentGatewayConfiguration, $transaction);
 
@@ -70,13 +70,10 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
@@ -85,14 +82,11 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): GatewayResponse {
         $gatewayResponse = new GatewayResponse();
 
@@ -122,13 +116,11 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws \UnexpectedValueException If the request method is not POST
      */
     public function getCallbackResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ): GatewayResponse {
         if (!$request->isMethod('GET')) {
             throw new \UnexpectedValueException('Alma : Payment Gateway error (Request method should be POST)');
@@ -161,9 +153,6 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getParameterNames(): ?array
     {
         return array_merge(
@@ -183,7 +172,7 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
     private function resolveCreatePaymentOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options
+        array $options,
     ): array {
         $resolver = (new OptionsResolver())
             ->setDefault('payment', function (OptionsResolver $paymentResolver) use ($paymentGatewayConfiguration, $transaction) {

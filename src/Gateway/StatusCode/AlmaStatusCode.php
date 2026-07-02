@@ -4,14 +4,14 @@ namespace IDCI\Bundle\PaymentBundle\Gateway\StatusCode;
 
 final class AlmaStatusCode
 {
-    const STATUS_NOT_STARTED = 'not_started';
-    const STATUS_SCORED_NO = 'scored_no';
-    const STATUS_SCORED_YES = 'scored_yes';
-    const STATUS_SCORED_MAYBE = 'scored_maybe';
-    const STATUS_IN_PROGRESS = 'in_progress';
-    const STATUS_PAID = 'paid';
+    public const STATUS_NOT_STARTED = 'not_started';
+    public const STATUS_SCORED_NO = 'scored_no';
+    public const STATUS_SCORED_YES = 'scored_yes';
+    public const STATUS_SCORED_MAYBE = 'scored_maybe';
+    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_PAID = 'paid';
 
-    const STATUS = [
+    public const STATUS = [
         'not_started' => 'The payment has been created',
         'scored_no' => 'The payment in installments is refused by Alma',
         'scored_yes' => 'The payment in installments is accepted by Alma',

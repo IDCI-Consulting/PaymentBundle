@@ -28,7 +28,7 @@ class PaymentGatewayEvent
     public function __construct(
         Transaction $transaction,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        array &$options = []
+        array &$options = [],
     ) {
         $this->transaction = $transaction;
         $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;

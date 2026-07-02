@@ -4,7 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Gateway\StatusCode;
 
 final class SystemPayTransactionStatusCode
 {
-    const ERROR_STATUS = [
+    public const ERROR_STATUS = [
         'ABANDONED' => 'The transaction has been abandonned by the purchaser',
         'CANCELLED' => 'The transaction has been canceled',
         'CAPTURE_FAILED' => 'The transaction has been canceled by the bank',
@@ -14,7 +14,7 @@ final class SystemPayTransactionStatusCode
         'REFUSED' => 'The transaction has been refused',
     ];
 
-    const PENDING_STATUS = [
+    public const PENDING_STATUS = [
         'AUTHORISED_TO_VALIDATE' => 'The transaction has been accepted but must be validated manually',
         'CAPTURED' => 'The transaction is in charge by the bank',
         'SUSPENDED' => 'The transaction has been suspended',
@@ -23,7 +23,7 @@ final class SystemPayTransactionStatusCode
         'WAITING_AUTHORISATION_TO_VALIDATE' => 'The transaction must be validated by the merchant',
     ];
 
-    const SUCCESS_STATUS = [
+    public const SUCCESS_STATUS = [
         'ACCEPTED' => 'The transaction has been accepted',
         'AUTHORISED' => 'The transaction has been accepted and will be charged in few days',
     ];

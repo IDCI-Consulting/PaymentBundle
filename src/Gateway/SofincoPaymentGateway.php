@@ -13,11 +13,11 @@ use Twig\Environment;
 
 class SofincoPaymentGateway extends AbstractPaymentGateway
 {
-    const OFFER_MODULE = 'WSACCROCHE';
+    public const OFFER_MODULE = 'WSACCROCHE';
 
-    const PRODUCT_MODULE = 'PRODUCT';
+    public const PRODUCT_MODULE = 'PRODUCT';
 
-    const CART_MODULE = 'PANIER';
+    public const CART_MODULE = 'PANIER';
 
     /**
      * @var string
@@ -27,7 +27,7 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
     public function __construct(
         Environment $templating,
         EventDispatcherInterface $dispatcher,
-        string $serverUrl
+        string $serverUrl,
     ) {
         parent::__construct($templating, $dispatcher);
 
@@ -41,7 +41,7 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
      */
     private function buildOfferVerifyOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
     ): array {
         return [
             'q6' => $paymentGatewayConfiguration->get('site_id'),
@@ -57,7 +57,7 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
     ): array {
         return [
             'q6' => $paymentGatewayConfiguration->get('site_id'),
@@ -78,7 +78,7 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
      */
     private function verifyIfOfferExist(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
     ): bool {
         $options = $this->buildOfferVerifyOptions($paymentGatewayConfiguration, $transaction);
 
@@ -98,7 +98,7 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
     private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
@@ -108,13 +108,10 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
@@ -123,26 +120,21 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): GatewayResponse {
         return new GatewayResponse();
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws \UnexpectedValueException If the request method is not GET
      */
     public function getCallbackResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ): GatewayResponse {
         if (!$request->isMethod(Request::METHOD_GET)) {
             throw new \UnexpectedValueException('Sofinco : Payment Gateway error (Request method should be GET)');
@@ -163,9 +155,6 @@ class SofincoPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_UNVERIFIED);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

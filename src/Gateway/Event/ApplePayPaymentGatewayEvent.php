@@ -35,7 +35,7 @@ class ApplePayPaymentGatewayEvent
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         GatewayResponse $gatewayResponse,
-        array $data = []
+        array $data = [],
     ) {
         $this->request = $request;
         $this->paymentGatewayConfiguration = $paymentGatewayConfiguration;

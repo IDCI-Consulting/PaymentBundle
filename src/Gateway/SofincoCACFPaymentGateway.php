@@ -31,7 +31,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
         Environment $templating,
         EventDispatcherInterface $dispatcher,
         SofincoCACFPaymentGatewayClient $client,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         parent::__construct($templating, $dispatcher);
 
@@ -47,7 +47,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options
+        array $options,
     ): array {
         $this->dispatcher->dispatch(new PaymentGatewayEvent($transaction, $paymentGatewayConfiguration, $options), PaymentGatewayEvents::PRE_CONFIGURE_OPTIONS);
 
@@ -78,7 +78,7 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
     private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction, $options);
 
@@ -117,13 +117,10 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction, $options);
 
@@ -132,26 +129,21 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): GatewayResponse {
         return new GatewayResponse();
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws \UnexpectedValueException If the request method is not POST
      */
     public function getCallbackResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ): GatewayResponse {
         if (!$request->isMethod(Request::METHOD_POST)) {
             throw new \UnexpectedValueException('Sofinco : Payment Gateway error (Request method should be POST)');
@@ -199,9 +191,6 @@ class SofincoCACFPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_UNVERIFIED);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

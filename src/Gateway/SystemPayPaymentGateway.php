@@ -15,9 +15,9 @@ use Twig\Environment;
 
 class SystemPayPaymentGateway extends AbstractPaymentGateway
 {
-    const SIGNATURE_ALGORITHM_SHA1 = 'SHA-1';
+    public const SIGNATURE_ALGORITHM_SHA1 = 'SHA-1';
 
-    const SIGNATURE_ALGORITHM_SHA256 = 'SHA-256';
+    public const SIGNATURE_ALGORITHM_SHA256 = 'SHA-256';
 
     /**
      * @var string
@@ -27,7 +27,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
     public function __construct(
         Environment $templating,
         EventDispatcherInterface $dispatcher,
-        string $serverUrl
+        string $serverUrl,
     ) {
         parent::__construct($templating, $dispatcher);
 
@@ -42,7 +42,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): array {
         return array_merge(
             [
@@ -73,7 +73,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
      */
     private function buildSignature(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        array $options
+        array $options,
     ): string {
         $key = $paymentGatewayConfiguration->get('site_key');
         $rawSignature = mb_convert_encoding(sprintf(
@@ -92,7 +92,7 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
     private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction, $options);
         $options['signature'] = $this->buildSignature($paymentGatewayConfiguration, $options);
@@ -103,13 +103,10 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction, $options);
 
@@ -118,26 +115,21 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): GatewayResponse {
         return new GatewayResponse();
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws \UnexpectedValueException If the request method is not POST
      */
     public function getCallbackResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ): GatewayResponse {
         if (!$request->isMethod(Request::METHOD_POST)) {
             throw new \UnexpectedValueException('Payment Gateway error (Request method should be POST)');
@@ -189,9 +181,6 @@ class SystemPayPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

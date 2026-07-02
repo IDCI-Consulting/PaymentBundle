@@ -4,7 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Gateway\StatusCode;
 
 final class SystemPayAuthStatusCode
 {
-    const STATUS = [
+    public const STATUS = [
         '03' => 'Problem with autorization servers',
         '05' => 'The bank has refused the transaction',
         '51' => 'Insufficient funds',

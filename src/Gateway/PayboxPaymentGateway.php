@@ -26,7 +26,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         EventDispatcherInterface $dispatcher,
         string $serverHostName,
         string $keyPath,
-        string $publicKeyUrl
+        string $publicKeyUrl,
     ) {
         parent::__construct($templating, $dispatcher);
 
@@ -102,7 +102,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
      */
     private function buildOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        Transaction $transaction
+        Transaction $transaction,
     ): array {
         return [
             'PBX_SITE' => $paymentGatewayConfiguration->get('client_site'),
@@ -128,7 +128,7 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
     private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): array {
         $options = $this->buildOptions($paymentGatewayConfiguration, $transaction);
 
@@ -153,13 +153,10 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction);
 
@@ -168,26 +165,21 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): GatewayResponse {
         return new GatewayResponse();
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws \UnexpectedValueException If the request method is not post
      */
     public function getCallbackResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ): GatewayResponse {
         if (!$request->isMethod('POST')) {
             throw new \UnexpectedValueException('Paybox : Payment Gateway error (Request method should be POST)');
@@ -229,9 +221,6 @@ class PayboxPaymentGateway extends AbstractPaymentGateway
         return $gatewayResponse->setStatus(PaymentStatus::STATUS_APPROVED);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getParameterNames(): ?array
     {
         return array_merge(

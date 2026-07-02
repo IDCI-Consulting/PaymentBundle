@@ -35,7 +35,7 @@ class ApplePayPaymentGatewaySessionEvent
     /**
      * @var string
      */
-    protected $sessionData = null;
+    protected $sessionData;
 
     /**
      * ApplePayPaymentGatewayEvent constructor.
@@ -46,7 +46,7 @@ class ApplePayPaymentGatewaySessionEvent
         string $validationUrl,
         array &$paymentRequest = [],
         array &$customData = [],
-        string &$sessionData = null
+        ?string &$sessionData = null,
     ) {
         $this->request = $request;
         $this->paymentContext = $paymentContext;
@@ -89,7 +89,7 @@ class ApplePayPaymentGatewaySessionEvent
     }
 
     /**
-     * Set payment request
+     * Set payment request.
      */
     public function setPaymentRequest(array $paymentRequest): self
     {
@@ -107,7 +107,7 @@ class ApplePayPaymentGatewaySessionEvent
     }
 
     /**
-     * Set custom data
+     * Set custom data.
      */
     public function setCustomData(array $customData): self
     {
@@ -125,7 +125,7 @@ class ApplePayPaymentGatewaySessionEvent
     }
 
     /**
-     * Set sessionData
+     * Set sessionData.
      */
     public function setSessionData(string $sessionData): self
     {

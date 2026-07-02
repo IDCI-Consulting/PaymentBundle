@@ -52,7 +52,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
         EventDispatcherInterface $dispatcher,
         RequestStack $requestStack,
         LoggerInterface $logger,
-        ?string $rootCaFilePath = null
+        ?string $rootCaFilePath = null,
     ) {
         parent::__construct($templating, $dispatcher);
 
@@ -63,7 +63,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
 
     public function createSession(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        string $validationUrl
+        string $validationUrl,
     ): ?string {
         $merchantIdentityCertificate = tmpfile();
         if (!\is_resource($merchantIdentityCertificate)) {
@@ -105,7 +105,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
 
     public function decryptPaymentToken(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
-        array $paymentData
+        array $paymentData,
     ): ?array {
         if (!class_exists(ApplePayDecodingServiceFactory::class)) {
             throw new \LogicException('ApplePayPaymentGateway requires "payu/apple-pay" package to decrypt payment token');
@@ -161,7 +161,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
     private function initialize(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): array {
         return [
             'return_url' => $paymentGatewayConfiguration->get('return_url'),
@@ -175,39 +175,31 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function buildHTMLView(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): string {
         $initializationData = $this->initialize($paymentGatewayConfiguration, $transaction, $options);
 
         return $this->templating->render('@IDCIPayment/Gateway/apple_pay.html.twig', $initializationData);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReturnResponse(
         Request $request,
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options = []
+        array $options = [],
     ): GatewayResponse {
         return new GatewayResponse();
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws \UnexpectedValueException If the request method is not POST
      */
     public function getCallbackResponse(
         Request $request,
-        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration
+        PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
     ): GatewayResponse {
         if (!$request->isMethod('POST')) {
             throw new \UnexpectedValueException('Apple pay : Payment Gateway error (Request method should be POST)');
@@ -250,7 +242,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
     private function resolveApplePayPaymentRequestOptions(
         PaymentGatewayConfigurationInterface $paymentGatewayConfiguration,
         Transaction $transaction,
-        array $options
+        array $options,
     ): array {
         $this->dispatcher->dispatch(new ApplePayPaymentGatewayBuildRequestEvent($paymentGatewayConfiguration, $options), ApplePayPaymentGatewayEvents::PRE_BUILD_REQUEST);
 
@@ -261,7 +253,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
             ->setDefault('countryCode', $paymentGatewayConfiguration->get('country_code'))->setAllowedValues('countryCode', Countries::getCountryCodes())
             ->setDefault('requiredBillingContactFields', $paymentGatewayConfiguration->get('required_billing_contact_fields'))->setAllowedTypes('requiredBillingContactFields', ['null', 'array'])
             ->setDefault('requiredShippingContactFields', $paymentGatewayConfiguration->get('required_shipping_contact_fields'))->setAllowedTypes('requiredShippingContactFields', ['null', 'array'])
-            ->setDefault('billingContact', function (OptionsResolver $billingContactResolver) use ($paymentGatewayConfiguration, $transaction, $options) {
+            ->setDefault('billingContact', function (OptionsResolver $billingContactResolver) use ($options) {
                 if (!isset($options['billingContact'])) {
                     return;
                 }
@@ -283,7 +275,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
                     ->setDefined('countryCode')->setAllowedValues('countryCode', Countries::getCountryCodes())
                 ;
             })
-            ->setDefault('shippingContact', function (OptionsResolver $shippingContactResolver) use ($paymentGatewayConfiguration, $transaction, $options) {
+            ->setDefault('shippingContact', function (OptionsResolver $shippingContactResolver) use ($options) {
                 if (!isset($options['shippingContact'])) {
                     return;
                 }
@@ -306,7 +298,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
                 ;
             })
             ->setDefault('applicationData', '{}')->setAllowedTypes('applicationData', ['string', 'array'])
-                ->setNormalizer('applicationData', function (Options $options, $applicationData) use ($paymentGatewayConfiguration, $transaction) {
+                ->setNormalizer('applicationData', function (Options $options, $applicationData) {
                     if (is_array($applicationData)) {
                         return json_encode($applicationData);
                     }
@@ -334,7 +326,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
             ->setDefined('supportsCouponCode')->setAllowedTypes('supportsCouponCode', ['bool'])
             ->setDefined('couponCode')->setAllowedTypes('couponCode', ['string'])
             ->setDefined('shippingContactEditingMode')->setAllowedTypes('shippingContactEditingMode', ['array'])
-            ->setDefault('total', function (OptionsResolver $totalResolver) use ($paymentGatewayConfiguration, $transaction) {
+            ->setDefault('total', function (OptionsResolver $totalResolver) use ($transaction) {
                 $totalResolver
                     ->setDefined('type')->setAllowedTypes('type', ['string'])
                     ->setDefault('label', $transaction->getItemId())->setAllowedTypes('label', ['string'])
@@ -418,7 +410,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
 
                     return $shippingMethods;
                 })
-            ->setDefault('multiTokenContexts', function (OptionsResolver $multiTokenContextsResolver) use ($paymentGatewayConfiguration, $transaction, $options) {
+            ->setDefault('multiTokenContexts', function (OptionsResolver $multiTokenContextsResolver) use ($options) {
                 if (!isset($options['multiTokenContexts'])) {
                     return;
                 }
@@ -431,7 +423,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
                     ->setRequired('amount')->setAllowedTypes('amount', ['string'])
                 ;
             })
-            ->setDefault('automaticReloadPaymentRequest', function (OptionsResolver $automaticReloadPaymentRequestResolver) use ($paymentGatewayConfiguration, $transaction, $options) {
+            ->setDefault('automaticReloadPaymentRequest', function (OptionsResolver $automaticReloadPaymentRequestResolver) use ($options) {
                 if (!isset($options['automaticReloadPaymentRequest'])) {
                     return;
                 }
@@ -457,7 +449,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
                     ->setDefined('tokenNotificationURL')->setAllowedTypes('tokenNotificationURL', ['string'])
                 ;
             })
-            ->setDefault('recurringPaymentRequest', function (OptionsResolver $recurringPaymentRequestResolver) use ($paymentGatewayConfiguration, $transaction, $options) {
+            ->setDefault('recurringPaymentRequest', function (OptionsResolver $recurringPaymentRequestResolver) use ($options) {
                 if (!isset($options['recurringPaymentRequest'])) {
                     return;
                 }
@@ -501,7 +493,7 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
                     ->setDefined('tokenNotificationURL')->setAllowedTypes('tokenNotificationURL', ['string'])
                 ;
             })
-            ->setDefault('deferredPaymentRequest', function (OptionsResolver $deferredPaymentRequestResolver) use ($paymentGatewayConfiguration, $transaction) {
+            ->setDefault('deferredPaymentRequest', function (OptionsResolver $deferredPaymentRequestResolver) {
                 if (!isset($options['deferredPaymentRequest'])) {
                     return;
                 }
@@ -538,9 +530,6 @@ class ApplePayPaymentGateway extends AbstractPaymentGateway
         return $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getParameterNames(): ?array
     {
         return array_merge(
