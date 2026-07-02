@@ -1,6 +1,7 @@
 # Variables
 
 php_sources ?= .
+php_fixer_version = 3-php8.5
 
 # Utils
 
