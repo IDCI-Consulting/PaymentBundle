@@ -10,10 +10,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PaymentGatewayConfigurationChoiceType extends AbstractType
 {
-    /**
-     * @var PaymentManager
-     */
-    private $paymentManager;
+    private PaymentManager $paymentManager;
 
     public function __construct(PaymentManager $paymentManager)
     {

@@ -8,10 +8,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class TransactionManagerEventSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var TransactionManagerInterface
-     */
-    private $transactionManager;
+    private TransactionManagerInterface $transactionManager;
 
     public function __construct(TransactionManagerInterface $transactionManager)
     {

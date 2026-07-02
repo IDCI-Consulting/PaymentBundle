@@ -4,45 +4,14 @@ namespace IDCI\Bundle\PaymentBundle\Model;
 
 class GatewayResponse
 {
-    /**
-     * @var string
-     */
-    private $transactionId;
-
-    /**
-     * @var string
-     */
-    private $paymentMethod;
-
-    /**
-     * @var int
-     */
-    private $amount;
-
-    /**
-     * @var string
-     */
-    private $currencyCode;
-
-    /**
-     * @var string
-     */
-    private $status;
-
-    /**
-     * @var string
-     */
-    private $message;
-
-    /**
-     * @var \DateTime
-     */
-    private $date;
-
-    /**
-     * @var array
-     */
-    private $raw;
+    private string $transactionId;
+    private string $paymentMethod;
+    private int $amount;
+    private string $currencyCode;
+    private string $status;
+    private string $message;
+    private \DateTime $date;
+    private array $raw;
 
     public function toArray(): array
     {

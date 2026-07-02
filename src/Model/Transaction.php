@@ -6,85 +6,22 @@ use Flaky\Flaky;
 
 class Transaction
 {
-    /**
-     * @var string
-     */
-    protected $id;
-
-    /**
-     * @var int
-     */
-    protected $number;
-
-    /**
-     * @var string
-     */
-    protected $gatewayConfigurationAlias;
-
-    /**
-     * @var string
-     */
-    protected $paymentMethod;
-
-    /**
-     * @var string
-     */
-    protected $itemId;
-
-    /**
-     * @var string|null
-     */
-    protected $customerId;
-
-    /**
-     * @var string|null
-     */
-    protected $customerEmail;
-
-    /**
-     * @var string
-     */
-    protected $status;
-
-    /**
-     * @var int
-     */
-    protected $amount;
-
-    /**
-     * @var string
-     */
-    protected $currencyCode;
-
-    /**
-     * @var string|null
-     */
-    protected $description;
-
-    /**
-     * @var array
-     */
-    protected $metadata;
-
-    /**
-     * @var array
-     */
-    protected $raw;
-
-    /**
-     * @var \DateTime
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     */
-    protected $updatedAt;
-
-    /**
-     * @var bool
-     */
-    protected $logged = true;
+    protected string $id;
+    protected int $number;
+    protected string $gatewayConfigurationAlias;
+    protected string $paymentMethod;
+    protected string $itemId;
+    protected ?string $customerId;
+    protected ?string $customerEmail;
+    protected ?string $status;
+    protected int $amount;
+    protected string $currencyCode;
+    protected ?string $description;
+    protected array $metadata;
+    protected array $raw;
+    protected \DateTime $createdAt;
+    protected \DateTime $updatedAt;
+    protected bool $logged = true;
 
     public function __construct()
     {
@@ -94,26 +31,6 @@ class Transaction
     public function __toString(): string
     {
         return $this->id;
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'gateway_configuration_alias' => $this->gatewayConfigurationAlias,
-            'payment_method' => $this->paymentMethod,
-            'item_id' => $this->itemId,
-            'customer_id' => $this->customerId,
-            'customer_email' => $this->customerEmail,
-            'status' => $this->status,
-            'amount' => $this->amount,
-            'currency_code' => $this->currencyCode,
-            'description' => $this->description,
-            'metadata' => $this->metadata,
-            'raw' => $this->raw,
-            'createdAt' => $this->createdAt,
-            'updatedAt' => $this->updatedAt,
-        ];
     }
 
     public function getId(): ?string
@@ -326,5 +243,25 @@ class Transaction
         $this->logged = $logged;
 
         return $this;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'gateway_configuration_alias' => $this->getGatewayConfigurationAlias(),
+            'payment_method' => $this->getPaymentMethod(),
+            'item_id' => $this->getItemId(),
+            'customer_id' => $this->getCustomerId(),
+            'customer_email' => $this->getCustomerEmail(),
+            'status' => $this->getStatus(),
+            'amount' => $this->getAmount(),
+            'currency_code' => $this->getCurrencyCode(),
+            'description' => $this->getDescription(),
+            'metadata' => $this->getMetadata(),
+            'raw' => $this->getRaw(),
+            'created_at' => $this->getCreatedAt(),
+            'updated_at' => $this->getUpdatedAt(),
+        ];
     }
 }

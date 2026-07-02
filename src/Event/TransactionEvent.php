@@ -7,13 +7,13 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 class TransactionEvent extends Event
 {
-    const APPROVED = 'idci_payment.transaction.approved';
-    const CANCELED = 'idci_payment.transaction.canceled';
-    const CREATED = 'idci_payment.transaction.created';
-    const FAILED = 'idci_payment.transaction.failed';
-    const PENDING = 'idci_payment.transaction.pending';
-    const UNVERIFIED = 'idci_payment.transaction.unverified';
-    const UPDATED = 'idci_payment.transaction.updated';
+    public const APPROVED = 'idci_payment.transaction.approved';
+    public const CANCELED = 'idci_payment.transaction.canceled';
+    public const CREATED = 'idci_payment.transaction.created';
+    public const FAILED = 'idci_payment.transaction.failed';
+    public const PENDING = 'idci_payment.transaction.pending';
+    public const UNVERIFIED = 'idci_payment.transaction.unverified';
+    public const UPDATED = 'idci_payment.transaction.updated';
 
     protected $transaction;
 

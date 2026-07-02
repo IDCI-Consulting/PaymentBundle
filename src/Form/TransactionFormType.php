@@ -7,16 +7,13 @@ use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
-use Symfony\Component\Form\Extension\Core\Type as Type;
+use Symfony\Component\Form\Extension\Core\Type;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TransactionFormType extends AbstractType
 {
-    /**
-     * @var PaymentManager
-     */
-    private $paymentManager;
+    private PaymentManager $paymentManager;
 
     public function __construct(PaymentManager $paymentManager)
     {

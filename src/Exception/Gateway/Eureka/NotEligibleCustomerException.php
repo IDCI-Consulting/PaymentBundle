@@ -15,9 +15,7 @@ class NotEligibleCustomerException extends GatewayException
     public function __construct(string $message, string $scoreType)
     {
         if (EurekaPaymentGatewayClient::SCORE_V3 !== $scoreType && EurekaPaymentGatewayClient::SCORE_CCL !== $scoreType) {
-            throw new \InvalidArgumentException(
-                sprintf('The scoring type "%s" is not supported. Supported values: %s, %s', $scoreType, EurekaPaymentGatewayClient::SCORE_V3, EurekaPaymentGatewayClient::SCORE_CCL)
-            );
+            throw new \InvalidArgumentException(sprintf('The scoring type "%s" is not supported. Supported values: %s, %s', $scoreType, EurekaPaymentGatewayClient::SCORE_V3, EurekaPaymentGatewayClient::SCORE_CCL));
         }
 
         $this->scoreType = $scoreType;
@@ -35,8 +33,6 @@ class NotEligibleCustomerException extends GatewayException
      * Retrieve the score type used by customer to evalute eligibility.
      *
      * @method getScoreType
-     *
-     * @return string score type
      */
     public function getScoreType(): string
     {

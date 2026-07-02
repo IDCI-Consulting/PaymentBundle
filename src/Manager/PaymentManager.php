@@ -14,35 +14,12 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class PaymentManager
 {
-    /**
-     * @var PaymentGatewayRegistryInterface
-     */
-    private $paymentGatewayRegistry;
-
-    /**
-     * @var TransactionManagerInterface
-     */
-    private $transactionManager;
-
-    /**
-     * @var EventDispatcher
-     */
-    private $dispatcher;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var array
-     */
-    private $paymentGatewayConfigurations;
-
-    /**
-     * @var EntityManagerInterface|null
-     */
-    private $em;
+    private PaymentGatewayRegistryInterface $paymentGatewayRegistry;
+    private TransactionManagerInterface $transactionManager;
+    private EventDispatcherInterface $dispatcher;
+    private LoggerInterface $logger;
+    private array $paymentGatewayConfigurations;
+    private EntityManagerInterface $em;
 
     public function __construct(
         PaymentGatewayRegistryInterface $paymentGatewayRegistry,
@@ -87,13 +64,7 @@ class PaymentManager
 
             foreach ($paymentGatewayFQCN::getParameterNames() as $parameterName) {
                 if (!array_key_exists($parameterName, $configuration['parameters'])) {
-                    throw new \UnexpectedValueException(
-                        'Payment Manager : Payment Gateway Configuration error : '.
-                        sprintf(
-                            'Parameter %s not found for payment gateway configuration %s',
-                            $parameterName, $alias
-                        )
-                    );
+                    throw new \UnexpectedValueException('Payment Manager : Payment Gateway Configuration error : '.sprintf('Parameter %s not found for payment gateway configuration %s', $parameterName, $alias));
                 }
             }
 

@@ -9,10 +9,7 @@ use IDCI\Bundle\PaymentBundle\Model\Transaction as TransactionModel;
 
 class DoctrineTransactionManager implements TransactionManagerInterface
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $em;
+    private EntityManagerInterface $em;
 
     public function __construct(?EntityManagerInterface $em = null)
     {

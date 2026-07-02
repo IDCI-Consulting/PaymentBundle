@@ -9,9 +9,6 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class PaymentGatewayCompilerPass implements CompilerPassInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function process(ContainerBuilder $container)
     {
         if (!$container->hasDefinition(PaymentGatewayRegistry::class)) {

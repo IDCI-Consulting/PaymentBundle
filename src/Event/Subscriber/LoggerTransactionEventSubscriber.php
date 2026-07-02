@@ -8,15 +8,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class LoggerTransactionEventSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var bool
-     */
-    private $enabled;
+    private LoggerInterface $logger;
+    private bool $enabled;
 
     public function __construct(LoggerInterface $logger, bool $enabled)
     {

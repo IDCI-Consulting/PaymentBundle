@@ -6,37 +6,18 @@ use Ramsey\Uuid\Uuid;
 
 class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterface
 {
-    /**
-     * @var Uuid
-     */
-    protected $id;
-
-    /**
-     * @var string
-     */
-    protected $alias;
-
-    /**
-     * @var string
-     */
-    protected $gatewayName;
-
-    /**
-     * @var bool
-     */
-    protected $enabled;
-
-    /**
-     * @var array
-     */
-    protected $parameters;
+    protected Uuid $id;
+    protected string $alias;
+    protected string $gatewayName;
+    protected bool $enabled;
+    protected array $parameters;
 
     public function get(string $key)
     {
         return $this->parameters[$key];
     }
 
-    public function set(string $key, $value): PaymentGatewayConfigurationInterface
+    public function set(string $key, $value): self
     {
         $this->parameters[$key] = $value;
 
@@ -58,7 +39,7 @@ class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterfac
         return $this->alias;
     }
 
-    public function setAlias(string $alias): PaymentGatewayConfigurationInterface
+    public function setAlias(string $alias): self
     {
         $this->alias = $alias;
 
@@ -70,7 +51,7 @@ class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterfac
         return $this->gatewayName;
     }
 
-    public function setGatewayName(string $gatewayName): PaymentGatewayConfigurationInterface
+    public function setGatewayName(string $gatewayName): self
     {
         $this->gatewayName = $gatewayName;
 
@@ -82,7 +63,7 @@ class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterfac
         return $this->enabled;
     }
 
-    public function setEnabled(bool $enable): PaymentGatewayConfigurationInterface
+    public function setEnabled(bool $enable): self
     {
         $this->enabled = $enable;
 
@@ -94,14 +75,14 @@ class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterfac
         return $this->parameters;
     }
 
-    public function addParameter($parameterKey, $parameterValue): PaymentGatewayConfigurationInterface
+    public function addParameter($parameterKey, $parameterValue): self
     {
         $this->parameters[$parameterKey] = $parameterValue;
 
         return $this;
     }
 
-    public function setParameters(array $parameters): PaymentGatewayConfigurationInterface
+    public function setParameters(array $parameters): self
     {
         $this->parameters = [];
 
