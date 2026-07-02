@@ -22,16 +22,16 @@ class CreatePaymentGatewayConfigurationCommand extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
-            ->setName('app:payment-gateway-configuration:create')
+            ->setName('payment:gateway-configuration:create')
             ->setDescription('Create a new payment gateway configuration')
             ->setHelp('Create a new payment gateway configuration')
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $om = $this->getApplication()->getKernel()->getContainer()->get('doctrine')->getManager();
         $helper = $this->getHelper('question');
@@ -76,6 +76,6 @@ class CreatePaymentGatewayConfigurationCommand extends Command
             sprintf('<info>The %s configuration has been succesfully created</info>', $paymentGatewayConfiguration)
         );
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

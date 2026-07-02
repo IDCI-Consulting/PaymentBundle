@@ -16,16 +16,16 @@ class ListPaymentGatewayConfigurationCommand extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
-            ->setName('app:payment-gateway-configuration:list')
+            ->setName('payment:gateway-configuration:list')
             ->setDescription('List and show all payment gateway configuration')
             ->setHelp('List and show all a payment gateway configuration')
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $om = $this->getApplication()->getKernel()->getContainer()->get('doctrine')->getManager();
         $helper = $this->getHelper('question');
@@ -34,9 +34,7 @@ class ListPaymentGatewayConfigurationCommand extends Command
         $paymentGatewayConfigurationList = $paymentGatewayRepository->findAll();
 
         if (count($paymentGatewayConfigurationList) < 1) {
-            throw new NoPaymentGatewayConfigurationFoundException(
-                'You need to have at least one payment gateway configuration'
-            );
+            throw new NoPaymentGatewayConfigurationFoundException('You need to have at least one payment gateway configuration');
         }
 
         $question = new ChoiceQuestion('Please select the gateway to show', $paymentGatewayConfigurationList, 0);
@@ -63,6 +61,6 @@ class ListPaymentGatewayConfigurationCommand extends Command
             );
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

@@ -17,16 +17,16 @@ class DeletePaymentGatewayConfigurationCommand extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
-            ->setName('app:payment-gateway-configuration:delete')
+            ->setName('payment:gateway-configuration:delete')
             ->setDescription('Delete permanantly a payment gateway configuration')
             ->setHelp('Delete permanantly a payment gateway configuration')
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $om = $this->getApplication()->getKernel()->getContainer()->get('doctrine')->getManager();
         $helper = $this->getHelper('question');
@@ -35,9 +35,7 @@ class DeletePaymentGatewayConfigurationCommand extends Command
         $paymentGatewayConfigurationList = $paymentGatewayRepository->findAll();
 
         if (count($paymentGatewayConfigurationList) < 1) {
-            throw new NoPaymentGatewayConfigurationFoundException(
-                'You need to have at least one payment gateway configuration'
-            );
+            throw new NoPaymentGatewayConfigurationFoundException('You need to have at least one payment gateway configuration');
         }
 
         $question = new ChoiceQuestion(
@@ -60,6 +58,6 @@ class DeletePaymentGatewayConfigurationCommand extends Command
             );
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

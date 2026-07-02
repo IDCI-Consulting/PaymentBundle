@@ -19,10 +19,10 @@ class CleanTransactionCommand extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
-            ->setName('app:transaction:clean')
+            ->setName('payment:transaction:clean')
             ->setDescription('Clean old transaction that stay in pending or created status after a given delay')
             ->setHelp('Clean transaction that stay in pending or created status after a given delay (formatted in DateInterval format)')
             ->addArgument('delay', InputArgument::OPTIONAL, 'The given period to estimate how to delete "old" aborted transactions')
@@ -38,7 +38,7 @@ EOT
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $om = $this->getApplication()->getKernel()->getContainer()->get('doctrine')->getManager();
         $helper = $this->getHelper('question');
@@ -65,7 +65,7 @@ EOT
         if (0 === count($transactions)) {
             $output->write(sprintf('No result found for the given delay (%s)', $delay));
 
-            return 0;
+            return Command::SUCCESS;
         }
 
         $question = new ConfirmationQuestion(
@@ -79,7 +79,7 @@ EOT
         $delete = $helper->ask($input, $output, $question);
 
         if (false === $delete) {
-            return 0;
+            return Command::SUCCESS;
         }
 
         foreach ($transactions as $transaction) {
@@ -87,5 +87,7 @@ EOT
         }
 
         $om->flush();
+
+        return Command::SUCCESS;
     }
 }

@@ -18,16 +18,16 @@ class UpdatePaymentGatewayConfigurationCommand extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
-            ->setName('app:payment-gateway-configuration:update')
+            ->setName('payment:gateway-configuration:update')
             ->setDescription('Update a payment gateway configuration')
             ->setHelp('Update a payment gateway configuration')
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $om = $this->getApplication()->getKernel()->getContainer()->get('doctrine')->getManager();
         $helper = $this->getHelper('question');
@@ -36,9 +36,7 @@ class UpdatePaymentGatewayConfigurationCommand extends Command
         $paymentGatewayConfigurationList = $paymentGatewayRepository->findAll();
 
         if (count($paymentGatewayConfigurationList) < 1) {
-            throw new NoPaymentGatewayConfigurationFoundException(
-                'You need to have at least one payment gateway configuration'
-            );
+            throw new NoPaymentGatewayConfigurationFoundException('You need to have at least one payment gateway configuration');
         }
 
         $question = new ChoiceQuestion('Please select the gateway', $paymentGatewayConfigurationList, 0);
@@ -78,6 +76,6 @@ class UpdatePaymentGatewayConfigurationCommand extends Command
             sprintf('<info>The %s configuration has been succesfully updated</info>', $paymentGatewayConfiguration)
         );
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

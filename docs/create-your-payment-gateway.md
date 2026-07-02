@@ -133,7 +133,7 @@ Warning : The payment gateway ```getCallbackResponse()``` method will never be c
 Use console command and choose your payment gateway:
 
 ```bash
-$ php bin/console app:payment-gateway-configuration:create
+$ php bin/console payment:gateway-configuration:create
 ```
 
 You can also add it to your ```config.yaml``` file:
