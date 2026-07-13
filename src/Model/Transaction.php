@@ -8,20 +8,19 @@ class Transaction
 {
     protected string $id;
     protected int $number;
-    protected string $gatewayConfigurationAlias;
-    protected string $paymentMethod;
-    protected string $itemId;
-    protected ?string $customerId;
+    protected string $paymentGatewayAlias;
+    protected ?string $paymentMethod;
+    protected string $itemReference;
+    protected ?string $customerReference;
     protected ?string $customerEmail;
     protected ?string $status;
     protected int $amount;
     protected string $currencyCode;
     protected ?string $description;
     protected array $metadata;
-    protected array $raw;
+    protected array $notifications;
     protected \DateTime $createdAt;
     protected \DateTime $updatedAt;
-    protected bool $logged = true;
 
     public function __construct()
     {
@@ -30,10 +29,15 @@ class Transaction
 
     public function __toString(): string
     {
-        return $this->id;
+        return sprintf('%s - %s - %d %s',
+            $this->getId(),
+            $this->getPaymentGatewayAlias(),
+            $this->getAmount(),
+            $this->getCurrencyCode()
+        );
     }
 
-    public function getId(): ?string
+    public function getId(): string
     {
         return $this->id;
     }
@@ -50,21 +54,21 @@ class Transaction
         return $this->number;
     }
 
-    public function setNumber(?int $number): self
+    public function setNumber(int $number): self
     {
         $this->number = $number;
 
         return $this;
     }
 
-    public function getGatewayConfigurationAlias(): string
+    public function getPaymentGatewayAlias(): string
     {
-        return $this->gatewayConfigurationAlias;
+        return $this->paymentGatewayAlias;
     }
 
-    public function setGatewayConfigurationAlias(string $gatewayConfigurationAlias): self
+    public function setPaymentGatewayAlias(string $paymentGatewayAlias): self
     {
-        $this->gatewayConfigurationAlias = $gatewayConfigurationAlias;
+        $this->paymentGatewayAlias = $paymentGatewayAlias;
 
         return $this;
     }
@@ -81,26 +85,26 @@ class Transaction
         return $this;
     }
 
-    public function getItemId(): ?string
+    public function getItemReference(): ?string
     {
-        return $this->itemId;
+        return $this->itemReference;
     }
 
-    public function setItemId(string $itemId): self
+    public function setItemReference(string $itemReference): self
     {
-        $this->itemId = $itemId;
+        $this->itemReference = $itemReference;
 
         return $this;
     }
 
-    public function getCustomerId(): ?string
+    public function getCustomerReference(): ?string
     {
-        return $this->customerId;
+        return $this->customerReference;
     }
 
-    public function setCustomerId(?string $customerId): self
+    public function setCustomerReference(?string $customerReference): self
     {
-        $this->customerId = $customerId;
+        $this->customerReference = $customerReference;
 
         return $this;
     }
@@ -122,7 +126,7 @@ class Transaction
         return $this->status;
     }
 
-    public function setStatus(string $status): self
+    public function setStatus(?string $status): self
     {
         $this->status = $status;
 
@@ -197,14 +201,34 @@ class Transaction
         return $this;
     }
 
-    public function getRaw(): ?array
+    public function getNotifications(): array
     {
-        return $this->raw;
+        return $this->notifications;
     }
 
-    public function setRaw(?array $raw = []): self
+    public function getLastNotification(): ?TransactionNotification
     {
-        $this->raw = $raw;
+        $lastNotification = null;
+
+        foreach ($this->getNotifications() as $notification) {
+            if (null === $lastNotification
+                || $lastNotification->getCreatedAt() < $notification->getCreatedAt()
+            ) {
+                $lastNotification = $notification;
+            }
+        }
+
+        return $lastNotification;
+    }
+
+    public function addNotification(TransactionNotification $notification)
+    {
+        $this->notifications[] = $notification;
+    }
+
+    public function setNotifications(array $notifications): self
+    {
+        $this->notifications = $notifications;
 
         return $this;
     }
@@ -233,33 +257,20 @@ class Transaction
         return $this;
     }
 
-    public function isLogged(): bool
-    {
-        return $this->logged;
-    }
-
-    public function setLogged(bool $logged): self
-    {
-        $this->logged = $logged;
-
-        return $this;
-    }
-
     public function toArray(): array
     {
         return [
             'id' => $this->getId(),
-            'gateway_configuration_alias' => $this->getGatewayConfigurationAlias(),
+            'payment_gateway_alias' => $this->getPaymentGatewayAlias(),
             'payment_method' => $this->getPaymentMethod(),
-            'item_id' => $this->getItemId(),
-            'customer_id' => $this->getCustomerId(),
+            'item_reference' => $this->getItemReference(),
+            'customer_reference' => $this->getCustomerReference(),
             'customer_email' => $this->getCustomerEmail(),
             'status' => $this->getStatus(),
             'amount' => $this->getAmount(),
             'currency_code' => $this->getCurrencyCode(),
             'description' => $this->getDescription(),
             'metadata' => $this->getMetadata(),
-            'raw' => $this->getRaw(),
             'created_at' => $this->getCreatedAt(),
             'updated_at' => $this->getUpdatedAt(),
         ];

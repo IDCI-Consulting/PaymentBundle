@@ -2,7 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle;
 
-use IDCI\Bundle\PaymentBundle\DependencyInjection\Compiler\PaymentGatewayCompilerPass;
+use IDCI\Bundle\PaymentBundle\DependencyInjection\Compiler\PaymentSystemCompilerPass;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -35,7 +35,7 @@ class IDCIPaymentBundle extends AbstractBundle
                 ->arrayNode('gateway_configurations')
                     ->arrayPrototype()
                         ->children()
-                            ->scalarNode('gateway_name')->isRequired()->cannotBeEmpty()->end()
+                            ->scalarNode('payment_system_alias')->isRequired()->cannotBeEmpty()->end()
                             ->booleanNode('enabled')->defaultTrue()->end()
                             ->arrayNode('parameters')->variablePrototype()->end()->end()
                         ->end()
@@ -61,6 +61,6 @@ class IDCIPaymentBundle extends AbstractBundle
     {
         parent::build($container);
 
-        $container->addCompilerPass(new PaymentGatewayCompilerPass());
+        $container->addCompilerPass(new PaymentSystemCompilerPass());
     }
 }

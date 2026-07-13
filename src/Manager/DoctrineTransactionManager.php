@@ -9,7 +9,7 @@ use IDCI\Bundle\PaymentBundle\Model\Transaction as TransactionModel;
 
 class DoctrineTransactionManager implements TransactionManagerInterface
 {
-    private EntityManagerInterface $em;
+    private ?EntityManagerInterface $em;
 
     public function __construct(?EntityManagerInterface $em = null)
     {
@@ -32,6 +32,21 @@ class DoctrineTransactionManager implements TransactionManagerInterface
 
         if (null === $transaction) {
             throw new NoTransactionFoundException($id);
+        }
+
+        return $transaction;
+    }
+
+    public function retrieveTransactionByNumber(string $number): TransactionModel
+    {
+        $transaction = $this
+            ->em
+            ->getRepository(Transaction::class)
+            ->findOneBy(['number' => $number])
+        ;
+
+        if (null === $transaction) {
+            throw new NoTransactionFoundException($number, 'number');
         }
 
         return $transaction;

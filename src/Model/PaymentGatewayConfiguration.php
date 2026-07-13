@@ -4,29 +4,17 @@ namespace IDCI\Bundle\PaymentBundle\Model;
 
 use Ramsey\Uuid\Uuid;
 
-class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterface
+class PaymentGatewayConfiguration
 {
     protected Uuid $id;
     protected string $alias;
-    protected string $gatewayName;
+    protected string $paymentSystemAlias;
     protected bool $enabled;
     protected array $parameters;
 
-    public function get(string $key)
-    {
-        return $this->parameters[$key];
-    }
-
-    public function set(string $key, $value): self
-    {
-        $this->parameters[$key] = $value;
-
-        return $this;
-    }
-
     public function __toString(): string
     {
-        return $this->alias;
+        return $this->getAlias();
     }
 
     public function getId(): ?Uuid
@@ -46,14 +34,14 @@ class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterfac
         return $this;
     }
 
-    public function getGatewayName(): ?string
+    public function getPaymentSystemAlias(): ?string
     {
-        return $this->gatewayName;
+        return $this->paymentSystemAlias;
     }
 
-    public function setGatewayName(string $gatewayName): self
+    public function setPaymentSystemAlias(string $paymentSystemAlias): self
     {
-        $this->gatewayName = $gatewayName;
+        $this->paymentSystemAlias = $paymentSystemAlias;
 
         return $this;
     }
@@ -75,21 +63,31 @@ class PaymentGatewayConfiguration implements PaymentGatewayConfigurationInterfac
         return $this->parameters;
     }
 
-    public function addParameter($parameterKey, $parameterValue): self
-    {
-        $this->parameters[$parameterKey] = $parameterValue;
-
-        return $this;
-    }
-
     public function setParameters(array $parameters): self
     {
         $this->parameters = [];
 
-        foreach ($parameters as $parameterKey => $parameterValue) {
-            $this->addParameter($parameterKey, $parameterValue);
+        foreach ($parameters as $key => $value) {
+            $this->addParameter($key, $value);
         }
 
         return $this;
+    }
+
+    public function addParameter($key, $value): self
+    {
+        $this->parameters[$key] = $value;
+
+        return $this;
+    }
+
+    public function hasParameter(string $key)
+    {
+        return isset($this->parameters[$key]);
+    }
+
+    public function getParameter(string $key)
+    {
+        return $this->hasParameter($key) ? $this->parameters[$key] : null;
     }
 }
