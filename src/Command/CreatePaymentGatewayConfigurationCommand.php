@@ -3,7 +3,7 @@
 namespace IDCI\Bundle\PaymentBundle\Command;
 
 use IDCI\Bundle\PaymentBundle\Entity\PaymentGatewayConfiguration;
-use IDCI\Bundle\PaymentBundle\Gateway\PaymentGatewayRegistry;
+use IDCI\Bundle\PaymentBundle\System\PaymentSystemRegistry;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -15,9 +15,9 @@ class CreatePaymentGatewayConfigurationCommand extends Command
 {
     private $paymentGatewayRegistry;
 
-    public function __construct(PaymentGatewayRegistry $paymentGatewayRegistry)
+    public function __construct(PaymentSystemRegistry $paymentSystemRegistry)
     {
-        $this->paymentGatewayRegistry = $paymentGatewayRegistry;
+        $this->paymentSystemRegistry = $paymentSystemRegistry;
 
         parent::__construct();
     }
@@ -36,15 +36,15 @@ class CreatePaymentGatewayConfigurationCommand extends Command
         $om = $this->getApplication()->getKernel()->getContainer()->get('doctrine')->getManager();
         $helper = $this->getHelper('question');
 
-        $paymentGatewayList = $this->paymentGatewayRegistry->getAll();
+        $paymentSystemList = $this->paymentSystemRegistry->getAll();
 
         $question = new ChoiceQuestion(
-            'Please select the gateway',
-            array_keys($this->paymentGatewayRegistry->getAll()),
+            'Please select the payment system',
+            array_keys($this->paymentSystemList),
             0
         );
         $question->setErrorMessage('%s is an invalid choice.');
-        $gatewayName = $helper->ask($input, $output, $question);
+        $systemAlias = $helper->ask($input, $output, $question);
 
         $question = new Question('What alias do you want to give ?');
         $alias = $helper->ask($input, $output, $question);
@@ -52,11 +52,11 @@ class CreatePaymentGatewayConfigurationCommand extends Command
         $question = new ConfirmationQuestion('Would you want to set it activated? [Y/n]', true);
         $enabled = $helper->ask($input, $output, $question);
 
-        $paymentGatewayFQCN = get_class($paymentGatewayList[$gatewayName]);
+        $paymentSystemFQCN = get_class($paymentSystemList[$systemAlias]);
 
         $parameters = [];
 
-        foreach ($paymentGatewayFQCN::getParameterNames() as $parameterName) {
+        foreach ($paymentSystemFQCN::getParameterNames() as $parameterName) {
             $question = new Question(sprintf('%s: ', $parameterName));
 
             $parameters[$parameterName] = $helper->ask($input, $output, $question);

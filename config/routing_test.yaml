@@ -1,3 +1,15 @@
-idci_payment_test_paymentgatewayfront:
-    resource: IDCI\Bundle\PaymentBundle\Controller\Test\PaymentGatewayFrontTestController
-    type: attribute
+idci_payment_test_select_payment_gateway_configuration:
+    controller: IDCI\Bundle\PaymentBundle\Controller\Test\PaymentGatewayTestController::selectPaymentGatewayConfiguration
+    path: /payment-gateway/select-configuration
+    methods: ['GET', 'POST']
+
+idci_payment_test_configure_transaction:
+    controller: IDCI\Bundle\PaymentBundle\Controller\Test\PaymentGatewayTestController::configureTransaction
+    path: /payment-gateway/{configuration_alias}/configure-transaction
+    methods: ['GET', 'POST']
+
+idci_payment_test_initialize_transaction:
+    controller: IDCI\Bundle\PaymentBundle\Controller\Test\PaymentGatewayTestController::initializeTransaction
+    path: /payment-gateway/{configuration_alias}/initialize-transaction
+    methods: ['GET', 'POST']
+

@@ -2,8 +2,8 @@
 
 namespace IDCI\Bundle\PaymentBundle\Form;
 
-use IDCI\Bundle\PaymentBundle\Form\Type\PaymentGatewayConfigurationChoiceType;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
@@ -24,38 +24,44 @@ class TransactionFormType extends AbstractType
     {
         $paymentGatewayConfigurationAliases = array_map(function ($paymentGatewayConfiguration) {
             return $paymentGatewayConfiguration->getAlias();
-        }, $this->paymentManager->getAllPaymentGatewayConfiguration());
-
-        $paymentGatewayConfigurationAliases[] = null;
+        }, $this->paymentManager->getPaymentGatewayConfigurations());
 
         $resolver
-            ->setDefaults([
-                'payment_gateway_configuration_alias' => null,
-            ])
-            ->setAllowedValues('payment_gateway_configuration_alias', $paymentGatewayConfigurationAliases)
+            ->setDefault('data_class', Transaction::class)
+            ->setRequired('payment_gateway_configuration_alias')->setAllowedValues('payment_gateway_configuration_alias', $paymentGatewayConfigurationAliases)
         ;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $choices = [];
-
+        $currencyChoices = [];
         foreach ((new ISO4217())->findAll() as $currencyCodes) {
-            $choices[$currencyCodes->getAlpha3()] = $currencyCodes->getAlpha3();
+            $currencyChoices[$currencyCodes->getAlpha3()] = $currencyCodes->getAlpha3();
         }
 
         $builder
-            ->add('payment_gateway_configuration_alias', PaymentGatewayConfigurationChoiceType::class)
-            ->add('item_id', Type\IntegerType::class)
-            ->add('amount', Type\IntegerType::class)
+            ->add('payment_gateway_configuration_alias', Type\HiddenType::class, [
+                'data' => $options['payment_gateway_configuration_alias'],
+            ])
+            ->add('payment_method', Type\TextType::class, [
+                'required' => false,
+            ])
+            ->add('item_reference', Type\TextType::class, [
+                'required' => true,
+            ])
+            ->add('customer_reference', Type\TextType::class, [
+                'required' => false,
+            ])
+             ->add('customer_email', Type\EmailType::class, [
+                'required' => false,
+            ])
+            ->add('amount', Type\IntegerType::class, [
+                'required' => true,
+            ])
             ->add('currency_code', Type\ChoiceType::class, [
-                'choices' => $choices,
-            ])
-            ->add('customer_id', Type\IntegerType::class, [
-                'required' => false,
-            ])
-            ->add('customer_email', Type\EmailType::class, [
-                'required' => false,
+                'required' => true,
+                'choices' => $currencyChoices,
+                'preferred_choices' => ['EUR'],
             ])
             ->add('description', Type\TextareaType::class, [
                 'required' => false,
@@ -78,11 +84,5 @@ class TransactionFormType extends AbstractType
                 return json_decode($metadata, true);
             }
         ));
-
-        if (null !== $options['payment_gateway_configuration_alias']) {
-            $builder->add('payment_gateway_configuration_alias', Type\HiddenType::class, [
-                'data' => $options['payment_gateway_configuration_alias'],
-            ]);
-        }
     }
 }

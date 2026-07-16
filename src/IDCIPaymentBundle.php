@@ -3,7 +3,6 @@
 namespace IDCI\Bundle\PaymentBundle;
 
 use IDCI\Bundle\PaymentBundle\DependencyInjection\Compiler\PaymentSystemCompilerPass;
-use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -21,6 +20,15 @@ class IDCIPaymentBundle extends AbstractBundle
                     ->children()
                         ->arrayNode('step')
                             ->children()
+                                ->scalarNode('approved')->end()
+                                ->scalarNode('canceled')->end()
+                                ->scalarNode('created')->end()
+                                ->scalarNode('failed')->end()
+                                ->scalarNode('pending')->end()
+                                ->scalarNode('unverified')->end()
+                            ->end()
+                        /*
+                            ->children()
                                 ->scalarNode(PaymentStatus::STATUS_APPROVED)->end()
                                 ->scalarNode(PaymentStatus::STATUS_CANCELED)->end()
                                 ->scalarNode(PaymentStatus::STATUS_CREATED)->end()
@@ -28,6 +36,7 @@ class IDCIPaymentBundle extends AbstractBundle
                                 ->scalarNode(PaymentStatus::STATUS_PENDING)->end()
                                 ->scalarNode(PaymentStatus::STATUS_UNVERIFIED)->end()
                             ->end()
+                        */
                         ->end()
                     ->end()
                 ->end()

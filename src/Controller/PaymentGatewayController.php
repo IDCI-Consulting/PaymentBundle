@@ -9,10 +9,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-#[Route('/payment-gateway')]
 class PaymentGatewayController extends AbstractController
 {
     private PaymentManager $paymentManager;
@@ -24,20 +22,21 @@ class PaymentGatewayController extends AbstractController
         $this->logger = $logger;
     }
 
-    #[Route('/{configuration_alias}/callback', name: 'idci_payment_payment_gateway_callback', methods: ['GET', 'POST'])]
-    public function callbackAction(Request $request, EventDispatcherInterface $dispatcher, $configuration_alias)
+    public function notifyTransaction(Request $request, EventDispatcherInterface $dispatcher, string $configuration_alias)
     {
         $data = $request->isMethod(Request::METHOD_POST) ? $request->request->all() : $request->query->all();
 
         $this->logger->info(
             sprintf(
-                '[gateway configuration alias: %s, data: %s, ip: %s, content: %s]',
+                '[IDCIPaymentGateway - configuration alias %s] data: %s | ip: %s | content: %s',
                 $configuration_alias,
                 json_encode($data),
                 json_encode($request->getClientIps()),
                 $request->getContent()
             )
         );
+
+        //$paymentGateway = $this->paymentGatewayRegistry->get($configuration_alias)
 
         $paymentContext = $this
             ->paymentManager

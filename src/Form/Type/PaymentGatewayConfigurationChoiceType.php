@@ -23,7 +23,7 @@ class PaymentGatewayConfigurationChoiceType extends AbstractType
             ->setNormalizer('choices', function (Options $options, $value) {
                 $choices = [];
 
-                foreach ($this->paymentManager->getAllPaymentGatewayConfiguration() as $paymentGatewayConfiguration) {
+                foreach ($this->paymentManager->getPaymentGatewayConfigurations() as $paymentGatewayConfiguration) {
                     $choices[$paymentGatewayConfiguration->getAlias()] = $paymentGatewayConfiguration->getAlias();
                 }
 

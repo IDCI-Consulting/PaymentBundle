@@ -7,20 +7,20 @@ use Flaky\Flaky;
 class Transaction
 {
     protected string $id;
-    protected int $number;
-    protected string $paymentGatewayAlias;
-    protected ?string $paymentMethod;
+    protected ?int $number = null;
+    protected string $paymentGatewayConfigurationAlias;
+    protected ?string $paymentMethod = null;
     protected string $itemReference;
-    protected ?string $customerReference;
-    protected ?string $customerEmail;
-    protected ?string $status;
+    protected ?string $customerReference = null;
+    protected ?string $customerEmail = null;
+    protected ?string $status = null;
     protected int $amount;
     protected string $currencyCode;
-    protected ?string $description;
+    protected ?string $description = null;
     protected array $metadata;
     protected array $notifications;
-    protected \DateTime $createdAt;
-    protected \DateTime $updatedAt;
+    protected ?\DateTime $createdAt = null;
+    protected ?\DateTime $updatedAt = null;
 
     public function __construct()
     {
@@ -31,7 +31,7 @@ class Transaction
     {
         return sprintf('%s - %s - %d %s',
             $this->getId(),
-            $this->getPaymentGatewayAlias(),
+            $this->getPaymentGatewayConfigurationAlias(),
             $this->getAmount(),
             $this->getCurrencyCode()
         );
@@ -54,21 +54,21 @@ class Transaction
         return $this->number;
     }
 
-    public function setNumber(int $number): self
+    public function setNumber(?int $number): self
     {
         $this->number = $number;
 
         return $this;
     }
 
-    public function getPaymentGatewayAlias(): string
+    public function getPaymentGatewayConfigurationAlias(): string
     {
-        return $this->paymentGatewayAlias;
+        return $this->paymentGatewayConfigurationAlias;
     }
 
-    public function setPaymentGatewayAlias(string $paymentGatewayAlias): self
+    public function setPaymentGatewayConfigurationAlias(string $paymentGatewayConfigurationAlias): self
     {
-        $this->paymentGatewayAlias = $paymentGatewayAlias;
+        $this->paymentGatewayConfigurationAlias = $paymentGatewayConfigurationAlias;
 
         return $this;
     }
@@ -261,7 +261,7 @@ class Transaction
     {
         return [
             'id' => $this->getId(),
-            'payment_gateway_alias' => $this->getPaymentGatewayAlias(),
+            'payment_gateway_configuration_alias' => $this->getPaymentGatewayConfigurationAlias(),
             'payment_method' => $this->getPaymentMethod(),
             'item_reference' => $this->getItemReference(),
             'customer_reference' => $this->getCustomerReference(),
