@@ -4,6 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Context;
 
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGateway;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\System\PaymentSystemInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\Options;
@@ -68,6 +69,11 @@ class PaymentContext
         $this->paymentGateway = $paymentGateway;
 
         return $this;
+    }
+
+    public function getPaymentSystem(): PaymentSystemInterface
+    {
+        return $this->getPaymentGateway()->getPaymentSystem();
     }
 
     public function getTransaction(): Transaction
@@ -138,5 +144,14 @@ class PaymentContext
             ->setDefault('description', null)->setAllowedTypes('description', ['null', 'string'])
             ->setDefault('metadata', [])->setAllowedTypes('metadata', ['array'])
         ;
+    }
+
+    public function buildInitialHTMLView(): string
+    {
+        $resolver = new OptionsResolver();
+        $this->getPaymentSystem()->configureParameters($resolver);
+        $parameters = $resolver->resolve($this->getPaymentGateway()->getParameters());
+
+        return $this->getPaymentSystem()->buildInitialHTMLView($this->getTransaction(), $this->getRequest(), $parameters);
     }
 }

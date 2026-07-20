@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+    <file source-language="en" target-language="fr" datatype="plaintext" original="file.ext">
+        <header>
+            <tool tool-id="symfony" tool-name="Symfony"/>
+        </header>
+        <body>
+            <trans-unit id="7v1FjsZl" resname="transaction">
+                <source>transaction</source>
+                <target>Transaction</target>
+            </trans-unit>
+            <trans-unit id="rDNQZgx4" resname="transaction.number">
+                <source>transaction.number</source>
+                <target>Numéro</target>
+            </trans-unit>
+            <trans-unit id="38WUWdZp" resname="transaction.payment_gateway_configuration_alias">
+                <source>transaction.payment_gateway_configuration_alias</source>
+                <target>Alias portail de configuration</target>
+            </trans-unit>
+            <trans-unit id="VxQzn1rN" resname="transaction.item_reference">
+                <source>transaction.item_reference</source>
+                <target>Référence élément</target>
+            </trans-unit>
+            <trans-unit id="lPtyiad6" resname="transaction.price">
+                <source>transaction.price</source>
+                <target>Prix</target>
+            </trans-unit>
+            <trans-unit id="37zISosz" resname="transaction.customer_reference">
+                <source>transaction.customer_reference</source>
+                <target>Référence client</target>
+            </trans-unit>
+            <trans-unit id="4aEloPp0" resname="transaction.customer_email">
+                <source>transaction.customer_email</source>
+                <target>Email client</target>
+            </trans-unit>
+            <trans-unit id="2pvqkO8l" resname="transaction.description">
+                <source>transaction.description</source>
+                <target>Description</target>
+            </trans-unit>
+
+            <!-- Worldline -->
+            <trans-unit id="0jOFRnj6" resname="worldline.redirection_message">
+                <source>worldline.redirection_message</source>
+                <target>Vous allez être automatiquement rediriger vers notre système de paiement.</target>
+            </trans-unit>
+            <trans-unit id="P5svj8E8" resname="worldline.link_message">
+                <source>worldline.link_message</source>
+                <target>Si ce n'est pas le cas, vous pouvez cliquer que le lien suivant</target>
+            </trans-unit>
+            <trans-unit id="OM5lh7Dm" resname="worldline.pay">
+                <source>worldline.pay</source>
+                <target>Payer</target>
+            </trans-unit>
+
+        </body>
+    </file>
+</xliff>

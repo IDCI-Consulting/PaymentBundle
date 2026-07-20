@@ -1,6 +1,6 @@
 body{
     font: 95% Arial, Helvetica, sans-serif;
-    max-width: 400px;
+    max-width: 480px;
     margin: 10px auto;
     padding: 16px;
     background: #F7F7F7;
@@ -58,8 +58,7 @@ input[type=submit] {
 }
 
 table {
-    max-width: 400px;
-    margin: 10px auto;
+    width: 100%;
 }
 
 table td, table th {
