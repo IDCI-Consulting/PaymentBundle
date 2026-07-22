@@ -2,11 +2,9 @@
 
 namespace IDCI\Bundle\PaymentBundle\Model;
 
-use Ramsey\Uuid\Uuid;
-
 class TransactionNotification
 {
-    protected Uuid $id;
+    protected string $id;
     protected string $state;
     protected string $message;
     protected array $metadata;
@@ -18,14 +16,26 @@ class TransactionNotification
         return sprintf('%s - %s', $this->getId(), $this->getState());
     }
 
-    public function getId(): ?Uuid
+    public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function setId(Uuid $id): self
+    public function setId(string $id): self
     {
         $this->id = $id;
+
+        return $this;
+    }
+
+    public function getState(): string
+    {
+        return $this->state;
+    }
+
+    public function setState(string $state): self
+    {
+        $this->state = $state;
 
         return $this;
     }

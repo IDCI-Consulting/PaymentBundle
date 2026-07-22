@@ -2,15 +2,15 @@
 
 namespace IDCI\Bundle\PaymentBundle\System;
 
+use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\Model\TransactionNotification;
 use OnlinePayments\Sdk\Authentication\V1HmacAuthenticator;
 use OnlinePayments\Sdk\Client;
 use OnlinePayments\Sdk\Communicator;
 use OnlinePayments\Sdk\CommunicatorConfiguration;
 use OnlinePayments\Sdk\Domain as SdkDomain;
-use OnlinePayments\Sdk\Merchant\MerchantClientInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
@@ -23,6 +23,8 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         self::INTEGRATION_METHOD_HOSTED_TOKENIZATION_PAGE,
     ];
 
+    protected $merchantClient = null;
+
     public function configureParameters(OptionsResolver $resolver): void
     {
         parent::configureParameters($resolver);
@@ -34,13 +36,27 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
             ->setRequired('merchant_id')->setAllowedTypes('merchant_id', ['string'])
             ->setRequired('integrator')->setAllowedTypes('integrator', ['string'])
             ->setRequired('integration_method')->setAllowedValues('integration_method', self::ALLOWED_INTEGRATION_METHODS)
+            ->setDefault('locale', null)->setAllowedTypes('locale', ['null', 'string'])
         ;
     }
 
-    public function buildInitialHTMLView(Transaction $transaction, Request $request, array $parameters): string
+    public function doBuildInitialHTMLView(Transaction $transaction, Request $request, array $parameters): string
     {
+        $this->createMerchantClient($parameters);
+
         if (self::INTEGRATION_METHOD_HOSTED_CHECKOUT_PAGE === $parameters['integration_method']) {
             $hostedCheckoutResponse = $this->callHostedCheckoutPage($transaction, $parameters);
+            $hostedCheckoutStatus = $this->merchantClient->hostedCheckout()->getHostedCheckout($hostedCheckoutResponse->getHostedCheckoutId());
+
+            $transaction->addNotification(
+                (new TransactionNotification())
+                    ->setMessage(json_encode($hostedCheckoutResponse))
+                    ->setState($hostedCheckoutStatus->getStatus())
+                    ->addMetadata('return_mac', $hostedCheckoutResponse->getReturnMac())
+                    ->addMetadata('hosted_checkout_id', $hostedCheckoutResponse->getHostedCheckoutId())
+                    ->addMetadata('redirect_url', $hostedCheckoutResponse->getRedirectUrl())
+            );
+            $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
             return $this->templating->render('@IDCIPayment/System/worldline/checkout.html.twig', [
                 'hosted_checkout_response' => $hostedCheckoutResponse,
@@ -58,8 +74,22 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         }
     }
 
-    protected function createMerchantClient(array $parameters): MerchantClientInterface
+    public function doBuildFeedbackHTMLView(Transaction $transaction, Request $request, array $parameters): string
     {
+        return '';
+    }
+
+    public function doHandleNotification(Transaction $transaction, Request $request, array $parameters): void
+    {
+
+    }
+
+    protected function createMerchantClient(array $parameters): void
+    {
+        if (null !== $this->merchantClient) {
+            return;
+        }
+
         $communicatorConfiguration = new CommunicatorConfiguration(
             $parameters['api_key'],
             $parameters['api_secret'],
@@ -72,7 +102,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         $communicator = new Communicator($communicatorConfiguration, $authenticator);
         $client = new Client($communicator);
 
-        return $client->merchant($parameters['merchant_id']);
+        $this->merchantClient = $client->merchant($parameters['merchant_id']);
     }
 
     protected function createOrder(Transaction $transaction): SdkDomain\Order
@@ -98,15 +128,13 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
 
     protected function callHostedCheckoutPage(Transaction $transaction, array $parameters): SdkDomain\CreateHostedCheckoutResponse
     {
-        $merchantClient = $this->createMerchantClient($parameters);
-
         $createHostedCheckoutRequest = new SdkDomain\CreateHostedCheckoutRequest();
         $createHostedCheckoutRequest->setOrder($this->createOrder($transaction));
 
         $hostedCheckoutSpecificInput = new SdkDomain\HostedCheckoutSpecificInput();
         $hostedCheckoutSpecificInput->setReturnUrl($parameters['client_return_url']);
 
-        if (isset($parameters['locale']) && null !== $parameters['locale']) {
+        if (null !== $parameters['locale']) {
             $hostedCheckoutSpecificInput->setLocale($parameters['locale']);
         }
 
@@ -116,18 +144,8 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         $feedbacks->setWebhooksUrls([$parameters['system_notification_url']]);
         $createHostedCheckoutRequest->setFeedbacks($feedbacks);
 
-        $hostedCheckoutResponse = $merchantClient->hostedCheckout()->createHostedCheckout($createHostedCheckoutRequest);
+        $this->createMerchantClient($parameters);
 
-        /*
-        $transaction
-            ->setStatus(PaymentStatus::STATUS_PENDING)
-            ->addMetadata('hosted_checkout_id', $hostedCheckoutResponse->getHostedCheckoutId())
-            ->addMetadata('return_mac', $hostedCheckoutResponse->getReturnMac())
-            ->addMetadata('redirect_url', $hostedCheckoutResponse->getRedirectUrl())
-        ;
-        $this->dispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
-        */
-
-        return $hostedCheckoutResponse;
+        return $this->merchantClient->hostedCheckout()->createHostedCheckout($createHostedCheckoutRequest);
     }
 }

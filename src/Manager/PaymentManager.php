@@ -11,6 +11,7 @@ use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfiguration as PaymentGatewa
 use IDCI\Bundle\PaymentBundle\System\PaymentSystemRegistry;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class PaymentManager
@@ -18,6 +19,7 @@ class PaymentManager
     private EventDispatcherInterface $dispatcher;
     private LoggerInterface $logger;
     private RequestStack $requestStack;
+    private UrlGeneratorInterface $urlGenerator;
     private TransactionManagerInterface $transactionManager;
     private PaymentSystemRegistry $paymentSystemRegistry;
     private array $paymentGatewayConfigurations;
@@ -27,6 +29,7 @@ class PaymentManager
         EventDispatcherInterface $dispatcher,
         LoggerInterface $logger,
         RequestStack $requestStack,
+        UrlGeneratorInterface $urlGenerator,
         TransactionManagerInterface $transactionManager,
         PaymentSystemRegistry $paymentSystemRegistry,
         array $paymentGatewayConfigurations,
@@ -35,6 +38,7 @@ class PaymentManager
         $this->dispatcher = $dispatcher;
         $this->logger = $logger;
         $this->requestStack = $requestStack;
+        $this->urlGenerator = $urlGenerator;
         $this->transactionManager = $transactionManager;
         $this->paymentSystemRegistry = $paymentSystemRegistry;
         $this->paymentGatewayConfigurations = $paymentGatewayConfigurations;
@@ -125,6 +129,8 @@ class PaymentManager
             ->setEventDispatcher($this->dispatcher)
             ->setLogger($this->logger)
             ->setRequest($this->requestStack->getCurrentRequest())
+            ->setUrlGenerator($this->urlGenerator)
+            ->setTransactionManager($this->transactionManager)
             ->setPaymentGateway($this->getPaymentGateway($alias))
         ;
     }

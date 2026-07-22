@@ -8,7 +8,7 @@ use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class PaymentGatewayTestController extends AbstractController
 {
@@ -84,18 +84,34 @@ class PaymentGatewayTestController extends AbstractController
         $paymentContext->createTransaction($request->query->all());
 
         return $this->render('@IDCIPayment/Test/create.html.twig', [
-            'view' => $paymentContext->buildInitialHTMLView(),
+            'view' => $paymentContext->buildInitialHTMLView([
+                'client_return_url' => $this->generateUrl(
+                    'idci_payment_test_finalize_transaction',
+                    [
+                        'configuration_alias' => $configuration_alias,
+                        'reference' => $paymentContext->getTransaction()->getReference(),
+                    ],
+                    UrlGeneratorInterface::ABSOLUTE_URL
+                ),
+                'locale' => 'fr',
+            ]),
             'transaction' => $paymentContext->getTransaction(),
         ]);
     }
 
-    #[Route('/{configuration_alias}/transaction/done', methods: ['GET', 'POST'])]
+    public function finalizeTransaction(Request $request, $configuration_alias)
+    {
+        $paymentContext = $this->paymentManager->createPaymentContext($configuration_alias);
+        $paymentContext->retrieveTransactionByReference($request->query->get('reference'));
+
+        dd('finalize', $paymentContext, $request);
+    }
+
     public function done(Request $request, $configuration_alias)
     {
         return $this->render('@IDCIPayment/Test/done.html.twig');
     }
 
-    #[Route('/{configuration_alias}/transaction/cancel', methods: ['GET', 'POST'])]
     public function cancel(Request $request, $configuration_alias)
     {
         return $this->render('@IDCIPayment/Test/cancel.html.twig');

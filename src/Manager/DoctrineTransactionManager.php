@@ -37,16 +37,16 @@ class DoctrineTransactionManager implements TransactionManagerInterface
         return $transaction;
     }
 
-    public function retrieveTransactionByNumber(string $number): TransactionModel
+    public function retrieveTransactionByReference(string $reference): TransactionModel
     {
         $transaction = $this
             ->em
             ->getRepository(Transaction::class)
-            ->findOneBy(['number' => $number])
+            ->findOneBy(['reference' => $reference])
         ;
 
         if (null === $transaction) {
-            throw new NoTransactionFoundException($number, 'number');
+            throw new NoTransactionFoundException($reference, 'reference');
         }
 
         return $transaction;

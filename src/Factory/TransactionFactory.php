@@ -4,7 +4,8 @@ namespace IDCI\Bundle\PaymentBundle\Factory;
 
 use Flaky\Flaky;
 use IDCI\Bundle\PaymentBundle\Context\TransactionStatus;
-use IDCI\Bundle\PaymentBundle\Entity\Transaction;
+use IDCI\Bundle\PaymentBundle\Model\Transaction;
+use IDCI\Bundle\PaymentBundle\Model\TransactionNotification;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -28,8 +29,9 @@ class TransactionFactory
         $this->configure($resolver);
         $resolvedData = $resolver->resolve($data);
 
-        return (new Transaction())
+        $transaction = (new Transaction())
             ->setId($resolvedData['id'])
+            ->setReference($resolvedData['reference'])
             ->setNumber($resolvedData['number'])
             ->setPaymentGatewayConfigurationAlias($resolvedData['payment_gateway_configuration_alias'])
             ->setPaymentMethod($resolvedData['payment_method'])
@@ -42,6 +44,23 @@ class TransactionFactory
             ->setDescription($resolvedData['description'])
             ->setMetadata($resolvedData['metadata'])
         ;
+
+        foreach ($resolvedData['notification_histories'] as $notificationData) {
+            $transaction->addNotification(self::createTransactionNotification($notificationData));
+        }
+
+        return $transaction;
+    }
+
+    public function createTransactionNotification(array $data): TransactionNotification
+    {
+        return (new TransactionNotification())
+            ->setId($data['id'])
+            ->setState($data['state'])
+            ->setMessage($data['message'])
+            ->setMetadata($data['metadata'])
+            ->setCreatedAt(new \DateTime($data['createdAt']))
+        ;
     }
 
     public function configure(OptionsResolver $resolver): void
@@ -53,7 +72,8 @@ class TransactionFactory
         }, $currencies);
 
         $resolver
-            ->setRequired('id')->setAllowedTypes('id', ['string'])
+            ->setDefault('id', null)->setAllowedTypes('id', ['null', 'string'])
+            ->setRequired('reference')->setAllowedTypes('reference', ['string'])
             ->setDefault('number', null)->setAllowedTypes('number', ['null', 'int'])
                 ->setNormalizer('number', function(Options $options, $value): ?int {
                     if (is_string($value)) {
@@ -79,6 +99,7 @@ class TransactionFactory
             ->setRequired('currency_code')->setAllowedValues('currency_code', $alpha3CurrencyCodes)
             ->setDefault('description', null)->setAllowedTypes('description', ['null', 'string'])
             ->setDefault('metadata', [])->setAllowedTypes('metadata', ['array'])
+            ->setDefault('notification_histories', [])->setAllowedTypes('notification_histories', ['array'])
         ;
     }
 }

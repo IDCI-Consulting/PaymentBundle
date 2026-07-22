@@ -6,7 +6,8 @@ use Flaky\Flaky;
 
 class Transaction
 {
-    protected string $id;
+    protected ?string $id = null;
+    protected string $reference;
     protected ?int $number = null;
     protected string $paymentGatewayConfigurationAlias;
     protected ?string $paymentMethod = null;
@@ -17,34 +18,47 @@ class Transaction
     protected int $amount;
     protected string $currencyCode;
     protected ?string $description = null;
-    protected array $metadata;
-    protected array $notifications;
+    protected array $metadata = [];
+    protected array $notifications = [];
     protected ?\DateTime $createdAt = null;
     protected ?\DateTime $updatedAt = null;
 
     public function __construct()
     {
-        $this->id = Flaky::id(62);
+        $this->reference = Flaky::id(62);
     }
 
     public function __toString(): string
     {
-        return sprintf('%s - %s - %d %s',
+        return sprintf('%s - %s - %s - %d %s',
             $this->getId(),
+            $this->getReference(),
             $this->getPaymentGatewayConfigurationAlias(),
             $this->getAmount(),
             $this->getCurrencyCode()
         );
     }
 
-    public function getId(): string
+    public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function setId(string $id): self
+    public function setId(?string $id): self
     {
         $this->id = $id;
+
+        return $this;
+    }
+
+    public function getReference(): string
+    {
+        return $this->reference;
+    }
+
+    public function setReference(string $reference): self
+    {
+        $this->reference = $reference;
 
         return $this;
     }
@@ -223,6 +237,8 @@ class Transaction
 
     public function addNotification(TransactionNotification $notification)
     {
+        $notification->setTransaction($this);
+
         $this->notifications[] = $notification;
     }
 
@@ -261,6 +277,7 @@ class Transaction
     {
         return [
             'id' => $this->getId(),
+            'reference' => $this->getReference(),
             'payment_gateway_configuration_alias' => $this->getPaymentGatewayConfigurationAlias(),
             'payment_method' => $this->getPaymentMethod(),
             'item_reference' => $this->getItemReference(),
