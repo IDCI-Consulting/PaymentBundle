@@ -59,7 +59,7 @@ class TransactionFactory
             ->setState($data['state'])
             ->setMessage($data['message'])
             ->setMetadata($data['metadata'])
-            ->setCreatedAt(new \DateTime($data['createdAt']))
+            ->setCreatedAt(new \DateTime($data['created_at']))
         ;
     }
 
@@ -100,6 +100,30 @@ class TransactionFactory
             ->setDefault('description', null)->setAllowedTypes('description', ['null', 'string'])
             ->setDefault('metadata', [])->setAllowedTypes('metadata', ['array'])
             ->setDefault('notification_histories', [])->setAllowedTypes('notification_histories', ['array'])
+                ->setNormalizer('notification_histories', function(Options $options, $value): array {
+                    $notificationHistoryResolver = new OptionsResolver();
+
+                    $notificationHistoryResolver
+                        ->setRequired('id')->setAllowedTypes('id', ['string'])
+                        ->setRequired('state')->setAllowedTypes('state', ['string'])
+                        ->setRequired('message')->setAllowedTypes('message', ['string'])
+                        ->setDefined('metadata')->setAllowedTypes('metadata', ['null', 'array'])
+                        ->setRequired('created_at')->setAllowedTypes('created_at', ['string', \DateTime::class])
+                            ->setNormalizer('created_at', function(Options $options, $value): \DateTime {
+                                if (is_string($value)) {
+                                    return new \DateTime($value);
+                                }
+
+                                return $value;
+                            })
+                    ;
+
+                    foreach ($value as $notificationHistoryData) {
+                        $notificationHistoryResolver->resolve($notificationHistoryData);
+                    }
+
+                    return $value;
+                })
         ;
     }
 }

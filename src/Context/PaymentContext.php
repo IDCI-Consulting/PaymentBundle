@@ -116,9 +116,7 @@ class PaymentContext
     public function createTransaction(array $data): Transaction
     {
         $transaction = TransactionFactory::getInstance()->create($data);
-
         $this->getEventDispatcher()->dispatch(new TransactionEvent($transaction), TransactionEvent::CREATED);
-
         $this->setTransaction($transaction);
 
         return $transaction;
@@ -127,8 +125,6 @@ class PaymentContext
     public function retrieveTransactionByReference(string $reference): Transaction
     {
         $transaction = $this->getTransactionManager()->retrieveTransactionByReference($reference);
-        dd($transaction);
-
         $this->setTransaction($transaction);
 
         return $transaction;
