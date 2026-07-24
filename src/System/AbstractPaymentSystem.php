@@ -30,32 +30,36 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
 
     public function buildInitialHTMLView(Transaction $transaction, Request $request, array $parameters): string
     {
-        $resolver = new OptionsResolver();
-        $this->configureParameters($resolver);
-        $resolvedParameters = $resolver->resolve($parameters);
-
-        return $this->doBuildInitialHTMLView($transaction, $request, $resolvedParameters);
+       return $this->doBuildInitialHTMLView($transaction, $request, $this->resolveParameters($parameters));
     }
 
-    public function buildFeedbackHTMLView(Transaction $transaction, Request $request, array $parameters): string
+    public function buildFinalHTMLView(Transaction $transaction, Request $request, array $parameters): string
     {
-        $resolver = new OptionsResolver();
-        $this->configureParameters($resolver);
-        $resolvedParameters = $resolver->resolve($parameters);
+        $view = $this->doBuildFinalHTMLView($transaction, $request, $this->resolveParameters($parameters));
 
-        return $this->doBuildFeedbackHTMLView($transaction, $request, $resolvedParameters);
+        if (null !== $view) {
+            return $view;
+        }
+
+        return $this->templating->render(sprintf('@IDCIPayment/TransactionStatus/%s.html.twig', $transaction->getStatus()), [
+            'transaction' => $transaction,
+        ]);
     }
 
     public function handleNotification(Transaction $transaction, Request $request, array $parameters): void
     {
+        $this->doHandleNotification($transaction, $request, $this->resolveParameters($parameters));
+    }
+
+    private function resolveParameters(array $parameters): array
+    {
         $resolver = new OptionsResolver();
         $this->configureParameters($resolver);
-        $resolvedParameters = $resolver->resolve($parameters);
 
-        $this->doHandleNotification($transaction, $request, $resolvedParameters);
+        return $resolver->resolve($parameters);
     }
 
     abstract public function doBuildInitialHTMLView(Transaction $transaction, Request $request, array $parameters): string;
-    abstract public function doBuildFeedbackHTMLView(Transaction $transaction, Request $request, array $parameters): string;
+    abstract public function doBuildFinalHTMLView(Transaction $transaction, Request $request, array $parameters): ?string;
     abstract public function doHandleNotification(Transaction $transaction, Request $request, array $parameters): void;
 }

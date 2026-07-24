@@ -9,9 +9,21 @@
                 <source>transaction</source>
                 <target>Transaction</target>
             </trans-unit>
+            <trans-unit id="BPDamvR7" resname="transaction.id">
+                <source>transaction.id</source>
+                <target>Id</target>
+            </trans-unit>
+            <trans-unit id="XFY4AD9Y" resname="transaction.reference">
+                <source>transaction.reference</source>
+                <target>Référence</target>
+            </trans-unit>
             <trans-unit id="rDNQZgx4" resname="transaction.number">
                 <source>transaction.number</source>
                 <target>Numéro</target>
+            </trans-unit>
+            <trans-unit id="ew04CWOM" resname="transaction.status">
+                <source>transaction.status</source>
+                <target>Status</target>
             </trans-unit>
             <trans-unit id="38WUWdZp" resname="transaction.payment_gateway_configuration_alias">
                 <source>transaction.payment_gateway_configuration_alias</source>
@@ -36,6 +48,31 @@
             <trans-unit id="2pvqkO8l" resname="transaction.description">
                 <source>transaction.description</source>
                 <target>Description</target>
+            </trans-unit>
+
+            <trans-unit id="0rtDDXKq" resname="transaction.approved">
+                <source>transaction.approved</source>
+                <target>Transaction approuvée</target>
+            </trans-unit>
+            <trans-unit id="yw93PSqU" resname="transaction.canceled">
+                <source>transaction.canceled</source>
+                <target>Transaction annulée</target>
+            </trans-unit>
+            <trans-unit id="sax8wWVg" resname="transaction.created">
+                <source>transaction.created</source>
+                <target>Transaction crée</target>
+            </trans-unit>
+            <trans-unit id="WT8Ppb34" resname="transaction.failed">
+                <source>transaction.failed</source>
+                <target>Transaction échouée</target>
+            </trans-unit>
+            <trans-unit id="nF0jeAIz" resname="transaction.pending">
+                <source>transaction.pending</source>
+                <target>Transaction en cours</target>
+            </trans-unit>
+            <trans-unit id="lLGp80Ne" resname="transaction.unverified">
+                <source>transaction.unverified</source>
+                <target>Transaction non vérifiée</target>
             </trans-unit>
 
             <!-- Worldline -->

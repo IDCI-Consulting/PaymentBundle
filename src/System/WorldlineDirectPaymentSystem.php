@@ -2,6 +2,7 @@
 
 namespace IDCI\Bundle\PaymentBundle\System;
 
+use IDCI\Bundle\PaymentBundle\Context\TransactionStatus;
 use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Model\TransactionNotification;
@@ -21,6 +22,16 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
     public const ALLOWED_INTEGRATION_METHODS = [
         self::INTEGRATION_METHOD_HOSTED_CHECKOUT_PAGE,
         self::INTEGRATION_METHOD_HOSTED_TOKENIZATION_PAGE,
+    ];
+
+    public const HOSTED_CHECKOUT_STATUS_PAYMENT_CREATED = 'PAYMENT_CREATED';
+    public const HOSTED_CHECKOUT_STATUS_IN_PROGRESS = 'IN_PROGRESS';
+    public const HOSTED_CHECKOUT_STATUS_CANCELLED_BY_CONSUMER = 'CANCELLED_BY_CONSUMER';
+
+    public const HOSTED_CHECKOUT_STATUS_MAP = [
+        self::HOSTED_CHECKOUT_STATUS_PAYMENT_CREATED => TransactionStatus::STATUS_PENDING,
+        self::HOSTED_CHECKOUT_STATUS_IN_PROGRESS => TransactionStatus::STATUS_CREATED,
+        self::HOSTED_CHECKOUT_STATUS_CANCELLED_BY_CONSUMER => TransactionStatus::STATUS_CANCELED,
     ];
 
     protected $merchantClient = null;
@@ -48,7 +59,9 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
             $hostedCheckoutResponse = $this->callHostedCheckoutPage($transaction, $parameters);
             $hostedCheckoutStatus = $this->merchantClient->hostedCheckout()->getHostedCheckout($hostedCheckoutResponse->getHostedCheckoutId());
 
-            $transaction->addNotification(
+            $transaction
+                ->setStatus(self::HOSTED_CHECKOUT_STATUS_MAP[$hostedCheckoutStatus->getStatus()])
+                ->addNotification(
                 (new TransactionNotification())
                     ->setMessage(json_encode($hostedCheckoutResponse))
                     ->setState($hostedCheckoutStatus->getStatus())
@@ -66,7 +79,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         if (self::INTEGRATION_METHOD_HOSTED_TOKENIZATION_PAGE === $parameters['integration_method']) {
             $hostedTokenizationResponse = $this->callHostedTokenizationPage($transaction, $parameters);
 
-            return $this->templating->render('@IDCIPayment/Gateway/worldline/tokenization.html.twig', [
+            return $this->templating->render('@IDCIPayment/System/worldline/tokenization.html.twig', [
                 'hosted_tokenization_response' => $hostedTokenizationResponse,
                 'wordline_host' => $parameters['api_endpoint'],
                 'transaction' => $transaction,
@@ -74,9 +87,44 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         }
     }
 
-    public function doBuildFeedbackHTMLView(Transaction $transaction, Request $request, array $parameters): string
+    public function doBuildFinalHTMLView(Transaction $transaction, Request $request, array $parameters): ?string
     {
-        return '';
+        $this->createMerchantClient($parameters);
+
+        if (self::INTEGRATION_METHOD_HOSTED_CHECKOUT_PAGE === $parameters['integration_method']) {
+            $relatedTransactionNotifications = [];
+
+            // Retrieve TransactionNotifications with RETURNMAC query parameter
+            foreach ($transaction->getNotifications() as $notification) {
+                if ($request->query->get('RETURNMAC') === $notification->getMetadata('return_mac')) {
+                    $relatedTransactionNotifications[] = $notification;
+                }
+            }
+
+            if (empty($relatedTransactionNotifications)) {
+                throw new \UnexpectedValueException(sprintf('No TransactionNotification found with the given RETURNMAC: %s', $request->query->get('RETURNMAC')));
+            }
+
+            if (1 === count($relatedTransactionNotifications)
+                && 'IN_PROGRESS' === $relatedTransactionNotifications[0]->getState()
+            ) {
+                $hostedCheckoutStatus = $this->merchantClient->hostedCheckout()->getHostedCheckout($request->query->get('hostedCheckoutId'));
+
+                $transaction
+                    ->setStatus(self::HOSTED_CHECKOUT_STATUS_MAP[$hostedCheckoutStatus->getStatus()])
+                    ->addNotification(
+                    (new TransactionNotification())
+                        ->setMessage($relatedTransactionNotifications[0]->getMessage())
+                        ->setState($hostedCheckoutStatus->getStatus())
+                        ->setMetadata($relatedTransactionNotifications[0]->getMetadata())
+                );
+                $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
+            }
+
+            return null;
+        }
+
+        return 'WorldlineDirectPaymentSystem::doBuildFinalHTMLView';
     }
 
     public function doHandleNotification(Transaction $transaction, Request $request, array $parameters): void

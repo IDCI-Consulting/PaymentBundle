@@ -132,6 +132,24 @@ class PaymentContext
 
     public function buildInitialHTMLView(array $parameters = []): string
     {
+        return $this->getPaymentSystem()->buildInitialHTMLView(
+            $this->getTransaction(),
+            $this->getRequest(),
+            $this->mergeParameters($parameters)
+        );
+    }
+
+    public function buildFinalHTMLView(array $parameters = []): string
+    {
+        return $this->getPaymentSystem()->buildFinalHTMLView(
+            $this->getTransaction(),
+            $this->getRequest(),
+            $this->mergeParameters($parameters)
+        );
+    }
+
+    private function mergeParameters(array $parameters): array
+    {
         $mergedParameters = array_merge(
             $this->getPaymentGateway()->getParameters(),
             $parameters
@@ -157,6 +175,6 @@ class PaymentContext
             );
         }
 
-        return $this->getPaymentSystem()->buildInitialHTMLView($this->getTransaction(), $this->getRequest(), $mergedParameters);
+        return $mergedParameters;
     }
 }

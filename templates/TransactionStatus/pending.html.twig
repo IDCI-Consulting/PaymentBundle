@@ -1,0 +1,40 @@
+<h1>{% trans from 'IDCIPaymentBundle' %}transaction.pending{% endtrans %}</h1>
+<div id="statusContainer"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var nextBtn = document.querySelector('.idci_step_navigation_next');
+
+        nextBtn.hidden = true;
+
+        var maxAttempt = 25;
+
+        var endAttempt = function () {
+            if (--maxAttempt > 0) {
+                setTimeout(function () {
+                    getTransaction(endAttempt);
+                }, 2000)
+            } else {
+                document.querySelector('#statusContainer').innerText = 'error_message';
+            }
+        }
+
+        var getTransaction = function (callback) {
+            fetch('{{ path('idci_payment_api_apitransaction_show', {'id': transaction.id}) }}')
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(result) {
+                if (result.status === '{{ constant('IDCI\\Bundle\\PaymentBundle\\Context\\TransactionStatus::STATUS_PENDING') }}') {
+                    callback();
+                } else {
+                    // show success message
+                    document.querySelector('#statusContainer').innerText = 'success_message';
+                    nextBtn.hidden = false
+                }
+            });
+        }
+
+        getTransaction(endAttempt);
+    });
+</script>

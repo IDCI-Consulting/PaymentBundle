@@ -83,7 +83,7 @@ class PaymentGatewayTestController extends AbstractController
         $paymentContext = $this->paymentManager->createPaymentContext($configuration_alias);
         $paymentContext->createTransaction($request->query->all());
 
-        return $this->render('@IDCIPayment/Test/create.html.twig', [
+        return $this->render('@IDCIPayment/Test/initialize.html.twig', [
             'view' => $paymentContext->buildInitialHTMLView([
                 'client_return_url' => $this->generateUrl(
                     'idci_payment_test_finalize_transaction',
@@ -104,7 +104,10 @@ class PaymentGatewayTestController extends AbstractController
         $paymentContext = $this->paymentManager->createPaymentContext($configuration_alias);
         $paymentContext->retrieveTransactionByReference($request->query->get('reference'));
 
-        dd('finalize', $paymentContext, $request);
+        return $this->render('@IDCIPayment/Test/finalize.html.twig', [
+            'view' => $paymentContext->buildFinalHTMLView(),
+            'transaction' => $paymentContext->getTransaction(),
+        ]);
     }
 
     public function done(Request $request, $configuration_alias)

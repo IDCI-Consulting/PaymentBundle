@@ -4,7 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Model;
 
 class TransactionNotification
 {
-    protected string $id;
+    protected ?string $id = null;
     protected string $state;
     protected string $message;
     protected array $metadata;

@@ -12,7 +12,7 @@ interface PaymentSystemInterface
 
     public function buildInitialHTMLView(Transaction $transaction, Request $request, array $parameters): string;
 
-    public function buildFeedbackHTMLView(Transaction $transaction, Request $request, array $parameters): string;
+    public function buildFinalHTMLView(Transaction $transaction, Request $request, array $parameters): string;
 
     public function handleNotification(Transaction $transaction, Request $request, array $parameters): void;
 }
