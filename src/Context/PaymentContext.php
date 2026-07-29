@@ -2,39 +2,23 @@
 
 namespace IDCI\Bundle\PaymentBundle\Context;
 
-use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
 use IDCI\Bundle\PaymentBundle\Factory\TransactionFactory;
 use IDCI\Bundle\PaymentBundle\Gateway\PaymentGateway;
-use IDCI\Bundle\PaymentBundle\Manager\TransactionManagerInterface;
+use IDCI\Bundle\PaymentBundle\Model\ProcessedTransactionResult;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\System\PaymentSystemInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class PaymentContext
 {
-    private EventDispatcherInterface $eventDispatcher;
+    public const TRANSACTION_REFERENCE_QUERY_PARAMETER = 'transaction_reference';
+
     private LoggerInterface $logger;
     private Request $request;
-    private UrlGeneratorInterface $urlGenerator;
-    private TransactionManagerInterface $transactionManager;
     private PaymentGateway $paymentGateway;
     private Transaction $transaction;
-
-    public function getEventDispatcher(): EventDispatcherInterface
-    {
-        return $this->eventDispatcher;
-    }
-
-    public function setEventDispatcher(EventDispatcherInterface $eventDispatcher): self
-    {
-        $this->eventDispatcher = $eventDispatcher;
-
-        return $this;
-    }
 
     public function getLogger(): LoggerInterface
     {
@@ -56,30 +40,6 @@ class PaymentContext
     public function setRequest(Request $request): self
     {
         $this->request = $request;
-
-        return $this;
-    }
-
-    public function getUrlGenerator(): UrlGeneratorInterface
-    {
-        return $this->urlGenerator;
-    }
-
-    public function setUrlGenerator(UrlGeneratorInterface $urlGenerator): self
-    {
-        $this->urlGenerator = $urlGenerator;
-
-        return $this;
-    }
-
-    public function getTransactionManager(): TransactionManagerInterface
-    {
-        return $this->transactionManager;
-    }
-
-    public function setTransactionManager(TransactionManagerInterface $transactionManager): self
-    {
-        $this->transactionManager = $transactionManager;
 
         return $this;
     }
@@ -112,69 +72,62 @@ class PaymentContext
 
         return $this;
     }
-
-    public function createTransaction(array $data): Transaction
+    public function isReturnClientRequest(): bool
     {
-        $transaction = TransactionFactory::getInstance()->create($data);
-        $this->getEventDispatcher()->dispatch(new TransactionEvent($transaction), TransactionEvent::CREATED);
+        return $this->getPaymentSystem()->isReturnClientRequest($this->getRequest());
+    }
+
+    public function initializeTransaction(array $transactionData, array $parameters = []): void
+    {
+        $transaction = $this->getPaymentSystem()->initializeTransaction(TransactionFactory::getInstance()->create($transactionData), $this->getRequest());
+        $this->getLogger()->info('[IDCIPaymentBundle] Initialize transaction', [
+            'class' => self::class,
+            'transaction' => $transaction,
+        ]);
         $this->setTransaction($transaction);
-
-        return $transaction;
     }
 
-    public function retrieveTransactionByReference(string $reference): Transaction
+    public function retrieveTransaction(): void
     {
-        $transaction = $this->getTransactionManager()->retrieveTransactionByReference($reference);
+        $transaction = $this->getPaymentSystem()->retrieveTransaction($this->getRequest());
+        $this->getLogger()->info('[IDCIPaymentBundle] retrieve transaction', [
+            'class' => self::class,
+            'transaction' => $transaction,
+        ]);
         $this->setTransaction($transaction);
-
-        return $transaction;
     }
 
-    public function buildInitialHTMLView(array $parameters = []): string
+    public function processTransaction(array $parameters = []): ProcessedTransactionResult
     {
-        return $this->getPaymentSystem()->buildInitialHTMLView(
-            $this->getTransaction(),
-            $this->getRequest(),
-            $this->mergeParameters($parameters)
-        );
-    }
+        $this->getLogger()->info('[IDCIPaymentBundle] process transaction', [
+            'class' => self::class,
+            'transaction' => $this->getTransaction(),
+        ]);
 
-    public function buildFinalHTMLView(array $parameters = []): string
-    {
-        return $this->getPaymentSystem()->buildFinalHTMLView(
-            $this->getTransaction(),
-            $this->getRequest(),
-            $this->mergeParameters($parameters)
-        );
+        try {
+            return $this->getPaymentSystem()->processTransaction(
+                $this->getTransaction(),
+                $this->getRequest(),
+                $this->mergeParameters($parameters),
+            );
+        } catch (\Exception $e) {
+            $this->getLogger()->error(sprintf('[IDCIPaymentBundle] fail to process transaction: %s', $e->getMessage()), [
+                'class' => self::class,
+                'transaction' => $this->getTransaction(),
+            ]);
+
+            return new ProcessedTransactionResult(
+                ProcessedTransactionResult::TYPE_HTML,
+                sprintf('ERROR: %s', $e->getMessage()),
+            );
+        }
     }
 
     private function mergeParameters(array $parameters): array
     {
-        $mergedParameters = array_merge(
+        return array_merge(
             $this->getPaymentGateway()->getParameters(),
             $parameters
         );
-
-        // Generate default value for 'client_return_url' parameter based on the current request
-        if (null === $mergedParameters['client_return_url']) {
-            $mergedParameters['client_return_url'] = $this->urlGenerator->generate(
-                $this->getRequest()->attributes->get('_route'),
-                $this->getRequest()->attributes->get('_route_params'),
-                UrlGeneratorInterface::ABSOLUTE_URL
-            );
-        }
-
-        // Generate default value for 'system_notification_url' parameter
-        if (null === $mergedParameters['system_notification_url']) {
-            $mergedParameters['system_notification_url'] = $this->urlGenerator->generate(
-                'idci_payment_gateway_transaction_notification',
-                [
-                    'configuration_alias' => $this->getPaymentGateway()->getAlias()
-                ],
-                UrlGeneratorInterface::ABSOLUTE_URL
-            );
-        }
-
-        return $mergedParameters;
     }
 }

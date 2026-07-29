@@ -14,19 +14,19 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 class PaymentGatewayController extends AbstractController
 {
     private PaymentManager $paymentManager;
-    private LoggerInterface $logger;
+    private LoggerInterface $paymentLogger;
 
-    public function __construct(PaymentManager $paymentManager, LoggerInterface $logger)
+    public function __construct(PaymentManager $paymentManager, LoggerInterface $paymentLogger)
     {
         $this->paymentManager = $paymentManager;
-        $this->logger = $logger;
+        $this->paymentLogger = $paymentLogger;
     }
 
     public function notifyTransaction(Request $request, EventDispatcherInterface $dispatcher, string $configuration_alias)
     {
         $data = $request->isMethod(Request::METHOD_POST) ? $request->request->all() : $request->query->all();
 
-        $this->logger->info(
+        $this->paymentLogger->info(
             sprintf(
                 '[IDCIPaymentGateway - configuration alias %s] data: %s | ip: %s | content: %s',
                 $configuration_alias,

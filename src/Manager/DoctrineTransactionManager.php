@@ -22,7 +22,7 @@ class DoctrineTransactionManager implements TransactionManagerInterface
         $this->em->flush();
     }
 
-    public function retrieveTransactionById(string $id): TransactionModel
+    public function retrieveTransactionById(string $id): ?TransactionModel
     {
         $transaction = $this
             ->em
@@ -37,7 +37,7 @@ class DoctrineTransactionManager implements TransactionManagerInterface
         return $transaction;
     }
 
-    public function retrieveTransactionByReference(string $reference): TransactionModel
+    public function retrieveTransactionByReference(string $reference): ?TransactionModel
     {
         $transaction = $this
             ->em

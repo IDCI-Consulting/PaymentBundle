@@ -17,8 +17,15 @@
     function submitForm() {
         tokenizer.submitTokenization().then((result) => {
             if (result.success) {
-                let redirect_url = window.location.href + "?transaction_id={{ transaction.id }}&hosted_tokenization_id=" + result.hostedTokenizationId;
-                window.location.href = redirect_url;
+                let currentUrl = window.location.href;
+
+                if (-1 != currentUrl.indexOf('?') && -1 != currentUrl.indexOf('=')) {
+                    extraQuery = '&{{ constant('IDCI\\Bundle\\PaymentBundle\\System\\AbstractPaymentSystem::TRANSACTION_REFERENCE_QUERY_PARAMETER') }}={{ transaction.reference }}&{{ constant('IDCI\\Bundle\\PaymentBundle\\System\\WorldlineDirectPaymentSystem::HOSTED_TOKENIZATION_ID_QUERY_PARAMETER') }}=' + result.hostedTokenizationId;
+                } else {
+                    extraQuery = '?{{ constant('IDCI\\Bundle\\PaymentBundle\\System\\AbstractPaymentSystem::TRANSACTION_REFERENCE_QUERY_PARAMETER') }}={{ transaction.reference }}&{{ constant('IDCI\\Bundle\\PaymentBundle\\System\\WorldlineDirectPaymentSystem::HOSTED_TOKENIZATION_ID_QUERY_PARAMETER') }}=' + result.hostedTokenizationId;
+                }
+
+                window.location.href = currentUrl + extraQuery;
             } else {
                 // displayErrorMessage(result.error.message);
             }

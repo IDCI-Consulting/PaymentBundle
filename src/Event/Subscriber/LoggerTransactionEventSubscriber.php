@@ -8,17 +8,18 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class LoggerTransactionEventSubscriber implements EventSubscriberInterface
 {
-    private LoggerInterface $logger;
+    private LoggerInterface $paymentLogger;
     private bool $enabled;
 
-    public function __construct(LoggerInterface $logger, bool $enabled)
+    public function __construct(LoggerInterface $paymentLogger, bool $enabled)
     {
-        $this->logger = $logger;
+        $this->paymentLogger = $paymentLogger;
         $this->enabled = $enabled;
     }
 
     public static function getSubscribedEvents()
     {
+        return [];
         return [
             TransactionEvent::APPROVED => [
                 ['approve', 0],
@@ -98,7 +99,7 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
     private function log(string $message)
     {
         try {
-            $this->logger->info($message);
+            $this->paymentLogger->info($message);
         } catch (\Exception $e) {
         }
     }

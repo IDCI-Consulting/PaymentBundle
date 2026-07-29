@@ -5,10 +5,10 @@ namespace IDCI\Bundle\PaymentBundle\Controller\Test;
 use IDCI\Bundle\PaymentBundle\Form\TransactionFormType;
 use IDCI\Bundle\PaymentBundle\Form\Type\PaymentGatewayConfigurationChoiceType;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
+use IDCI\Bundle\PaymentBundle\Model\ProcessedTransactionResult;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class PaymentGatewayTestController extends AbstractController
 {
@@ -52,7 +52,6 @@ class PaymentGatewayTestController extends AbstractController
     public function configureTransaction(Request $request, string $configuration_alias)
     {
         $form = $this->createForm(TransactionFormType::class, null, [
-            'payment_gateway_configuration_alias' => $configuration_alias,
             'csrf_protection' => false,
             'method' => 'GET',
         ]);
@@ -61,8 +60,9 @@ class PaymentGatewayTestController extends AbstractController
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 $transactionModel = $form->getData();
+                $transactionModel->setPaymentGatewayConfigurationAlias($configuration_alias);
 
-                return $this->redirectToRoute('idci_payment_test_initialize_transaction', array_merge(
+                return $this->redirectToRoute('idci_payment_test_process_transaction', array_merge(
                     [
                         'configuration_alias' => $configuration_alias,
                     ],
@@ -78,45 +78,33 @@ class PaymentGatewayTestController extends AbstractController
         ]);
     }
 
-    public function initializeTransaction(Request $request, $configuration_alias)
+    public function processTransaction(Request $request, $configuration_alias)
     {
-        $paymentContext = $this->paymentManager->createPaymentContext($configuration_alias);
-        $paymentContext->createTransaction($request->query->all());
+        $paymentContext = $this->paymentManager->createPaymentContext($configuration_alias, $request);
 
-        return $this->render('@IDCIPayment/Test/initialize.html.twig', [
-            'view' => $paymentContext->buildInitialHTMLView([
-                'client_return_url' => $this->generateUrl(
-                    'idci_payment_test_finalize_transaction',
-                    [
-                        'configuration_alias' => $configuration_alias,
-                        'reference' => $paymentContext->getTransaction()->getReference(),
-                    ],
-                    UrlGeneratorInterface::ABSOLUTE_URL
-                ),
+        if ($paymentContext->isReturnClientRequest()) {
+            $paymentContext->retrieveTransaction();
+        } else {
+            $paymentContext->initializeTransaction($request->query->all(), [
                 'locale' => 'fr',
-            ]),
-            'transaction' => $paymentContext->getTransaction(),
+            ]);
+        }
+
+        $processedTransactionResult = $paymentContext->processTransaction([
+            'locale' => 'fr',
         ]);
-    }
 
-    public function finalizeTransaction(Request $request, $configuration_alias)
-    {
-        $paymentContext = $this->paymentManager->createPaymentContext($configuration_alias);
-        $paymentContext->retrieveTransactionByReference($request->query->get('reference'));
+        if (ProcessedTransactionResult::TYPE_HTML === $processedTransactionResult->getType()) {
+            return $this->render('@IDCIPayment/Test/transaction.html.twig', [
+                'view' => $processedTransactionResult->getContent(),
+                'transaction' => $paymentContext->getTransaction(),
+            ]);
+        }
 
-        return $this->render('@IDCIPayment/Test/finalize.html.twig', [
-            'view' => $paymentContext->buildFinalHTMLView(),
-            'transaction' => $paymentContext->getTransaction(),
-        ]);
-    }
+        if (ProcessedTransactionResult::TYPE_REDIRECTION === $processedTransactionResult->getType()) {
+            return $this->redirect($processedTransactionResult->getContent());
+        }
 
-    public function done(Request $request, $configuration_alias)
-    {
-        return $this->render('@IDCIPayment/Test/done.html.twig');
-    }
-
-    public function cancel(Request $request, $configuration_alias)
-    {
-        return $this->render('@IDCIPayment/Test/cancel.html.twig');
+        throw new \RuntimeException('Wrong processed transaction result type');
     }
 }

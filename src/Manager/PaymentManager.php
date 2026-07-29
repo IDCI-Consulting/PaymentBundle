@@ -10,36 +10,22 @@ use IDCI\Bundle\PaymentBundle\Gateway\PaymentGateway;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfiguration as PaymentGatewayConfigurationModel;
 use IDCI\Bundle\PaymentBundle\System\PaymentSystemRegistry;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 class PaymentManager
 {
-    private EventDispatcherInterface $dispatcher;
-    private LoggerInterface $logger;
-    private RequestStack $requestStack;
-    private UrlGeneratorInterface $urlGenerator;
-    private TransactionManagerInterface $transactionManager;
+    private LoggerInterface $paymentLogger;
     private PaymentSystemRegistry $paymentSystemRegistry;
     private array $paymentGatewayConfigurations;
     private ?EntityManagerInterface $em;
 
     public function __construct(
-        EventDispatcherInterface $dispatcher,
-        LoggerInterface $logger,
-        RequestStack $requestStack,
-        UrlGeneratorInterface $urlGenerator,
-        TransactionManagerInterface $transactionManager,
+        LoggerInterface $paymentLogger,
         PaymentSystemRegistry $paymentSystemRegistry,
         array $paymentGatewayConfigurations,
         ?EntityManagerInterface $em = null,
     ) {
-        $this->dispatcher = $dispatcher;
-        $this->logger = $logger;
-        $this->requestStack = $requestStack;
-        $this->urlGenerator = $urlGenerator;
-        $this->transactionManager = $transactionManager;
+        $this->paymentLogger = $paymentLogger;
         $this->paymentSystemRegistry = $paymentSystemRegistry;
         $this->paymentGatewayConfigurations = $paymentGatewayConfigurations;
         $this->em = $em;
@@ -123,14 +109,11 @@ class PaymentManager
         ;
     }
 
-    public function createPaymentContext(string $alias): PaymentContext
+    public function createPaymentContext(string $alias, Request $request): PaymentContext
     {
         return (new PaymentContext())
-            ->setEventDispatcher($this->dispatcher)
-            ->setLogger($this->logger)
-            ->setRequest($this->requestStack->getCurrentRequest())
-            ->setUrlGenerator($this->urlGenerator)
-            ->setTransactionManager($this->transactionManager)
+            ->setLogger($this->paymentLogger)
+            ->setRequest($request)
             ->setPaymentGateway($this->getPaymentGateway($alias))
         ;
     }

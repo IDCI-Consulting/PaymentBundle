@@ -7,7 +7,7 @@ class TransactionNotification
     protected ?string $id = null;
     protected string $state;
     protected string $message;
-    protected array $metadata;
+    protected array $metadata = [];
     protected Transaction $transaction;
     protected \DateTime $createdAt;
 

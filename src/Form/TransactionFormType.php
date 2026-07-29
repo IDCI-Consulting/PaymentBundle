@@ -2,7 +2,6 @@
 
 namespace IDCI\Bundle\PaymentBundle\Form;
 
-use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use Payum\ISO4217\ISO4217;
 use Symfony\Component\Form\AbstractType;
@@ -13,22 +12,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TransactionFormType extends AbstractType
 {
-    private PaymentManager $paymentManager;
-
-    public function __construct(PaymentManager $paymentManager)
-    {
-        $this->paymentManager = $paymentManager;
-    }
-
     public function configureOptions(OptionsResolver $resolver)
     {
-        $paymentGatewayConfigurationAliases = array_map(function ($paymentGatewayConfiguration) {
-            return $paymentGatewayConfiguration->getAlias();
-        }, $this->paymentManager->getPaymentGatewayConfigurations());
-
         $resolver
             ->setDefault('data_class', Transaction::class)
-            ->setRequired('payment_gateway_configuration_alias')->setAllowedValues('payment_gateway_configuration_alias', $paymentGatewayConfigurationAliases)
         ;
     }
 
@@ -40,9 +27,6 @@ class TransactionFormType extends AbstractType
         }
 
         $builder
-            ->add('payment_gateway_configuration_alias', Type\HiddenType::class, [
-                'data' => $options['payment_gateway_configuration_alias'],
-            ])
             ->add('payment_method', Type\TextType::class, [
                 'required' => false,
             ])

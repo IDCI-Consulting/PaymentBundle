@@ -8,13 +8,8 @@ idci_payment_test_configure_transaction:
     path: /payment-gateway/{configuration_alias}/configure-transaction
     methods: ['GET', 'POST']
 
-idci_payment_test_initialize_transaction:
-    controller: IDCI\Bundle\PaymentBundle\Controller\Test\PaymentGatewayTestController::initializeTransaction
-    path: /payment-gateway/{configuration_alias}/initialize-transaction
-    methods: ['GET', 'POST']
-
-idci_payment_test_finalize_transaction:
-    controller: IDCI\Bundle\PaymentBundle\Controller\Test\PaymentGatewayTestController::finalizeTransaction
-    path: /payment-gateway/{configuration_alias}/finalize-transaction
+idci_payment_test_process_transaction:
+    controller: IDCI\Bundle\PaymentBundle\Controller\Test\PaymentGatewayTestController::processTransaction
+    path: /payment-gateway/{configuration_alias}/process-transaction
     methods: ['GET', 'POST']
 

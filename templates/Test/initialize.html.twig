@@ -1,6 +1,0 @@
-{% extends '@IDCIPayment/_layout.html.twig' %}
-
-{% block body %}
-    {{ view | raw }}
-    {% include '@IDCIPayment/Transaction/_table.html.twig' with {'transaction': transaction} %}
-{% endblock %}

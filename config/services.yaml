@@ -11,7 +11,7 @@ services:
     # Controller
     IDCI\Bundle\PaymentBundle\Controller\PaymentGatewayController:
         arguments:
-            $logger: '@monolog.logger.payment'
+            $paymentLogger: '@monolog.logger.payment'
 
     IDCI\Bundle\PaymentBundle\Controller\ApplePayPaymentGatewayController:
         arguments:
@@ -24,6 +24,7 @@ services:
 
     IDCI\Bundle\PaymentBundle\Manager\PaymentManager:
         arguments:
+            $paymentLogger: '@monolog.logger.payment'
             $em: '@?doctrine.orm.entity_manager'
             $paymentGatewayConfigurations: '%idci_payment.gateway_configurations%'
 
@@ -36,7 +37,7 @@ services:
 
     IDCI\Bundle\PaymentBundle\Event\Subscriber\LoggerTransactionEventSubscriber:
         arguments:
-            $logger: '@monolog.logger.payment'
+            $paymentLogger: '@monolog.logger.payment'
             $enabled: '%idci_payment.enabled_logger_subscriber%'
 
     # Payment Systems

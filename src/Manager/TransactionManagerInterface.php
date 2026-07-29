@@ -8,7 +8,7 @@ interface TransactionManagerInterface
 {
     public function saveTransaction(Transaction $transaction);
 
-    public function retrieveTransactionById(string $id): Transaction;
+    public function retrieveTransactionById(string $id): ?Transaction;
 
-    public function retrieveTransactionByReference(string $reference): Transaction;
+    public function retrieveTransactionByReference(string $reference): ?Transaction;
 }
