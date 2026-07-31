@@ -9,6 +9,7 @@ final class TransactionStatus
     public const STATUS_CREATED = 'created';
     public const STATUS_FAILED = 'failed';
     public const STATUS_PENDING = 'pending';
+    public const STATUS_REFUNDED = 'refunded';
     public const STATUS_UNVERIFIED = 'unverified';
 
     public const AVAILABLE_STATUSES = [
@@ -17,6 +18,7 @@ final class TransactionStatus
         self::STATUS_CREATED,
         self::STATUS_FAILED,
         self::STATUS_PENDING,
+        self::STATUS_REFUNDED,
         self::STATUS_UNVERIFIED,
     ];
 }

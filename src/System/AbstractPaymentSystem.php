@@ -108,7 +108,11 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
     {
         $transactionReference = $request->query->get(self::TRANSACTION_REFERENCE_QUERY_PARAMETER);
 
-        return $this->transactionManager->retrieveTransactionByReference($transactionReference);
+        if (null !== $transactionReference) {
+            return $this->transactionManager->retrieveTransactionByReference($transactionReference);
+        }
+
+        return $this->doRetrieveTransaction($request);
     }
 
     public function processTransaction(Transaction $transaction, Request $request, array $parameters): ProcessedTransactionResult
@@ -160,6 +164,7 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
         )));
     }
 
+    abstract protected function doRetrieveTransaction(Request $request): Transaction;
     abstract protected function doProcessInitialTransaction(array $parameters): ProcessedTransactionResult;
     abstract protected function doProcessReturnClientTransaction(array $parameters): ?ProcessedTransactionResult;
     abstract protected function doHandleNotification(array $parameters): void;

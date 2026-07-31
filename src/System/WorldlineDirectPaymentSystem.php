@@ -12,6 +12,7 @@ use OnlinePayments\Sdk\Client;
 use OnlinePayments\Sdk\Communicator;
 use OnlinePayments\Sdk\CommunicatorConfiguration;
 use OnlinePayments\Sdk\Domain as SdkDomain;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
@@ -24,6 +25,18 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         self::INTEGRATION_METHOD_HOSTED_TOKENIZATION_PAGE,
     ];
 
+    public const PAYMENT_STATUS_CREATED = 'CREATED';
+    public const PAYMENT_STATUS_CANCELLED = 'CANCELLED';
+    public const PAYMENT_STATUS_REJECTED = 'REJECTED';
+    public const PAYMENT_STATUS_REJECTED_CAPTURE = 'REJECTED_CAPTURE';
+    public const PAYMENT_STATUS_REDIRECTED = 'REDIRECTED';
+    public const PAYMENT_STATUS_PENDING_CAPTURE = 'PENDING_CAPTURE';
+    public const PAYMENT_STATUS_AUTHORIZATION_REQUESTED = 'AUTHORIZATION_REQUESTED';
+    public const PAYMENT_STATUS_CAPTURE_REQUESTED = 'CAPTURE_REQUESTED';
+    public const PAYMENT_STATUS_CAPTURED = 'CAPTURED';
+    public const PAYMENT_STATUS_REFUND_REQUESTED = 'REFUND_REQUESTED';
+    public const PAYMENT_STATUS_REFUNDED = 'REFUNDED';
+
     public const HOSTED_CHECKOUT_STATUS_PAYMENT_CREATED = 'PAYMENT_CREATED';
     public const HOSTED_CHECKOUT_STATUS_IN_PROGRESS = 'IN_PROGRESS';
     public const HOSTED_CHECKOUT_STATUS_CANCELLED_BY_CONSUMER = 'CANCELLED_BY_CONSUMER';
@@ -34,24 +47,18 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         self::HOSTED_CHECKOUT_STATUS_CANCELLED_BY_CONSUMER => TransactionStatus::STATUS_CANCELED,
     ];
 
-    public const PAYMENT_DETAILS_STATUS_PAYMENT_CREATED = 'CREATED';
-    public const PAYMENT_DETAILS_STATUS_PAYMENT_CANCELLED = 'CANCELLED';
-    public const PAYMENT_DETAILS_STATUS_PAYMENT_REJECTED = 'REJECTED';
-    public const PAYMENT_DETAILS_STATUS_PAYMENT_REJECTED_CAPTURE = 'REJECTED_CAPTURE';
-    public const PAYMENT_DETAILS_STATUS_PAYMENT_REDIRECTED = 'REDIRECTED';
-    public const PAYMENT_DETAILS_STATUS_PAYMENT_PENDING_CAPTURE = 'PENDING_CAPTURE';
-    public const PAYMENT_DETAILS_STATUS_PAYMENT_AUTHORIZATION_REQUESTED = 'AUTHORIZATION_REQUESTED';
-    public const PAYMENT_DETAILS_STATUS_PAYMENT_CAPTURED = 'CAPTURED';
-
-    public const PAYMENT_DETAILS_STATUS_MAP = [
-        self::PAYMENT_DETAILS_STATUS_PAYMENT_CREATED => TransactionStatus::STATUS_CREATED,
-        self::PAYMENT_DETAILS_STATUS_PAYMENT_CANCELLED => TransactionStatus::STATUS_CANCELED,
-        self::PAYMENT_DETAILS_STATUS_PAYMENT_REJECTED => TransactionStatus::STATUS_FAILED,
-        self::PAYMENT_DETAILS_STATUS_PAYMENT_REJECTED_CAPTURE => TransactionStatus::STATUS_FAILED,
-        self::PAYMENT_DETAILS_STATUS_PAYMENT_REDIRECTED => TransactionStatus::STATUS_PENDING,
-        self::PAYMENT_DETAILS_STATUS_PAYMENT_PENDING_CAPTURE => TransactionStatus::STATUS_PENDING,
-        self::PAYMENT_DETAILS_STATUS_PAYMENT_AUTHORIZATION_REQUESTED => TransactionStatus::STATUS_PENDING,
-        self::PAYMENT_DETAILS_STATUS_PAYMENT_CAPTURED => TransactionStatus::STATUS_APPROVED,
+    public const PAYMENT_STATUS_MAP = [
+        self::PAYMENT_STATUS_CREATED => TransactionStatus::STATUS_CREATED,
+        self::PAYMENT_STATUS_CANCELLED => TransactionStatus::STATUS_CANCELED,
+        self::PAYMENT_STATUS_REJECTED => TransactionStatus::STATUS_FAILED,
+        self::PAYMENT_STATUS_REJECTED_CAPTURE => TransactionStatus::STATUS_FAILED,
+        self::PAYMENT_STATUS_REDIRECTED => TransactionStatus::STATUS_PENDING,
+        self::PAYMENT_STATUS_PENDING_CAPTURE => TransactionStatus::STATUS_PENDING,
+        self::PAYMENT_STATUS_AUTHORIZATION_REQUESTED => TransactionStatus::STATUS_PENDING,
+        self::PAYMENT_STATUS_CAPTURE_REQUESTED => TransactionStatus::STATUS_PENDING,
+        self::PAYMENT_STATUS_CAPTURED => TransactionStatus::STATUS_APPROVED,
+        self::PAYMENT_STATUS_REFUND_REQUESTED => TransactionStatus::STATUS_PENDING,
+        self::PAYMENT_STATUS_REFUNDED => TransactionStatus::STATUS_REFUNDED,
     ];
 
     public const HOSTED_CHECKOUT_ID_QUERY_PARAMETER = 'hostedCheckoutId';
@@ -77,6 +84,21 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
             ->setDefault('locale', 'en')->setAllowedTypes('locale', ['string'])
             ->setDefault('hosted_tokenization_template_file', null)->setAllowedTypes('hosted_tokenization_template_file', ['null', 'string'])
         ;
+    }
+
+    protected function doRetrieveTransaction(Request $request): Transaction
+    {
+        if (Request::METHOD_POST === $request->getMethod()) {
+            $payload = json_decode($request->getContent(), true);
+
+            if (!isset($payload['payment']['paymentOutput']['references']['merchantReference'])) {
+                throw new \Exception('Invalid payload');
+            }
+
+            $transactionId = $payload['payment']['paymentOutput']['references']['merchantReference'];
+
+            return $this->transactionManager->retrieveTransactionById($transactionId);
+        }
     }
 
     protected function doProcessInitialTransaction(array $parameters): ProcessedTransactionResult
@@ -161,12 +183,12 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                 $paymentDetails = $this->merchantClient->payments()->getPaymentDetails($hostedCheckoutStatus->getCreatedPaymentOutput()->getPayment()->getId());
 
                 $transaction
-                    ->setStatus(self::PAYMENT_DETAILS_STATUS_MAP[$paymentDetails->getStatus()])
+                    ->setStatus(self::PAYMENT_STATUS_MAP[$paymentDetails->getStatus()])
                     ->addNotification(
                         (new TransactionNotification())
                             ->setMessage(json_encode($hostedCheckoutStatus))
                             ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
-                            ->setState($hostedCheckoutStatus->getStatus())
+                            ->setState($paymentDetails->getStatus())
                             ->addMetadata('payment_id', $paymentDetails->getId())
                             ->addMetadata('payment_details', json_encode($paymentDetails))
                     )
@@ -191,12 +213,12 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                     && 'REDIRECT' === $createPaymentResponse->getMerchantAction()->getActionType()
                 ) {
                     $transaction
-                        ->setStatus(self::PAYMENT_DETAILS_STATUS_MAP[$paymentDetails->getStatus()])
+                        ->setStatus(self::PAYMENT_STATUS_MAP[$paymentDetails->getStatus()])
                         ->addNotification(
                             (new TransactionNotification())
                                 ->setMessage(json_encode($createPaymentResponse))
                                 ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
-                                ->setState($createPaymentResponse->getPayment()->getStatus())
+                                ->setState($paymentDetails->getStatus())
                                 ->addMetadata('return_mac', $createPaymentResponse->getMerchantAction()->getRedirectData()->getReturnMac())
                                 ->addMetadata('redirect_url', $createPaymentResponse->getMerchantAction()->getRedirectData()->getRedirectURL())
                                 ->addMetadata('payment_id', $paymentDetails->getId())
@@ -212,12 +234,12 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                 }
 
                 $transaction
-                    ->setStatus(self::PAYMENT_DETAILS_STATUS_MAP[$paymentDetails->getStatus()])
+                    ->setStatus(self::PAYMENT_STATUS_MAP[$paymentDetails->getStatus()])
                     ->addNotification(
                         (new TransactionNotification())
                             ->setMessage(json_encode($createPaymentResponse))
                             ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
-                            ->setState($createPaymentResponse->getPayment()->getStatus())
+                            ->setState($paymentDetails->getStatus())
                             ->addMetadata('payment_id', $paymentDetails->getId())
                             ->addMetadata('payment_details', json_encode($paymentDetails))
                     )
@@ -247,7 +269,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                 $paymentDetails = $this->merchantClient->payments()->getPaymentDetails($request->query->get(self::HOSTED_TOKENIZATION_PAYMENT_ID_PARAMETER));
 
                 $transaction
-                    ->setStatus(self::PAYMENT_DETAILS_STATUS_MAP[$paymentDetails->getStatus()])
+                    ->setStatus(self::PAYMENT_STATUS_MAP[$paymentDetails->getStatus()])
                     ->addNotification(
                         (new TransactionNotification())
                             ->setMessage(json_encode($paymentDetails))
@@ -268,6 +290,69 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
 
     protected function doHandleNotification(array $parameters): void
     {
+        $transaction = $parameters['transaction'];
+        $request = $parameters['request'];
+        $payload = json_decode($request->getContent(), true);
+
+        $transaction
+            ->addNotification(
+                (new TransactionNotification())
+                    ->setMessage($request->getContent())
+                    ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
+                    ->setState($payload['payment']['status'])
+            )
+        ;
+        $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
+
+        $this->createMerchantClient($parameters);
+
+        if (self::PAYMENT_STATUS_PENDING_CAPTURE === $payload['payment']['status']
+            && in_array($transaction->getStatus(), [TransactionStatus::STATUS_CREATED, TransactionStatus::STATUS_PENDING])
+        ) {
+            $capturePaymentRequest = new SdkDomain\CapturePaymentRequest();
+            $capturePaymentRequest->setAmount($payload['payment']['paymentOutput']['acquiredAmount']['amount']);
+            $capturePaymentRequest->setIsFinal(true);
+
+            $paymentReferences = new SdkDomain\PaymentReferences();
+            $paymentReferences->setOperationGroupReference($transaction->getId());
+            $capturePaymentRequest->setReferences($paymentReferences);
+
+
+            $transaction
+                ->addNotification(
+                    (new TransactionNotification())
+                        ->setMessage(json_encode($capturePaymentRequest->toObject()))
+                        ->setCallDirection(TransactionNotification::CALL_DIRECTION_TRANSMIT)
+                        ->setState($transaction->getLastNotification()->getState())
+                    )
+            ;
+            $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
+
+            $captureResponse = $this->merchantClient->payments()->capturePayment($payload['payment']['id'], $capturePaymentRequest);
+
+            $transaction
+                ->addNotification(
+                    (new TransactionNotification())
+                        ->setMessage(json_encode($captureResponse->toObject()))
+                        ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
+                        ->setState($captureResponse->getStatus())
+                )
+            ;
+            $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
+        }
+
+        $paymentDetails = $this->merchantClient->payments()->getPaymentDetails($payload['payment']['id']);
+        $transaction
+            ->setStatus(self::PAYMENT_STATUS_MAP[$paymentDetails->getStatus()])
+            ->addNotification(
+                (new TransactionNotification())
+                    ->setMessage(json_encode($paymentDetails))
+                    ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
+                    ->setState($paymentDetails->getStatus())
+                    ->addMetadata('payment_id', $paymentDetails->getId())
+            )
+        ;
+        $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
     }
 

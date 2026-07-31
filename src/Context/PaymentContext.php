@@ -129,8 +129,23 @@ class PaymentContext
             'class' => self::class,
             'parameters' => $parameters,
             'request' => $this->getRequest(),
-//            'transaction' => $this->getTransaction(),
+            'transaction' => $this->getTransaction(),
         ]);
+
+        try {
+            $this->getPaymentSystem()->handleNotification(
+                $this->getTransaction(),
+                $this->getRequest(),
+                $this->mergeParameters($parameters),
+            );
+        } catch (\Exception $e) {
+            $this->getLogger()->error(sprintf('[IDCIPaymentBundle] fail to handle notification: %s', $e->getMessage()), [
+                'class' => self::class,
+                'transaction' => $this->getTransaction(),
+            ]);
+
+            throw $e;
+        }
     }
 
     private function mergeParameters(array $parameters): array
