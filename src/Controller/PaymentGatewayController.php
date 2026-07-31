@@ -14,21 +14,25 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 class PaymentGatewayController extends AbstractController
 {
     private PaymentManager $paymentManager;
-    private LoggerInterface $paymentLogger;
 
-    public function __construct(PaymentManager $paymentManager, LoggerInterface $paymentLogger)
+    public function __construct(PaymentManager $paymentManager)
     {
         $this->paymentManager = $paymentManager;
-        $this->paymentLogger = $paymentLogger;
     }
 
     public function notifyTransaction(Request $request, EventDispatcherInterface $dispatcher, string $configuration_alias)
     {
-        $data = $request->isMethod(Request::METHOD_POST) ? $request->request->all() : $request->query->all();
+        $paymentContext = $this->paymentManager->createPaymentContext($configuration_alias, $request);
+        $paymentContext->handleNotification();
+        dd('ici');
+
+        $transaction = $paymentContext->getTransaction();
+        return new JsonResponse($transaction->toArray());
+        /*
 
         $this->paymentLogger->info(
             sprintf(
-                '[IDCIPaymentGateway - configuration alias %s] data: %s | ip: %s | content: %s',
+                '[IDCIPaymentBundle] configuration alias %s] data: %s | ip: %s | content: %s',
                 $configuration_alias,
                 json_encode($data),
                 json_encode($request->getClientIps()),
@@ -38,13 +42,8 @@ class PaymentGatewayController extends AbstractController
 
         //$paymentGateway = $this->paymentGatewayRegistry->get($configuration_alias)
 
-        $paymentContext = $this
-            ->paymentManager
-            ->createPaymentContextByAlias($configuration_alias)
-        ;
 
         $paymentContext->handleGatewayCallback($request);
-        $transaction = $paymentContext->getTransaction();
 
         $event = [
             PaymentStatus::STATUS_CREATED => TransactionEvent::CREATED,
@@ -56,7 +55,6 @@ class PaymentGatewayController extends AbstractController
         ];
 
         $dispatcher->dispatch(new TransactionEvent($transaction), $event[$transaction->getStatus()]);
-
-        return new JsonResponse($transaction->toArray());
+        */
     }
 }

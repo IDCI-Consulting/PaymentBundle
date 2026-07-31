@@ -9,10 +9,6 @@ services:
         exclude: '../src/{Entity,Repository,Tests,Event/Subscriber}'
 
     # Controller
-    IDCI\Bundle\PaymentBundle\Controller\PaymentGatewayController:
-        arguments:
-            $paymentLogger: '@monolog.logger.payment'
-
     IDCI\Bundle\PaymentBundle\Controller\ApplePayPaymentGatewayController:
         arguments:
             $domainVerificationDirectoryPath: '%idci_payment.apple_pay.domain_verification_directory_path%'

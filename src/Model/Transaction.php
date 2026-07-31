@@ -235,11 +235,13 @@ class Transaction
         return $lastNotification;
     }
 
-    public function addNotification(TransactionNotification $notification)
+    public function addNotification(TransactionNotification $notification): self
     {
         $notification->setTransaction($this);
 
         $this->notifications[] = $notification;
+
+        return $this;
     }
 
     public function setNotifications(array $notifications): self

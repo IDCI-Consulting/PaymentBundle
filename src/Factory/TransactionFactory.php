@@ -56,6 +56,7 @@ class TransactionFactory
     {
         return (new TransactionNotification())
             ->setId($data['id'])
+            ->setCallDirection($data['call_direction'])
             ->setState($data['state'])
             ->setMessage($data['message'])
             ->setMetadata($data['metadata'])
@@ -105,6 +106,7 @@ class TransactionFactory
 
                     $notificationHistoryResolver
                         ->setRequired('id')->setAllowedTypes('id', ['string'])
+                        ->setRequired('call_direction')->setAllowedValues('call_direction', TransactionNotification::AVAILABLE_CALL_DIRECTIONS)
                         ->setRequired('state')->setAllowedTypes('state', ['string'])
                         ->setRequired('message')->setAllowedTypes('message', ['string'])
                         ->setDefined('metadata')->setAllowedTypes('metadata', ['null', 'array'])

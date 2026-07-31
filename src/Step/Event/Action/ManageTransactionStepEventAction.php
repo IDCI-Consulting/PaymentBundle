@@ -22,40 +22,19 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
 {
     public const TRANSACTION_ID_QUERY_PARAMETER = 'transaction_id';
 
-    /**
-     * @var PaymentManager
-     */
-    protected $paymentManager;
+    protected PaymentManager $paymentManager;
 
-    /**
-     * @var TransactionManagerInterface
-     */
-    protected $transactionManager;
+    protected TransactionManagerInterface $transactionManager;
 
-    /**
-     * @var UrlGeneratorInterface
-     */
-    protected $router;
+    protected UrlGeneratorInterface $router;
 
-    /**
-     * @var RequestStack
-     */
-    protected $requestStack;
+    protected RequestStack $requestStack;
 
-    /**
-     * @var EventDispatcherInterface
-     */
-    protected $dispatcher;
+    protected EventDispatcherInterface $dispatcher;
 
-    /**
-     * @var Environment
-     */
-    private $templating;
+    private Environment $templating;
 
-    /**
-     * @var array
-     */
-    private $templates;
+    private array $templates;
 
     public function __construct(
         PaymentManager $paymentManager,
@@ -64,7 +43,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         RequestStack $requestStack,
         EventDispatcherInterface $dispatcher,
         Environment $templating,
-        array $templates
+        array $templates = [],
     ) {
         $this->paymentManager = $paymentManager;
         $this->transactionManager = $transactionManager;
@@ -104,7 +83,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
     private function getDefaultCallbackUrl(PaymentGatewayConfiguration $paymentGatewayConfiguration)
     {
         return $this->router->generate(
-            'idci_payment_payment_gateway_callback',
+            'idci_payment_gateway_transaction_notification',
             [
                 'configuration_alias' => $paymentGatewayConfiguration->getAlias(),
             ],
@@ -122,13 +101,13 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             $transaction = $this->transactionManager->retrieveTransactionById($event->getStepEventData()['id']);
 
             if (
-                null !== $transaction &&
-                !in_array($transaction->getStatus(), [PaymentStatus::STATUS_FAILED, PaymentStatus::STATUS_CANCELED]) &&
-                $transaction->getPaymentMethod() === $parameters['payment_method'] &&
-                $transaction->getItemId() === $parameters['item_id'] &&
-                $transaction->getAmount() === $parameters['amount'] &&
-                $transaction->getCurrencyCode() === $parameters['currency_code'] &&
-                $transaction->getCustomerId() === $parameters['customer_id']
+                null !== $transaction
+                && !in_array($transaction->getStatus(), [PaymentStatus::STATUS_FAILED, PaymentStatus::STATUS_CANCELED])
+                && $transaction->getPaymentMethod() === $parameters['payment_method']
+                && $transaction->getItemId() === $parameters['item_id']
+                && $transaction->getAmount() === $parameters['amount']
+                && $transaction->getCurrencyCode() === $parameters['currency_code']
+                && $transaction->getCustomerId() === $parameters['customer_id']
             ) {
                 $paymentContext->setTransaction($transaction);
             }
@@ -257,9 +236,6 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         return $transaction->toArray();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doExecute(StepEventInterface $event, array $parameters = [])
     {
         $request = $this->requestStack->getCurrentRequest();
@@ -270,10 +246,10 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         ;
 
         if (
-            !$request->query->has(self::TRANSACTION_ID_QUERY_PARAMETER) &&
-            (
-                null === $transaction ||
-                in_array($transaction->getStatus(), [
+            !$request->query->has(self::TRANSACTION_ID_QUERY_PARAMETER)
+            && (
+                null === $transaction
+                || in_array($transaction->getStatus(), [
                     PaymentStatus::STATUS_CREATED,
                     PaymentStatus::STATUS_PENDING,
                     PaymentStatus::STATUS_FAILED,
@@ -287,9 +263,6 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         return $this->prepareReturnTransaction($event, $parameters);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function setDefaultParameters(OptionsResolver $resolver)
     {
         $resolver

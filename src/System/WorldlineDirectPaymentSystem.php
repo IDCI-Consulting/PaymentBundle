@@ -93,11 +93,13 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                 ->addNotification(
                 (new TransactionNotification())
                     ->setMessage(json_encode($hostedCheckoutResponse))
+                    ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
                     ->setState($hostedCheckoutStatus->getStatus())
                     ->addMetadata('return_mac', $hostedCheckoutResponse->getReturnMac())
                     ->addMetadata('hosted_checkout_id', $hostedCheckoutResponse->getHostedCheckoutId())
                     ->addMetadata('redirect_url', $hostedCheckoutResponse->getRedirectUrl())
-            );
+                )
+            ;
             $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
             return new ProcessedTransactionResult(
@@ -156,15 +158,20 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                 && 'IN_PROGRESS' === $relatedTransactionNotifications[0]->getState()
             ) {
                 $hostedCheckoutStatus = $this->merchantClient->hostedCheckout()->getHostedCheckout($request->query->get(self::HOSTED_CHECKOUT_ID_QUERY_PARAMETER));
+                $paymentDetails = $this->merchantClient->payments()->getPaymentDetails($hostedCheckoutStatus->getCreatedPaymentOutput()->getPayment()->getId());
 
                 $transaction
-                    ->setStatus(self::HOSTED_CHECKOUT_STATUS_MAP[$hostedCheckoutStatus->getStatus()])
+                    ->setStatus(self::PAYMENT_DETAILS_STATUS_MAP[$paymentDetails->getStatus()])
                     ->addNotification(
-                    (new TransactionNotification())
-                        ->setMessage($relatedTransactionNotifications[0]->getMessage())
-                        ->setState($hostedCheckoutStatus->getStatus())
-                        ->setMetadata($relatedTransactionNotifications[0]->getMetadata())
-                );
+                        (new TransactionNotification())
+                            ->setMessage(json_encode($hostedCheckoutStatus))
+                            ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
+                            ->setState($hostedCheckoutStatus->getStatus())
+                            ->addMetadata('payment_id', $paymentDetails->getId())
+                            ->addMetadata('payment_details', json_encode($paymentDetails))
+                    )
+                ;
+
                 $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
             }
 
@@ -180,17 +187,22 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                 $createPaymentResponse = $this->sendCreatePaymentRequest($parameters);
                 $paymentDetails = $this->merchantClient->payments()->getPaymentDetails($createPaymentResponse->getPayment()->getId());
 
-                if ('REDIRECT' === $createPaymentResponse->getMerchantAction()->getActionType()) {
+                if (null !== $createPaymentResponse->getMerchantAction()
+                    && 'REDIRECT' === $createPaymentResponse->getMerchantAction()->getActionType()
+                ) {
                     $transaction
                         ->setStatus(self::PAYMENT_DETAILS_STATUS_MAP[$paymentDetails->getStatus()])
                         ->addNotification(
                             (new TransactionNotification())
-                                ->setMessage(json_encode($createPaymentResponse->toObject()))
+                                ->setMessage(json_encode($createPaymentResponse))
+                                ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
                                 ->setState($createPaymentResponse->getPayment()->getStatus())
                                 ->addMetadata('return_mac', $createPaymentResponse->getMerchantAction()->getRedirectData()->getReturnMac())
                                 ->addMetadata('redirect_url', $createPaymentResponse->getMerchantAction()->getRedirectData()->getRedirectURL())
-                        );
-
+                                ->addMetadata('payment_id', $paymentDetails->getId())
+                                ->addMetadata('payment_details', json_encode($paymentDetails))
+                        )
+                    ;
                     $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
                     return new ProcessedTransactionResult(
@@ -202,10 +214,14 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                 $transaction
                     ->setStatus(self::PAYMENT_DETAILS_STATUS_MAP[$paymentDetails->getStatus()])
                     ->addNotification(
-                    (new TransactionNotification())
-                        ->setMessage(json_encode($createPaymentResponse->toObject()))
-                        ->setState($createPaymentResponse->getPayment()->getStatus())
-                );
+                        (new TransactionNotification())
+                            ->setMessage(json_encode($createPaymentResponse))
+                            ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
+                            ->setState($createPaymentResponse->getPayment()->getStatus())
+                            ->addMetadata('payment_id', $paymentDetails->getId())
+                            ->addMetadata('payment_details', json_encode($paymentDetails))
+                    )
+                ;
                 $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
                 return null;
@@ -235,9 +251,11 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                     ->addNotification(
                         (new TransactionNotification())
                             ->setMessage(json_encode($paymentDetails))
+                            ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
                             ->setState($paymentDetails->getStatus())
                             ->addMetadata('payment_id', $paymentDetails->getId())
-                    );
+                    )
+                ;
 
                 $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
             }
@@ -315,6 +333,16 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
 
         $this->createMerchantClient($parameters);
 
+        $transaction
+            ->setStatus(TransactionStatus::STATUS_CREATED)
+            ->addNotification(
+                (new TransactionNotification())
+                    ->setMessage(json_encode($createHostedCheckoutRequest))
+                    ->setCallDirection(TransactionNotification::CALL_DIRECTION_TRANSMIT)
+                    ->setState('INITIALIZE')
+            )
+        ;
+
         return $this->merchantClient->hostedCheckout()->createHostedCheckout($createHostedCheckoutRequest);
     }
 
@@ -326,6 +354,16 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         }
 
         $this->createMerchantClient($parameters);
+
+        $transaction
+            ->setStatus(TransactionStatus::STATUS_CREATED)
+            ->addNotification(
+                (new TransactionNotification())
+                    ->setMessage(json_encode($createHostedTokenizationRequest))
+                    ->setCallDirection(TransactionNotification::CALL_DIRECTION_TRANSMIT)
+                    ->setState('INITIALIZE')
+            )
+        ;
 
         return $this->merchantClient->hostedTokenization()->createHostedTokenization($createHostedTokenizationRequest);
     }

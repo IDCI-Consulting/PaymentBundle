@@ -16,7 +16,6 @@ class PaymentStepType extends AbstractStepType
 
     public function buildNavigationStepForm(FormBuilderInterface $builder, array $options)
     {
-        return;
     }
 
     public function prepareNavigation(NavigatorInterface $navigator, array $options): array

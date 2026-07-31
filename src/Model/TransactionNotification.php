@@ -4,7 +4,16 @@ namespace IDCI\Bundle\PaymentBundle\Model;
 
 class TransactionNotification
 {
+    public const CALL_DIRECTION_TRANSMIT = 'transmit';
+    public const CALL_DIRECTION_RECEIVE = 'receive';
+
+    public const AVAILABLE_CALL_DIRECTIONS = [
+        self::CALL_DIRECTION_TRANSMIT,
+        self::CALL_DIRECTION_RECEIVE,
+    ];
+
     protected ?string $id = null;
+    protected ?string $callDirection = null;
     protected string $state;
     protected string $message;
     protected array $metadata = [];
@@ -24,6 +33,18 @@ class TransactionNotification
     public function setId(string $id): self
     {
         $this->id = $id;
+
+        return $this;
+    }
+
+    public function getCallDirection(): string
+    {
+        return $this->callDirection;
+    }
+
+    public function setCallDirection(string $callDirection): self
+    {
+        $this->callDirection = $callDirection;
 
         return $this;
     }

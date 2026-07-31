@@ -123,6 +123,16 @@ class PaymentContext
         }
     }
 
+    public function handleNotification(array $parameters = []): void
+    {
+        $this->getLogger()->info('[IDCIPaymentBundle] handle notification', [
+            'class' => self::class,
+            'parameters' => $parameters,
+            'request' => $this->getRequest(),
+//            'transaction' => $this->getTransaction(),
+        ]);
+    }
+
     private function mergeParameters(array $parameters): array
     {
         return array_merge(
