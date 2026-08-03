@@ -21,7 +21,6 @@ class PaymentGatewayController extends AbstractController
     {
         $paymentContext = $this->paymentManager->createPaymentContext($configuration_alias, $request);
         $paymentContext->retrieveTransaction();
-
         $paymentContext->handleNotification();
 
         return new JsonResponse([

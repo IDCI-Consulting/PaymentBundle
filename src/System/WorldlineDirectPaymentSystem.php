@@ -86,7 +86,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         ;
     }
 
-    protected function doRetrieveTransaction(Request $request): Transaction
+    protected function doRetrieveTransaction(Request $request): ?Transaction
     {
         if (Request::METHOD_POST === $request->getMethod()) {
             $payload = json_decode($request->getContent(), true);
@@ -99,6 +99,8 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
 
             return $this->transactionManager->retrieveTransactionById($transactionId);
         }
+
+        return null;
     }
 
     protected function doProcessInitialTransaction(array $parameters): ProcessedTransactionResult
@@ -353,7 +355,6 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
             )
         ;
         $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
-
     }
 
     protected function createMerchantClient(array $parameters): void

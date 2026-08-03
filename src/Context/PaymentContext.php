@@ -66,7 +66,7 @@ class PaymentContext
         return $this->transaction;
     }
 
-    public function setTransaction(Transaction $transaction): self
+    public function setTransaction(?Transaction $transaction): self
     {
         $this->transaction = $transaction;
 
@@ -94,6 +94,16 @@ class PaymentContext
             'class' => self::class,
             'transaction' => $transaction,
         ]);
+
+        if (null === $transaction) {
+            $this->getLogger()->info('[IDCIPaymentBundle] failed to retrieve transaction', [
+                'class' => self::class,
+                'request' => $this->getRequest(),
+            ]);
+
+            throw new \UnexpectedValueException('[IDCIPaymentBundle] failed to retrieve transaction');
+        }
+
         $this->setTransaction($transaction);
     }
 
@@ -111,7 +121,7 @@ class PaymentContext
                 $this->mergeParameters($parameters),
             );
         } catch (\Exception $e) {
-            $this->getLogger()->error(sprintf('[IDCIPaymentBundle] fail to process transaction: %s', $e->getMessage()), [
+            $this->getLogger()->error(sprintf('[IDCIPaymentBundle] failed to process transaction: %s', $e->getMessage()), [
                 'class' => self::class,
                 'transaction' => $this->getTransaction(),
             ]);
@@ -139,7 +149,7 @@ class PaymentContext
                 $this->mergeParameters($parameters),
             );
         } catch (\Exception $e) {
-            $this->getLogger()->error(sprintf('[IDCIPaymentBundle] fail to handle notification: %s', $e->getMessage()), [
+            $this->getLogger()->error(sprintf('[IDCIPaymentBundle] failed to handle notification: %s', $e->getMessage()), [
                 'class' => self::class,
                 'transaction' => $this->getTransaction(),
             ]);

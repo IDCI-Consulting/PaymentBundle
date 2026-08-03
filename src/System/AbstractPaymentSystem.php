@@ -104,7 +104,7 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
         return $initializedTransaction;
     }
 
-    public function retrieveTransaction(Request $request): Transaction
+    public function retrieveTransaction(Request $request): ?Transaction
     {
         $transactionReference = $request->query->get(self::TRANSACTION_REFERENCE_QUERY_PARAMETER);
 
@@ -164,7 +164,7 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
         )));
     }
 
-    abstract protected function doRetrieveTransaction(Request $request): Transaction;
+    abstract protected function doRetrieveTransaction(Request $request): ?Transaction;
     abstract protected function doProcessInitialTransaction(array $parameters): ProcessedTransactionResult;
     abstract protected function doProcessReturnClientTransaction(array $parameters): ?ProcessedTransactionResult;
     abstract protected function doHandleNotification(array $parameters): void;
