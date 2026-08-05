@@ -178,6 +178,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                 ));
             }
 
+            dd('ici', $relatedTransactionNotifications);
             if (1 === count($relatedTransactionNotifications)
                 && 'IN_PROGRESS' === $relatedTransactionNotifications[0]->getState()
             ) {
@@ -304,7 +305,6 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                     ->setState($payload['payment']['status'])
             )
         ;
-        $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
         $this->createMerchantClient($parameters);
 
@@ -328,7 +328,6 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                         ->setState($transaction->getLastNotification()->getState())
                     )
             ;
-            $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
             $captureResponse = $this->merchantClient->payments()->capturePayment($payload['payment']['id'], $capturePaymentRequest);
 
@@ -340,7 +339,6 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                         ->setState($captureResponse->getStatus())
                 )
             ;
-            $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
         }
 
         $paymentDetails = $this->merchantClient->payments()->getPaymentDetails($payload['payment']['id']);
@@ -352,6 +350,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                     ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
                     ->setState($paymentDetails->getStatus())
                     ->addMetadata('payment_id', $paymentDetails->getId())
+                    ->addMetadata('payment_details', json_encode($paymentDetails))
             )
         ;
         $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);

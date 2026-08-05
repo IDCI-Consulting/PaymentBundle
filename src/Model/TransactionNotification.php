@@ -18,7 +18,7 @@ class TransactionNotification
     protected string $message;
     protected array $metadata = [];
     protected Transaction $transaction;
-    protected \DateTime $createdAt;
+    protected ?\DateTime $createdAt = null;
 
     public function __toString(): string
     {

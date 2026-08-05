@@ -2,12 +2,10 @@
 
 namespace IDCI\Bundle\PaymentBundle\Model;
 
-use Flaky\Flaky;
-
 class Transaction
 {
     protected ?string $id = null;
-    protected string $reference;
+    protected ?string $reference = null;
     protected ?int $number = null;
     protected string $paymentGatewayConfigurationAlias;
     protected ?string $paymentMethod = null;
@@ -22,11 +20,6 @@ class Transaction
     protected array $notifications = [];
     protected ?\DateTime $createdAt = null;
     protected ?\DateTime $updatedAt = null;
-
-    public function __construct()
-    {
-        $this->reference = Flaky::id(62);
-    }
 
     public function __toString(): string
     {
@@ -51,7 +44,7 @@ class Transaction
         return $this;
     }
 
-    public function getReference(): string
+    public function getReference(): ?string
     {
         return $this->reference;
     }

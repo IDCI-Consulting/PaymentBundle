@@ -74,7 +74,14 @@ class TransactionFactory
 
         $resolver
             ->setDefault('id', null)->setAllowedTypes('id', ['null', 'string'])
-            ->setRequired('reference')->setAllowedTypes('reference', ['string'])
+            ->setDefault('reference', null)->setAllowedTypes('reference', ['null', 'string'])
+                ->setNormalizer('reference', function(Options $options, $value): string {
+                    if (null !== $value) {
+                        return $value;
+                    }
+
+                    return Flaky::id(62);
+                })
             ->setDefault('number', null)->setAllowedTypes('number', ['null', 'int'])
                 ->setNormalizer('number', function(Options $options, $value): ?int {
                     if (is_string($value)) {
