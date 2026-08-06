@@ -1,2 +1,5 @@
-<h1>{% trans from 'IDCIPaymentBundle' %}transaction.approved{% endtrans %}</h1>
+<div class="idci-payment-transaction-status status-approved">
+    <h3 class="idci-payment-transaction-status-title">{% trans from 'IDCIPaymentBundle' %}transaction.approved{% endtrans %}</h3>
+    {% include '@IDCIPayment/Transaction/_table_short.html.twig' with {'transaction': transaction} %}
+</div>
 

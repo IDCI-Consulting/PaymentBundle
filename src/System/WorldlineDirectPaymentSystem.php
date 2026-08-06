@@ -170,8 +170,9 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         $this->createMerchantClient($parameters);
 
         if (null !== $transaction->getMetadata('payment_id')) {
-            $paymentDetails = $this->merchantClient->payments()->getPaymentDetails($hostedCheckoutStatus->getCreatedPaymentOutput()->getPayment()->getId());
-            dd('ok', $paymentDetails);
+            //$paymentDetails = $this->merchantClient->payments()->getPaymentDetails($transaction->getMetadata('payment_id'));
+
+            return null;
         }
 
         $transaction

@@ -31,11 +31,11 @@
             </trans-unit>
             <trans-unit id="VxQzn1rN" resname="transaction.item_reference">
                 <source>transaction.item_reference</source>
-                <target>Item reference</target>
+                <target>Order reference</target>
             </trans-unit>
-            <trans-unit id="lPtyiad6" resname="transaction.price">
-                <source>transaction.price</source>
-                <target>Price</target>
+            <trans-unit id="lPtyiad6" resname="transaction.amount">
+                <source>transaction.amount</source>
+                <target>Amount</target>
             </trans-unit>
             <trans-unit id="37zISosz" resname="transaction.customer_reference">
                 <source>transaction.customer_reference</source>

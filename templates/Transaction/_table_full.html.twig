@@ -1,4 +1,4 @@
-<table>
+<table class="idci-payment-transaction-table">
     <tr>
         <th>{% trans from 'IDCIPaymentBundle' %}transaction.id{% endtrans %}</th>
         <td>{% if transaction.id is not null %}{{ transaction.id }}{% else %}N/A{% endif %}</td>
@@ -24,7 +24,7 @@
         <td>{{ transaction.itemReference }}</td>
     </tr>
     <tr>
-        <th>{% trans from 'IDCIPaymentBundle' %}transaction.price{% endtrans %}</th>
+        <th>{% trans from 'IDCIPaymentBundle' %}transaction.amount{% endtrans %}</th>
         <td>{{ transaction.amount / 100 }} {{ transaction.currencyCode }}</td>
     </tr>
     <tr>
