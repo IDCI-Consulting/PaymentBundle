@@ -2,16 +2,10 @@
 
 namespace IDCI\Bundle\PaymentBundle\Step\Event\Action;
 
-use IDCI\Bundle\PaymentBundle\Event\TransactionEvent;
-use IDCI\Bundle\PaymentBundle\Exception\Gateway\GatewayException;
 use IDCI\Bundle\PaymentBundle\Manager\PaymentManager;
-use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfiguration;
 use IDCI\Bundle\PaymentBundle\Model\ProcessedTransactionResult;
-use IDCI\Bundle\PaymentBundle\Model\Transaction;
-use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use IDCI\Bundle\StepBundle\Step\Event\Action\AbstractStepEventAction;
 use IDCI\Bundle\StepBundle\Step\Event\StepEventInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Twig\Environment;

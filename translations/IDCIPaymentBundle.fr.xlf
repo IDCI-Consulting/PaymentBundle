@@ -76,13 +76,13 @@
             </trans-unit>
 
             <!-- Worldline -->
-            <trans-unit id="0jOFRnj6" resname="worldline.redirection_message">
-                <source>worldline.redirection_message</source>
-                <target>Vous allez être automatiquement rediriger vers notre système de paiement.</target>
+            <trans-unit id="0jOFRnj6" resname="worldline.redirection_title">
+                <source>worldline.redirection_title</source>
+                <target>Vous allez être automatiquement rediriger vers notre système de paiement</target>
             </trans-unit>
             <trans-unit id="P5svj8E8" resname="worldline.link_message">
                 <source>worldline.link_message</source>
-                <target>Si ce n'est pas le cas, vous pouvez cliquer que le lien suivant</target>
+                <target>Si ce n'est pas le cas, vous pouvez cliquer sur le lien suivant</target>
             </trans-unit>
             <trans-unit id="OM5lh7Dm" resname="worldline.pay">
                 <source>worldline.pay</source>

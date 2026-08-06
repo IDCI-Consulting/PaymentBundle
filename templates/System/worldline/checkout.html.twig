@@ -1,8 +1,13 @@
-<p>{% trans from 'IDCIPaymentBundle' %}worldline.redirection_message{% endtrans %}</p>
-<p>{% trans from 'IDCIPaymentBundle' %}worldline.link_message{% endtrans %}: <a href="{{ hosted_checkout_response.getRedirectUrl() }}" id="wordline-checkout-pay-button">{% trans from 'IDCIPaymentBundle' %}worldline.pay{% endtrans %}</a></p>
+<div class="worldline-direct-checkout-redirect">
+    <h3 class="worldline-direct-checkout-redirect-title">{% trans from 'IDCIPaymentBundle' %}worldline.redirection_title{% endtrans %}</h3>
+    <p class="worldline-direct-checkout-redirect-message">
+        {% trans from 'IDCIPaymentBundle' %}worldline.link_message{% endtrans %}:
+        <a href="{{ hosted_checkout_response.getRedirectUrl() }}" id="wordline-direct-checkout-pay-button">{% trans from 'IDCIPaymentBundle' %}worldline.pay{% endtrans %}</a>
+    </p>
+</div>
 
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById("wordline-checkout-pay-button").click();
+        document.getElementById("wordline-direct-checkout-pay-button").click();
     });
 </script>
