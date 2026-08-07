@@ -81,6 +81,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
             ->setRequired('merchant_id')->setAllowedTypes('merchant_id', ['string'])
             ->setRequired('integrator')->setAllowedTypes('integrator', ['string'])
             ->setRequired('integration_method')->setAllowedValues('integration_method', self::ALLOWED_INTEGRATION_METHODS)
+            ->setDefault('merchant_reference', null)->setAllowedTypes('merchant_reference', ['null', 'string'])
             ->setDefault('locale', 'en')->setAllowedTypes('locale', ['string'])
             ->setDefault('hosted_tokenization_template_file', null)->setAllowedTypes('hosted_tokenization_template_file', ['null', 'string'])
         ;
@@ -109,7 +110,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         $this->createMerchantClient($parameters);
 
         if (self::INTEGRATION_METHOD_HOSTED_CHECKOUT_PAGE === $parameters['integration_method']) {
-            $hostedCheckoutResponse = $this->callHostedCheckoutPage($transaction, $parameters);
+            $hostedCheckoutResponse = $this->callHostedCheckoutPage($parameters);
             $hostedCheckoutStatus = $this->merchantClient->hostedCheckout()->getHostedCheckout($hostedCheckoutResponse->getHostedCheckoutId());
 
             $transaction
@@ -136,7 +137,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         }
 
         if (self::INTEGRATION_METHOD_HOSTED_TOKENIZATION_PAGE === $parameters['integration_method']) {
-            $hostedTokenizationResponse = $this->callHostedTokenizationPage($transaction, $parameters);
+            $hostedTokenizationResponse = $this->callHostedTokenizationPage($parameters);
 
             $transaction
                 ->setStatus(TransactionStatus::STATUS_CREATED)
@@ -409,8 +410,10 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         $this->merchantClient = $client->merchant($parameters['merchant_id']);
     }
 
-    protected function createOrder(Transaction $transaction): SdkDomain\Order
+    protected function createOrder(array $parameters): SdkDomain\Order
     {
+        $transaction = $parameters['transaction'];
+
         $amountOfMoney = new SdkDomain\AmountOfMoney();
         $amountOfMoney->setAmount($transaction->getAmount());
         $amountOfMoney->setCurrencyCode($transaction->getCurrencyCode());
@@ -420,7 +423,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
 
         $orderReferences = new SdkDomain\OrderReferences();
         $orderReferences->setMerchantReference($transaction->getId());
-        // $orderReferences->setOperationGroupReference($transaction->getId());
+        //$orderReferences->setMerchantReference($parameters['merchant_reference'] ?? $transaction->getId());
 
         $order = new SdkDomain\Order();
         $order->setAmountOfMoney($amountOfMoney);
@@ -430,10 +433,12 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         return $order;
     }
 
-    protected function callHostedCheckoutPage(Transaction $transaction, array $parameters): SdkDomain\CreateHostedCheckoutResponse
+    protected function callHostedCheckoutPage(array $parameters): SdkDomain\CreateHostedCheckoutResponse
     {
+        $transaction = $parameters['transaction'];
+
         $createHostedCheckoutRequest = new SdkDomain\CreateHostedCheckoutRequest();
-        $createHostedCheckoutRequest->setOrder($this->createOrder($transaction));
+        $createHostedCheckoutRequest->setOrder($this->createOrder($parameters));
 
         $hostedCheckoutSpecificInput = new SdkDomain\HostedCheckoutSpecificInput();
         $hostedCheckoutSpecificInput->setReturnUrl($parameters['client_return_url']);
@@ -464,8 +469,10 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         return $this->merchantClient->hostedCheckout()->createHostedCheckout($createHostedCheckoutRequest);
     }
 
-    protected function callHostedTokenizationPage(Transaction $transaction, array $parameters): SdkDomain\CreateHostedTokenizationResponse
+    protected function callHostedTokenizationPage(array $parameters): SdkDomain\CreateHostedTokenizationResponse
     {
+        $transaction = $parameters['transaction'];
+
         $createHostedTokenizationRequest = new SdkDomain\CreateHostedTokenizationRequest();
         if (null !== $parameters['hosted_tokenization_template_file']) {
             $createHostedTokenizationRequest->setVariant($parameters['hosted_tokenization_template_file']);
@@ -489,8 +496,10 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
 
     public function sendCreatePaymentRequest(array $parameters): SdkDomain\CreatePaymentResponse
     {
+        $transaction = $parameters['transaction'];
+
         $createPaymentRequest = new SdkDomain\CreatePaymentRequest();
-        $createPaymentRequest->setHostedTokenizationId($parameters['transaction']->getMetadata('hosted_tokenization_id'));
+        $createPaymentRequest->setHostedTokenizationId($transaction->getMetadata('hosted_tokenization_id'));
 
         $redirectionData = new SdkDomain\RedirectionData();
         $redirectionData->setReturnUrl($parameters['client_return_url']);
@@ -507,7 +516,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         $order = new SdkDomain\Order();
 
         $orderReferences = new SdkDomain\OrderReferences();
-        $orderReferences->setMerchantReference($parameters['transaction']->getId());
+        $orderReferences->setMerchantReference($transaction->getId());
         $order->setReferences($orderReferences);
 
         $browserData = new SdkDomain\BrowserData();
@@ -529,13 +538,13 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         $customerDevice->setBrowserData($browserData);
 
         $customer = new SdkDomain\Customer();
-        $customer->setMerchantCustomerId($parameters['transaction']->getCustomerReference());
+        $customer->setMerchantCustomerId($transaction->getCustomerReference());
         $customer->setDevice($customerDevice);
         $order->setCustomer($customer);
 
         $amountOfMoney = new SdkDomain\AmountOfMoney();
-        $amountOfMoney->setAmount($parameters['transaction']->getAmount());
-        $amountOfMoney->setCurrencyCode($parameters['transaction']->getCurrencyCode());
+        $amountOfMoney->setAmount($transaction->getAmount());
+        $amountOfMoney->setCurrencyCode($transaction->getCurrencyCode());
         $order->setAmountOfMoney($amountOfMoney);
 
         $createPaymentRequest->setOrder($order);

@@ -56,9 +56,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             ], $parameters['gateway_parameters']);
         }
 
-        $processedTransactionResult = $paymentContext->processTransaction([
-            'locale' => 'fr',
-        ]);
+        $processedTransactionResult = $paymentContext->processTransaction($parameters['gateway_parameters']);
 
         $options = $event->getNavigator()->getCurrentStep()->getOptions();
         $options['prevent_previous'] = false;
