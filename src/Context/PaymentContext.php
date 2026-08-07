@@ -126,10 +126,7 @@ class PaymentContext
                 'transaction' => $this->getTransaction(),
             ]);
 
-            return new ProcessedTransactionResult(
-                ProcessedTransactionResult::TYPE_HTML,
-                sprintf('ERROR: %s', $e->getMessage()),
-            );
+            throw $e;
         }
     }
 
