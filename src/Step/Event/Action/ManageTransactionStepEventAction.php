@@ -70,7 +70,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
             $options['pre_step_content'] = $processedTransactionResult->getContent();
 
             /*
-            $options['pre_step_content'] = $this->render('@IDCIPayment/Test/transaction.html.twig' / $this->templates[PaymentStatus::STATUS_CREATED], [
+            $options['pre_step_content'] = $this->render($this->templates[PaymentStatus::STATUS_CREATED], [
                 array_merge(
                     $parameters['template_extra_vars'],
                     [
@@ -84,8 +84,7 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
         }
 
         if (ProcessedTransactionResult::TYPE_REDIRECTION === $processedTransactionResult->getType()) {
-            dd('ici');
-            //return $this->redirect($processedTransactionResult->getContent());
+            $event->getNavigator()->setRedirection($processedTransactionResult->getContent());
         }
 
         $event->getNavigator()->getCurrentStep()->setOptions($options);

@@ -252,12 +252,12 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                 if (null !== $createPaymentResponse->getMerchantAction()
                     && 'REDIRECT' === $createPaymentResponse->getMerchantAction()->getActionType()
                 ) {
-
                     $transaction
                         ->addMetadata('return_mac', $createPaymentResponse->getMerchantAction()->getRedirectData()->getReturnMac())
                         ->addMetadata('redirect_url', $createPaymentResponse->getMerchantAction()->getRedirectData()->getRedirectURL())
                     ;
                     $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
+                    dd($transaction);
 
                     return new ProcessedTransactionResult(
                         ProcessedTransactionResult::TYPE_REDIRECTION,
@@ -269,7 +269,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
             }
 
             if ($request->query->get(self::HOSTED_TOKENIZATION_RETURNMAC_PARAMETER) !== $transaction->getMetadata('return_mac')) {
-                throw new \UnexpectedValueException(sprintf('The provided parameter "%s" does\'t match the transaction parameter', self::HOSTED_CHECKOHOSTED_TOKENIZATION_RETURNMAC_PARAMETERUT_RETURNMAC_PARAMETER));
+                throw new \UnexpectedValueException(sprintf('The provided parameter "%s" does\'t match the transaction parameter', self::HOSTED_TOKENIZATION_RETURNMAC_PARAMETER));
             }
 
             dd($transaction, $transaction->getLastNotification());
