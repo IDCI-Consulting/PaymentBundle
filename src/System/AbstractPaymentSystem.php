@@ -58,7 +58,7 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
                         array_merge(
                             $options['request']->attributes->get('_route_params'),
                             [
-                                'transaction_reference' => $options['transaction']->getReference(),
+                                self::TRANSACTION_REFERENCE_QUERY_PARAMETER => $options['transaction']->getReference(),
                             ]
                         ),
                         UrlGeneratorInterface::ABSOLUTE_URL
