@@ -9,7 +9,7 @@
             <custom-id-generator class="Ramsey\Uuid\Doctrine\UuidGenerator" />
         </id>
         <field name="alias" type="string" column="alias" unique="true" />
-        <field name="gatewayName" type="string" column="gateway_name" />
+        <field name="paymentSystemAlias" type="string" column="payment_system_alias" />
         <field name="enabled" type="boolean" column="enabled" />
         <field name="parameters" type="json" column="parameters" />
     </entity>

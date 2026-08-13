@@ -7,7 +7,7 @@
         <id name="id" type="string" column="id"></id>
         <field name="reference" type="string" column="reference" />
         <field name="number" type="integer" column="number" />
-        <field name="gatewayConfigurationAlias" type="string" column="gateway_configuration_alias" />
+        <field name="paymentGatewayConfigurationAlias" type="string" column="gateway_configuration_alias" />
         <field name="paymentMethod" type="string" column="payment_method" nullable="true" />
         <field name="itemReference" type="string" column="item_reference" />
         <field name="customerReference" type="string" column="customer_reference" nullable="true" />
