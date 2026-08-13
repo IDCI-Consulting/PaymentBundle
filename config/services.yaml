@@ -37,6 +37,10 @@ services:
             $enabled: '%idci_payment.enabled_logger_subscriber%'
 
     # Payment Systems
+    IDCI\Bundle\PaymentBundle\System\PayPlugPaymentSystem:
+       tags:
+           - { name: idci_payment.system, alias: payplug }
+
     IDCI\Bundle\PaymentBundle\System\WorldlineDirectPaymentSystem:
         tags:
             - { name: idci_payment.system, alias: worldline_direct }
@@ -120,10 +124,6 @@ services:
 #    IDCI\Bundle\PaymentBundle\Gateway\MoneticoPaymentGateway:
 #        tags:
 #            - { name: idci_payment.gateways, alias: monetico }
-#
-#    IDCI\Bundle\PaymentBundle\Gateway\PayPlugPaymentGateway:
-#        tags:
-#            - { name: idci_payment.gateways, alias: payplug }
 #
 #    IDCI\Bundle\PaymentBundle\Gateway\SystemPayPaymentGateway:
 #        arguments:

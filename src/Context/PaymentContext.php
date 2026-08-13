@@ -87,7 +87,11 @@ class PaymentContext
 
     public function retrieveTransaction(): void
     {
-        $transaction = $this->getPaymentSystem()->retrieveTransaction($this->getRequest());
+        $transaction = $this->getPaymentSystem()->retrieveTransaction(
+            $this->getRequest(),
+            $this->getPaymentGateway()->getParameters()
+        );
+
         $this->getLogger()->info('[IDCIPaymentBundle] retrieve transaction', [
             'class' => self::class,
             'transaction' => $transaction,
