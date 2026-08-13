@@ -4,7 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Entity;
 
 use IDCI\Bundle\PaymentBundle\Model\TransactionNotification as TransactionNotificationModel;
 
-class Transaction extends TransactionNotificationModel
+class TransactionNotification extends TransactionNotificationModel
 {
     public function onPrePersist()
     {
