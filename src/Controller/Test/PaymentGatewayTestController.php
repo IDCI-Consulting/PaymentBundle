@@ -85,14 +85,10 @@ class PaymentGatewayTestController extends AbstractController
         if ($paymentContext->isReturnClientRequest()) {
             $paymentContext->retrieveTransaction();
         } else {
-            $paymentContext->initializeTransaction($request->query->all(), [
-                'locale' => 'fr',
-            ]);
+            $paymentContext->initializeTransaction($request->query->all(), []);
         }
 
-        $processedTransactionResult = $paymentContext->processTransaction([
-            'locale' => 'fr',
-        ]);
+        $processedTransactionResult = $paymentContext->processTransaction([]);
 
         if (ProcessedTransactionResult::TYPE_HTML === $processedTransactionResult->getType()) {
             return $this->render('@IDCIPayment/Test/transaction.html.twig', [
