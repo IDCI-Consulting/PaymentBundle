@@ -149,7 +149,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                         ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
                         ->setState('CREATED')
                         ->setCreatedAt(new \DateTime('now'))
-                    )
+                )
             ;
             $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
@@ -333,7 +333,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                         ->setCallDirection(TransactionNotification::CALL_DIRECTION_TRANSMIT)
                         ->setState('CAPTURE_PAYMENT_REQUESTED')
                         ->setCreatedAt(new \DateTime('now'))
-                    )
+                )
             ;
 
             $captureResponse = $this->merchantClient->payments()->capturePayment($payload['payment']['id'], $capturePaymentRequest);
@@ -367,7 +367,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
     }
 
-    protected function createMerchantClient(array $parameters): void
+    private function createMerchantClient(array $parameters): void
     {
         if (null !== $this->merchantClient) {
             return;
@@ -388,7 +388,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         $this->merchantClient = $client->merchant($parameters['merchant_id']);
     }
 
-    protected function createOrder(array $parameters): SdkDomain\Order
+    private function createOrder(array $parameters): SdkDomain\Order
     {
         $transaction = $parameters['transaction'];
 
@@ -411,7 +411,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         return $order;
     }
 
-    protected function callHostedCheckoutPage(array $parameters): SdkDomain\CreateHostedCheckoutResponse
+    private function callHostedCheckoutPage(array $parameters): SdkDomain\CreateHostedCheckoutResponse
     {
         $transaction = $parameters['transaction'];
 
@@ -447,7 +447,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         return $this->merchantClient->hostedCheckout()->createHostedCheckout($createHostedCheckoutRequest);
     }
 
-    protected function callHostedTokenizationPage(array $parameters): SdkDomain\CreateHostedTokenizationResponse
+    private function callHostedTokenizationPage(array $parameters): SdkDomain\CreateHostedTokenizationResponse
     {
         $transaction = $parameters['transaction'];
 
@@ -472,7 +472,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         return $this->merchantClient->hostedTokenization()->createHostedTokenization($createHostedTokenizationRequest);
     }
 
-    public function sendCreatePaymentRequest(array $parameters): SdkDomain\CreatePaymentResponse
+    private function sendCreatePaymentRequest(array $parameters): SdkDomain\CreatePaymentResponse
     {
         $transaction = $parameters['transaction'];
 
