@@ -184,7 +184,6 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                     ->setCreatedAt(new \DateTime('now'))
             )
         ;
-        $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
         if (self::INTEGRATION_METHOD_HOSTED_CHECKOUT_PAGE === $parameters['integration_method']) {
             if ($request->query->get(self::HOSTED_CHECKOUT_RETURNMAC_PARAMETER) !== $transaction->getMetadata('return_mac')) {
@@ -247,7 +246,6 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                             ->setCreatedAt(new \DateTime('now'))
                     )
                 ;
-                $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
                 if (null !== $createPaymentResponse->getMerchantAction()
                     && 'REDIRECT' === $createPaymentResponse->getMerchantAction()->getActionType()
@@ -257,7 +255,6 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                         ->addMetadata('redirect_url', $createPaymentResponse->getMerchantAction()->getRedirectData()->getRedirectURL())
                     ;
                     $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
-                    dd($transaction);
 
                     return new ProcessedTransactionResult(
                         ProcessedTransactionResult::TYPE_REDIRECTION,
@@ -265,14 +262,16 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                     );
                 }
 
+                $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
+
                 return null;
             }
 
             if ($request->query->get(self::HOSTED_TOKENIZATION_RETURNMAC_PARAMETER) !== $transaction->getMetadata('return_mac')) {
+                $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
+
                 throw new \UnexpectedValueException(sprintf('The provided parameter "%s" does\'t match the transaction parameter', self::HOSTED_TOKENIZATION_RETURNMAC_PARAMETER));
             }
-
-            dd($transaction, $transaction->getLastNotification());
 
             if ('REDIRECTED' === $transaction->getLastNotification()->getState()) {
                 $paymentDetails = $this->merchantClient->payments()->getPaymentDetails($request->query->get(self::HOSTED_TOKENIZATION_PAYMENT_ID_PARAMETER));
@@ -313,7 +312,6 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                     ->setCreatedAt(new \DateTime('now'))
             )
         ;
-        $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
         $this->createMerchantClient($parameters);
 
@@ -349,7 +347,6 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                         ->setCreatedAt(new \DateTime('now'))
                 )
             ;
-            $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
         }
 
         if (self::PAYMENT_STATUS_CREATED !== $payload['payment']['status']) {
@@ -365,8 +362,9 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                         ->setCreatedAt(new \DateTime('now'))
                 )
             ;
-            $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
         }
+
+        $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
     }
 
     protected function createMerchantClient(array $parameters): void
@@ -442,9 +440,9 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                     ->setMessage(json_encode($createHostedCheckoutRequest))
                     ->setCallDirection(TransactionNotification::CALL_DIRECTION_TRANSMIT)
                     ->setState('INITIALIZE')
+                    ->setCreatedAt(new \DateTime('now'))
             )
         ;
-        $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
         return $this->merchantClient->hostedCheckout()->createHostedCheckout($createHostedCheckoutRequest);
     }
@@ -467,9 +465,9 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                     ->setMessage(json_encode($createHostedTokenizationRequest))
                     ->setCallDirection(TransactionNotification::CALL_DIRECTION_TRANSMIT)
                     ->setState('INITIALIZE')
+                    ->setCreatedAt(new \DateTime('now'))
             )
         ;
-        $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
         return $this->merchantClient->hostedTokenization()->createHostedTokenization($createHostedTokenizationRequest);
     }
@@ -510,7 +508,9 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
             'text/html,application/xhtml+xml,application/xmlq=0.9,image/webp,image/apng,*/*q=0.8,application/signed-exchangev=b3'
         );
 
-        $customerDevice->setLocale($parameters['locale']);
+        if (null !== $parameters['locale']) {
+            $customerDevice->setLocale($parameters['locale']);
+        }
         // $customerDevice->setTimezoneOffsetUtcMinutes("-180");
         $customerDevice->setUserAgent(
             'Mozilla/5.0 (Windows NT 10.0 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'
@@ -541,9 +541,9 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                     ->setMessage(json_encode($createPaymentRequest))
                     ->setCallDirection(TransactionNotification::CALL_DIRECTION_TRANSMIT)
                     ->setState('CREATE_PAYMENT')
+                    ->setCreatedAt(new \DateTime('now'))
             )
         ;
-        $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
         return $this->merchantClient->payments()->createPayment($createPaymentRequest);
     }

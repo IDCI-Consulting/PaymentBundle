@@ -1,9 +1,12 @@
-<div id="div-hosted-tokenization"></div>
-<button onclick="submitForm()">Valider</button>
+<div class="worldline-direct-hosted-tokenization">
+    <div id="div-hosted-tokenization"></div>
+    <button onclick="submitForm()">{% trans from 'IDCIPaymentBundle' %}worldline.pay{% endtrans %}</button>
+</div>
+
 <script>
     let tokenizer = null;
     function initTokenizer() {
-        tokenizer = new Tokenizer('{{ hosted_tokenization_response.getHostedTokenizationUrl() }}', 'div-hosted-tokenization', {hideCardholderName: false });
+        tokenizer = new Tokenizer('{{ hosted_tokenization_response.getHostedTokenizationUrl() }}', 'div-hosted-tokenization', { hideCardholderName: false });
 
         // Invoking tokenizer.initialize() will add the <iframe> inside the previously referenced <div> element
         tokenizer.initialize().then(() => {
