@@ -13,8 +13,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PaymentContext
 {
-    public const TRANSACTION_REFERENCE_QUERY_PARAMETER = 'transaction_reference';
-
     private LoggerInterface $logger;
     private Request $request;
     private PaymentGateway $paymentGateway;
