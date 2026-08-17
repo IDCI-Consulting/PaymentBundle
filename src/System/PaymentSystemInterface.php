@@ -15,7 +15,7 @@ interface PaymentSystemInterface
 
     public function initializeTransaction(Transaction $transaction, Request $request): Transaction;
 
-    public function retrieveTransaction(Request $request): ?Transaction;
+    public function retrieveTransaction(Request $request, array $gatewayParameters): ?Transaction;
 
     public function processTransaction(Transaction $transaction, Request $request, array $parameters): ProcessedTransactionResult;
 

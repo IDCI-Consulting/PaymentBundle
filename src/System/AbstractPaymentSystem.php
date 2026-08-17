@@ -45,11 +45,11 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
     public function configureParameters(OptionsResolver $resolver): void
     {
         $resolver
-            ->setRequired('transaction')->setAllowedTypes('transaction', [Transaction::class])
+            ->setDefault('transaction', null)->setAllowedTypes('transaction', ['null', Transaction::class])
             ->setRequired('request')->setAllowedTypes('request', [Request::class])
             ->setDefault('client_return_url', null)->setAllowedTypes('client_return_url', ['null', 'string'])
                 ->setNormalizer('client_return_url', function (Options $options, $value) {
-                    if (null !== $value) {
+                    if (null !== $value || null === $options['transaction']) {
                         return $value;
                     }
 
@@ -66,7 +66,7 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
                 })
             ->setDefault('system_notification_url', null)->setAllowedTypes('system_notification_url', ['null', 'string'])
                 ->setNormalizer('system_notification_url', function (Options $options, $value) {
-                    if (null !== $value) {
+                    if (null !== $value || null === $options['transaction']) {
                         return $value;
                     }
 
@@ -80,6 +80,8 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
                 })
         ;
     }
+
+
 
     public function isReturnClientRequest(Request $request): bool
     {
@@ -104,7 +106,7 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
         return $initializedTransaction;
     }
 
-    public function retrieveTransaction(Request $request): ?Transaction
+    public function retrieveTransaction(Request $request, array $gatewayParameters = []): ?Transaction
     {
         $transactionReference = $request->query->get(self::TRANSACTION_REFERENCE_QUERY_PARAMETER);
 
@@ -112,7 +114,14 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
             return $this->transactionManager->retrieveTransactionByReference($transactionReference);
         }
 
-        return $this->doRetrieveTransaction($request);
+        $resolvedParameters = $this->resolveParameters(array_merge(
+            [
+                'request' => $request,
+            ],
+            $gatewayParameters
+        ));
+
+        return $this->doRetrieveTransaction($request, $resolvedParameters);
     }
 
     public function processTransaction(Transaction $transaction, Request $request, array $parameters): ProcessedTransactionResult
@@ -164,7 +173,7 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
         )));
     }
 
-    abstract protected function doRetrieveTransaction(Request $request): ?Transaction;
+    abstract protected function doRetrieveTransaction(Request $request, array $parameters): ?Transaction;
     abstract protected function doProcessInitialTransaction(array $parameters): ProcessedTransactionResult;
     abstract protected function doProcessReturnClientTransaction(array $parameters): ?ProcessedTransactionResult;
     abstract protected function doHandleNotification(array $parameters): void;

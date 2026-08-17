@@ -87,7 +87,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         ;
     }
 
-    protected function doRetrieveTransaction(Request $request): ?Transaction
+    protected function doRetrieveTransaction(Request $request, array $parameters): ?Transaction
     {
         if (Request::METHOD_POST === $request->getMethod()) {
             $payload = json_decode($request->getContent(), true);
