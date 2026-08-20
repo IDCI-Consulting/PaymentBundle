@@ -91,12 +91,24 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
     {
         if (Request::METHOD_POST === $request->getMethod()) {
             $payload = json_decode($request->getContent(), true);
-
-            if (!isset($payload['payment']['paymentOutput']['references']['merchantReference'])) {
+            if (!is_array($payload)) {
                 throw new \Exception('Invalid payload');
             }
 
-            $transactionId = $payload['payment']['paymentOutput']['references']['merchantReference'];
+            if (!isset($payload['payment']['paymentOutput']['merchantParameters'])) {
+                throw new \Exception('Missing payment:paymentOutput:merchantParameters in the given payload');
+            }
+
+            $merchantParameters = json_decode($payload['payment']['paymentOutput']['merchantParameters'], true);
+            if (!is_array($merchantParameters)) {
+                throw new \Exception('Invalid merchant parameters in the given payload');
+            }
+
+            if (!isset($merchantParameters['transaction_id'])) {
+                throw new \Exception('The merchantParameters must contain transaction_id key and value');
+            }
+
+            $transactionId = $merchantParameters['transaction_id'];
 
             return $this->transactionManager->retrieveTransactionById($transactionId);
         }
@@ -400,8 +412,10 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         $customer->setMerchantCustomerId($transaction->getCustomerReference());
 
         $orderReferences = new SdkDomain\OrderReferences();
-        $orderReferences->setMerchantReference($transaction->getId());
-        //$orderReferences->setMerchantReference($parameters['merchant_reference'] ?? $transaction->getId());
+        $orderReferences->setMerchantReference($parameters['merchant_reference'] ?? $transaction->getId());
+        $orderReferences->setMerchantParameters(json_encode([
+            'transaction_id' => $transaction->getId()
+        ]));
 
         $order = new SdkDomain\Order();
         $order->setAmountOfMoney($amountOfMoney);
@@ -494,7 +508,10 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         $order = new SdkDomain\Order();
 
         $orderReferences = new SdkDomain\OrderReferences();
-        $orderReferences->setMerchantReference($transaction->getId());
+        $orderReferences->setMerchantReference($parameters['merchant_reference'] ?? $transaction->getId());
+        $orderReferences->setMerchantParameters(json_encode([
+            'transaction_id' => $transaction->getId()
+        ]));
         $order->setReferences($orderReferences);
 
         $browserData = new SdkDomain\BrowserData();
