@@ -81,8 +81,6 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
         ;
     }
 
-
-
     public function isReturnClientRequest(Request $request): bool
     {
         return $request->query->has(self::TRANSACTION_REFERENCE_QUERY_PARAMETER);
