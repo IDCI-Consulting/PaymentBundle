@@ -122,8 +122,8 @@ class ManageTransactionStepEventAction extends AbstractStepEventAction
                     }
                 )
             ->setDefault('gateway_parameters', [])->setAllowedTypes('gateway_parameters', ['array'])
-#            ->setDefault('success_message', 'Your transaction succeeded.')->setAllowedTypes('success_message', ['null', 'string'])
-#            ->setDefault('error_message', 'There was a problem with your transaction, please try again.')->setAllowedTypes('error_message', ['null', 'string'])
+//            ->setDefault('success_message', 'Your transaction succeeded.')->setAllowedTypes('success_message', ['null', 'string'])
+//            ->setDefault('error_message', 'There was a problem with your transaction, please try again.')->setAllowedTypes('error_message', ['null', 'string'])
             ->setDefault('template_extra_vars', [])->setAllowedTypes('template_extra_vars', ['array'])
                 ->setNormalizer(
                     'template_extra_vars',

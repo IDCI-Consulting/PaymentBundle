@@ -135,12 +135,12 @@ class PayplugPaymentSystem extends AbstractPaymentSystem
             return null;
         }
 
-        Payplug\Payplug::init(array(
+        Payplug\Payplug::init([
             'apiVersion' => $parameters['version'],
             'secretKey' => $parameters['secret_key'],
-        ));
+        ]);
 
-        $payplugPayment = \Payplug\Payment::retrieve($payload['id']);
+        $payplugPayment = Payplug\Payment::retrieve($payload['id']);
 
         return $this->transactionManager->retrieveTransactionById($payplugPayment->metadata['transaction_id']);
     }
@@ -149,10 +149,10 @@ class PayplugPaymentSystem extends AbstractPaymentSystem
     {
         $transaction = $parameters['transaction'];
 
-        Payplug\Payplug::init(array(
+        Payplug\Payplug::init([
             'apiVersion' => $parameters['version'],
             'secretKey' => $parameters['secret_key'],
-        ));
+        ]);
 
         $payplugPayment = Payplug\Payment::create($parameters['payment_data']);
 
@@ -190,7 +190,7 @@ class PayplugPaymentSystem extends AbstractPaymentSystem
 
         if (
             null === $transaction->getMetadata('payment_id')
-            || $transaction->getStatus() !== TransactionStatus::STATUS_CREATED
+            || TransactionStatus::STATUS_CREATED !== $transaction->getStatus()
         ) {
             return null;
         }
@@ -206,12 +206,12 @@ class PayplugPaymentSystem extends AbstractPaymentSystem
             )
         ;
 
-        Payplug\Payplug::init(array(
+        Payplug\Payplug::init([
             'apiVersion' => $parameters['version'],
             'secretKey' => $parameters['secret_key'],
-        ));
+        ]);
 
-        $payplugPayment = \Payplug\Payment::retrieve($transaction->getMetadata('payment_id'));
+        $payplugPayment = Payplug\Payment::retrieve($transaction->getMetadata('payment_id'));
 
         if (null !== $payplugPayment->failure && 'canceled' === $payplugPayment->failure->code) {
             $transaction
@@ -267,12 +267,12 @@ class PayplugPaymentSystem extends AbstractPaymentSystem
             )
         ;
 
-        Payplug\Payplug::init(array(
+        Payplug\Payplug::init([
             'apiVersion' => $parameters['version'],
             'secretKey' => $parameters['secret_key'],
-        ));
+        ]);
 
-        $payplugPayment = \Payplug\Payment::retrieve($transaction->getMetadata('payment_id'));
+        $payplugPayment = Payplug\Payment::retrieve($transaction->getMetadata('payment_id'));
 
         if (null !== $payplugPayment->failure && 'canceled' === $payplugPayment->failure->code) {
             $transaction
@@ -324,11 +324,9 @@ class PayplugPaymentSystem extends AbstractPaymentSystem
         ;
 
         $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
-
-        return;
     }
 
-    public static function transformPaymentToArray(\Payplug\Resource\Payment $payment): array
+    public static function transformPaymentToArray(Payplug\Resource\Payment $payment): array
     {
         $reflectionClass = new \ReflectionClass($payment);
         $method = $reflectionClass->getMethod('getAttributes');

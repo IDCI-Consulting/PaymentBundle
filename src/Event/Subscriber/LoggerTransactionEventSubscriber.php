@@ -20,6 +20,7 @@ class LoggerTransactionEventSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [];
+
         return [
             TransactionEvent::APPROVED => [
                 ['approve', 0],

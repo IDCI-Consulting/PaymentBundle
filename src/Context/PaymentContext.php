@@ -9,7 +9,6 @@ use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\System\PaymentSystemInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PaymentContext
 {
@@ -70,6 +69,7 @@ class PaymentContext
 
         return $this;
     }
+
     public function isReturnClientRequest(): bool
     {
         return $this->getPaymentSystem()->isReturnClientRequest($this->getRequest());

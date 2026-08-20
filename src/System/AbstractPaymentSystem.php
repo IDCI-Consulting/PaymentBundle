@@ -141,7 +141,7 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
 
     public function processInitialTransaction(array $parameters): ProcessedTransactionResult
     {
-       return $this->doProcessInitialTransaction($parameters);
+        return $this->doProcessInitialTransaction($parameters);
     }
 
     public function processReturnClientTransaction(array $parameters): ProcessedTransactionResult
@@ -172,7 +172,10 @@ abstract class AbstractPaymentSystem implements PaymentSystemInterface
     }
 
     abstract protected function doRetrieveTransaction(Request $request, array $parameters): ?Transaction;
+
     abstract protected function doProcessInitialTransaction(array $parameters): ProcessedTransactionResult;
+
     abstract protected function doProcessReturnClientTransaction(array $parameters): ?ProcessedTransactionResult;
+
     abstract protected function doHandleNotification(array $parameters): void;
 }

@@ -68,7 +68,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
     public const HOSTED_TOKENIZATION_RETURNMAC_PARAMETER = 'RETURNMAC';
     public const HOSTED_TOKENIZATION_PAYMENT_ID_PARAMETER = 'paymentId';
 
-    protected $merchantClient = null;
+    protected $merchantClient;
 
     public function configureParameters(OptionsResolver $resolver): void
     {
@@ -136,7 +136,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
                         ->setCallDirection(TransactionNotification::CALL_DIRECTION_RECEIVE)
                         ->setState($hostedCheckoutStatus->getStatus())
                         ->setCreatedAt(new \DateTime('now'))
-                    )
+                )
             ;
             $this->eventDispatcher->dispatch(new TransactionEvent($transaction), TransactionEvent::UPDATED);
 
@@ -414,7 +414,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         $orderReferences = new SdkDomain\OrderReferences();
         $orderReferences->setMerchantReference($parameters['merchant_reference'] ?? $transaction->getId());
         $orderReferences->setMerchantParameters(json_encode([
-            'transaction_id' => $transaction->getId()
+            'transaction_id' => $transaction->getId(),
         ]));
 
         $order = new SdkDomain\Order();
@@ -510,7 +510,7 @@ class WorldlineDirectPaymentSystem extends AbstractPaymentSystem
         $orderReferences = new SdkDomain\OrderReferences();
         $orderReferences->setMerchantReference($parameters['merchant_reference'] ?? $transaction->getId());
         $orderReferences->setMerchantParameters(json_encode([
-            'transaction_id' => $transaction->getId()
+            'transaction_id' => $transaction->getId(),
         ]));
         $order->setReferences($orderReferences);
 

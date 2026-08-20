@@ -21,7 +21,7 @@ class ApplePayPaymentGatewayController extends AbstractController
     public function __construct(
         EventDispatcherInterface $dispatcher,
         PaymentManager $paymentManager,
-        string $domainVerificationDirectoryPath
+        string $domainVerificationDirectoryPath,
     ) {
         $this->dispatcher = $dispatcher;
         $this->paymentManager = $paymentManager;

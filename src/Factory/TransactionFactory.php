@@ -75,7 +75,7 @@ class TransactionFactory
         $resolver
             ->setDefault('id', null)->setAllowedTypes('id', ['null', 'string'])
             ->setDefault('reference', null)->setAllowedTypes('reference', ['null', 'string'])
-                ->setNormalizer('reference', function(Options $options, $value): string {
+                ->setNormalizer('reference', function (Options $options, $value): string {
                     if (null !== $value) {
                         return $value;
                     }
@@ -83,9 +83,9 @@ class TransactionFactory
                     return Flaky::id(62);
                 })
             ->setDefault('number', null)->setAllowedTypes('number', ['null', 'int'])
-                ->setNormalizer('number', function(Options $options, $value): ?int {
+                ->setNormalizer('number', function (Options $options, $value): ?int {
                     if (is_string($value)) {
-                        return (int)$value;
+                        return (int) $value;
                     }
 
                     return $value;
@@ -97,9 +97,9 @@ class TransactionFactory
             ->setDefault('customer_email', null)->setAllowedTypes('customer_email', ['null', 'string'])
             ->setDefault('status', TransactionStatus::STATUS_CREATED)->setAllowedValues('status', TransactionStatus::AVAILABLE_STATUSES)
             ->setRequired('amount')->setAllowedTypes('amount', ['int', 'string'])
-                ->setNormalizer('amount', function(Options $options, $value): int {
+                ->setNormalizer('amount', function (Options $options, $value): int {
                     if (is_string($value)) {
-                        return (int)$value;
+                        return (int) $value;
                     }
 
                     return $value;
@@ -108,7 +108,7 @@ class TransactionFactory
             ->setDefault('description', null)->setAllowedTypes('description', ['null', 'string'])
             ->setDefault('metadata', [])->setAllowedTypes('metadata', ['array'])
             ->setDefault('notification_histories', [])->setAllowedTypes('notification_histories', ['array'])
-                ->setNormalizer('notification_histories', function(Options $options, $value): array {
+                ->setNormalizer('notification_histories', function (Options $options, $value): array {
                     $notificationHistoryResolver = new OptionsResolver();
 
                     $notificationHistoryResolver
@@ -118,7 +118,7 @@ class TransactionFactory
                         ->setRequired('message')->setAllowedTypes('message', ['string'])
                         ->setDefined('metadata')->setAllowedTypes('metadata', ['null', 'array'])
                         ->setRequired('created_at')->setAllowedTypes('created_at', ['string', \DateTime::class])
-                            ->setNormalizer('created_at', function(Options $options, $value): \DateTime {
+                            ->setNormalizer('created_at', function (Options $options, $value): \DateTime {
                                 if (is_string($value)) {
                                     return new \DateTime($value);
                                 }

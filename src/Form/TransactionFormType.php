@@ -37,8 +37,8 @@ class TransactionFormType extends AbstractType
                 'required' => false,
             ])
              ->add('customer_email', Type\EmailType::class, [
-                'required' => false,
-            ])
+                 'required' => false,
+             ])
             ->add('amount', Type\IntegerType::class, [
                 'required' => true,
             ])
