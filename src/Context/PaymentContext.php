@@ -77,12 +77,23 @@ class PaymentContext
 
     public function initializeTransaction(array $transactionData, array $parameters = []): void
     {
-        $transaction = $this->getPaymentSystem()->initializeTransaction(TransactionFactory::getInstance()->create($transactionData), $this->getRequest());
-        $this->getLogger()->info('[IDCIPaymentBundle] Initialize transaction', [
-            'class' => self::class,
-            'transaction' => $transaction,
-        ]);
-        $this->setTransaction($transaction);
+        try {
+            $transaction = $this->getPaymentSystem()->initializeTransaction(TransactionFactory::getInstance()->create($transactionData), $this->getRequest());
+            $this->getLogger()->info('[IDCIPaymentBundle] Initialized transaction', [
+                'class' => self::class,
+                'transaction' => $transaction,
+            ]);
+            $this->setTransaction($transaction);
+        } catch (\Exception $e) {
+            $this->getLogger()->error(sprintf('[IDCIPaymentBundle] failed to initialize transaction: %s', $e->getMessage()), [
+                'class' => self::class,
+                'parameters' => $parameters,
+                'request' => $this->getRequest(),
+                'transaction_data' => $transactionData,
+            ]);
+
+            throw $e;
+        }
     }
 
     public function retrieveTransaction(): void
@@ -92,14 +103,16 @@ class PaymentContext
             $this->getPaymentGateway()->getParameters()
         );
 
-        $this->getLogger()->info('[IDCIPaymentBundle] retrieve transaction', [
+        $this->getLogger()->info('[IDCIPaymentBundle] retrieved transaction', [
             'class' => self::class,
+            'request_method' => $this->getRequest()->getMethod(),
             'transaction' => $transaction,
         ]);
 
         if (null === $transaction) {
             $this->getLogger()->info('[IDCIPaymentBundle] failed to retrieve transaction', [
                 'class' => self::class,
+                'gateway_parameters' => $this->getPaymentGateway()->getParameters(),
                 'request' => $this->getRequest(),
             ]);
 
@@ -125,6 +138,8 @@ class PaymentContext
         } catch (\Exception $e) {
             $this->getLogger()->error(sprintf('[IDCIPaymentBundle] failed to process transaction: %s', $e->getMessage()), [
                 'class' => self::class,
+                'parameters' => $parameters,
+                'request' => $this->getRequest(),
                 'transaction' => $this->getTransaction(),
             ]);
 
@@ -136,8 +151,6 @@ class PaymentContext
     {
         $this->getLogger()->info('[IDCIPaymentBundle] handle notification', [
             'class' => self::class,
-            'parameters' => $parameters,
-            'request' => $this->getRequest(),
             'transaction' => $this->getTransaction(),
         ]);
 
@@ -150,6 +163,8 @@ class PaymentContext
         } catch (\Exception $e) {
             $this->getLogger()->error(sprintf('[IDCIPaymentBundle] failed to handle notification: %s', $e->getMessage()), [
                 'class' => self::class,
+                'parameters' => $parameters,
+                'request' => $this->getRequest(),
                 'transaction' => $this->getTransaction(),
             ]);
 
