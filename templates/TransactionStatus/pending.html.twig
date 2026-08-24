@@ -1,0 +1,47 @@
+<div id="statusContainer" class="idci-payment-transaction-status status-pending">
+    <h3 class="idci-payment-transaction-status-title">{% trans from 'IDCIPaymentBundle' %}transaction.pending{% endtrans %}</h3>
+    <div id="statusOutput">pending_message</div>
+    {% include '@IDCIPayment/Transaction/_table_short.html.twig' with {'transaction': transaction} %}
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var statusContainer = document.querySelector('#statusContainer');
+        var statusOutput = document.querySelector('#statusOutput');
+        var nextBtn = document.querySelector('#idci_step_navigator__path_0');
+        nextBtn.style.display = 'none';
+
+        var maxAttempt = 25;
+        var endAttempt = function () {
+            if (--maxAttempt > 0) {
+                setTimeout(function () {
+                    getTransaction(endAttempt);
+                }, 2000)
+            } else {
+                statusContainer.classList.remove('status-pending');
+                statusContainer.classList.add('status-failed');
+                statusOutput.innerText = 'error_message';
+            }
+        }
+
+        var getTransaction = function (callback) {
+            fetch('{{ path('idci_payment_api_apitransaction_show', {'id': transaction.id}) }}')
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(result) {
+                if (result.status === '{{ constant('IDCI\\Bundle\\PaymentBundle\\Context\\TransactionStatus::STATUS_PENDING') }}') {
+                    callback();
+                } else {
+                    statusContainer.classList.remove('status-pending');
+                    statusContainer.classList.add('status-' + result.status);
+                    statusOutput.innerText = 'success_message';
+                    nextBtn.style.display = 'block';
+                }
+            });
+        }
+
+        getTransaction(endAttempt);
+    });
+</script>

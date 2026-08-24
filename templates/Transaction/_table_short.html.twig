@@ -1,0 +1,14 @@
+<table class="idci-payment-transaction-table">
+    <tr>
+        <th>{% trans from 'IDCIPaymentBundle' %}transaction.reference{% endtrans %}</th>
+        <td>{{ transaction.reference }}</td>
+    </tr>
+    <tr>
+        <th>{% trans from 'IDCIPaymentBundle' %}transaction.item_reference{% endtrans %}</th>
+        <td>{{ transaction.itemReference }}</td>
+    </tr>
+    <tr>
+        <th>{% trans from 'IDCIPaymentBundle' %}transaction.amount{% endtrans %}</th>
+        <td>{{ transaction.amount / 100 }} {{ transaction.currencyCode }}</td>
+    </tr>
+</table>

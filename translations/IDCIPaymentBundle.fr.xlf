@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+    <file source-language="en" target-language="fr" datatype="plaintext" original="file.ext">
+        <header>
+            <tool tool-id="symfony" tool-name="Symfony"/>
+        </header>
+        <body>
+            <trans-unit id="7v1FjsZl" resname="transaction">
+                <source>transaction</source>
+                <target>Transaction</target>
+            </trans-unit>
+            <trans-unit id="BPDamvR7" resname="transaction.id">
+                <source>transaction.id</source>
+                <target>Id</target>
+            </trans-unit>
+            <trans-unit id="XFY4AD9Y" resname="transaction.reference">
+                <source>transaction.reference</source>
+                <target>Référence</target>
+            </trans-unit>
+            <trans-unit id="rDNQZgx4" resname="transaction.number">
+                <source>transaction.number</source>
+                <target>Numéro</target>
+            </trans-unit>
+            <trans-unit id="ew04CWOM" resname="transaction.status">
+                <source>transaction.status</source>
+                <target>Status</target>
+            </trans-unit>
+            <trans-unit id="38WUWdZp" resname="transaction.payment_gateway_configuration_alias">
+                <source>transaction.payment_gateway_configuration_alias</source>
+                <target>Alias portail de configuration</target>
+            </trans-unit>
+            <trans-unit id="VxQzn1rN" resname="transaction.item_reference">
+                <source>transaction.item_reference</source>
+                <target>Référence commande</target>
+            </trans-unit>
+            <trans-unit id="lPtyiad6" resname="transaction.amount">
+                <source>transaction.amount</source>
+                <target>Montant</target>
+            </trans-unit>
+            <trans-unit id="37zISosz" resname="transaction.customer_reference">
+                <source>transaction.customer_reference</source>
+                <target>Référence client</target>
+            </trans-unit>
+            <trans-unit id="4aEloPp0" resname="transaction.customer_email">
+                <source>transaction.customer_email</source>
+                <target>Email client</target>
+            </trans-unit>
+            <trans-unit id="2pvqkO8l" resname="transaction.description">
+                <source>transaction.description</source>
+                <target>Description</target>
+            </trans-unit>
+
+            <trans-unit id="0rtDDXKq" resname="transaction.approved">
+                <source>transaction.approved</source>
+                <target>Transaction approuvée</target>
+            </trans-unit>
+            <trans-unit id="yw93PSqU" resname="transaction.canceled">
+                <source>transaction.canceled</source>
+                <target>Transaction annulée</target>
+            </trans-unit>
+            <trans-unit id="sax8wWVg" resname="transaction.created">
+                <source>transaction.created</source>
+                <target>Transaction crée</target>
+            </trans-unit>
+            <trans-unit id="WT8Ppb34" resname="transaction.failed">
+                <source>transaction.failed</source>
+                <target>Transaction échouée</target>
+            </trans-unit>
+            <trans-unit id="nF0jeAIz" resname="transaction.pending">
+                <source>transaction.pending</source>
+                <target>Transaction en cours</target>
+            </trans-unit>
+            <trans-unit id="lLGp80Ne" resname="transaction.unverified">
+                <source>transaction.unverified</source>
+                <target>Transaction non vérifiée</target>
+            </trans-unit>
+
+            <!-- Worldline -->
+            <trans-unit id="0jOFRnj6" resname="worldline.redirection_title">
+                <source>worldline.redirection_title</source>
+                <target>Vous allez être automatiquement rediriger vers notre système de paiement</target>
+            </trans-unit>
+            <trans-unit id="P5svj8E8" resname="worldline.link_message">
+                <source>worldline.link_message</source>
+                <target>Si ce n'est pas le cas, vous pouvez cliquer sur le lien suivant</target>
+            </trans-unit>
+            <trans-unit id="OM5lh7Dm" resname="worldline.pay">
+                <source>worldline.pay</source>
+                <target>Payer</target>
+            </trans-unit>
+
+        </body>
+    </file>
+</xliff>

@@ -51,12 +51,12 @@ return [
 ];
 ```
 
-Add this to your ```config.yml``` file
+Add this to your ```config.yaml``` file
 
 ```yaml
 # config/packages/idci_payment.yaml
 imports:
-    - {resource: '@IDCIPaymentBundle/Resources/config/config.yml'}
+    - {resource: '@IDCIPaymentBundle/config/config.yaml'}
 
 # Enable monolog logging using event subscriber plugged on transaction state changes
 idci_payment:
@@ -82,50 +82,51 @@ Install routes in your ```config/routes/idci_payment.yaml``` file:
 ```yaml
 # config/routes/idci_payment.yaml
 idci_payment:
-    resource: '@IDCIPaymentBundle/Resources/config/routing.yml'
+    resource: '@IDCIPaymentBundle/config/routing.yaml'
     prefix:   /
 
 idci_payment_api:
-    resource: '@IDCIPaymentBundle/Resources/config/routing_api.yml'
+    resource: '@IDCIPaymentBundle/config/routing_api.yaml'
     prefix:   /api
 ```
 
 These tutorials may help you to personalize yourself this bundle:
 
-- [Create a new payment gateway](./Resources/docs/create-your-payment-gateway.md): incorporate new payment method to this bundle
-- [Create your own transaction manager](./Resources/docs/create-your-transaction-manager.md) : help you to retrieve transaction from other stockages methods (default: Doctrine)
-- [Use this bundle with step bundle](./Resources/docs/use-step-bundle.md): simple configuration to make this bundle work with step bundle
-- [Create your own event subscriber](./Resources/docs/create-your-event-subscriber.md): learn how to work with transaction event
+- [Create a new payment gateway](./docs/create-your-payment-gateway.md): incorporate new payment method to this bundle
+- [Create your own transaction manager](./docs/create-your-transaction-manager.md) : help you to retrieve transaction from other stockages methods (default: Doctrine)
+- [Use this bundle with step bundle](./docs/use-step-bundle.md): simple configuration to make this bundle work with step bundle
+- [Create your own event subscriber](./docs/create-your-event-subscriber.md): learn how to work with transaction event
 
 Supported Gateways
 ------------------
 
-* [Stripe](./Gateway/StripePaymentGateway.php) ([example](./Resources/docs/example/stripe.md))
-* [Paypal](./Gateway/PaypalPaymentGateway.php) ([example](./Resources/docs/example/paypal.md))
-* [Paybox](./Gateway/PayboxPaymentGateway.php) ([example](./Resources/docs/example/paybox.md))
-* [Monetico](./Gateway/MoneticoPaymentGateway.php) (Unsupported for now)
-* [Ogone](./Gateway/OgonePaymentGateway.php) (Unsupported for now)
-* [PayPlug](./Gateway/PayPlugPaymentGateway.php) ([example](./Resources/docs/example/payplug.md))
-* [SystemPay](./Gateway/SystemPayPaymentGateway.php) ([example](./Resources/docs/example/systempay.md))
-* [Sofinco](./Gateway/SofincoPaymentGateway.php) ([example](./Resources/docs/example/sofinco.md))
-* [Sofinco CACF](./Gateway/SofincoCACFPaymentGateway.php) ([example](./Resources/docs/example/sofinco-cacf.md))
-* [Eureka/FloaBank](./Gateway/EurekaPaymentGateway.php) ([example](./Resources/docs/example/eureka.md))
-* [Alma](./Gateway/AlmaPaymentGateway.php) ([example](./Resources/docs/example/alma.md))
-* [ApplePay](./Gateway/ApplePayPaymentGateway.php) ([example](./Resources/docs/example/apple-pay.md))
-* [Atos Sips Bin](./Gateway/AtosSipsBinPaymentGateway.php)
-    * Mercanet ([example](./Resources/docs/example/mercanet-bin.md))
-    * Scellius ([example](./Resources/docs/example/scellius-bin.md))
-    * Sogenactif ([example](./Resources/docs/example/sogenactif-bin.md))
-* [Atos Sips POST](./Gateway/AtosSipsPostPaymentGateway.php)
-    * Mercanet ([example](./Resources/docs/example/mercanet-post.md))
-    * Sogenactif ([example](./Resources/docs/example/sogenactif-post.md))
-* [Atos Sips JSON](./Gateway/AtosSipsJsonPaymentGateway.php)
-    * Mercanet ([example](./Resources/docs/example/mercanet-json.md))
-    * Sogenactif ([example](./Resources/docs/example/sogenactif-json.md))
+* [Stripe](./src/Gateway/StripePaymentGateway.php) ([example](./docs/example/stripe.md))
+* [Paypal](./src/Gateway/PaypalPaymentGateway.php) ([example](./docs/example/paypal.md))
+* [Paybox](./src/Gateway/PayboxPaymentGateway.php) ([example](./docs/example/paybox.md))
+* [Monetico](./src/Gateway/MoneticoPaymentGateway.php) (Unsupported for now)
+* [Ogone](./src/Gateway/OgonePaymentGateway.php) (Unsupported for now)
+* [PayPlug](./src/Gateway/PayPlugPaymentGateway.php) ([example](./docs/example/payplug.md))
+* [SystemPay](./src/Gateway/SystemPayPaymentGateway.php) ([example](./docs/example/systempay.md))
+* [Sofinco](./src/Gateway/SofincoPaymentGateway.php) ([example](./docs/example/sofinco.md))
+* [Sofinco CACF](./src/Gateway/SofincoCACFPaymentGateway.php) ([example](./docs/example/sofinco-cacf.md))
+* [Eureka/FloaBank](./src/Gateway/EurekaPaymentGateway.php) ([example](./docs/example/eureka.md))
+* [Alma](./src/Gateway/AlmaPaymentGateway.php) ([example](./docs/example/alma.md))
+* [ApplePay](./src/Gateway/ApplePayPaymentGateway.php) ([example](./docs/example/apple-pay.md))
+* [Atos Sips Bin](./src/Gateway/AtosSipsBinPaymentGateway.php)
+    * Mercanet ([example](./docs/example/mercanet-bin.md))
+    * Scellius ([example](./docs/example/scellius-bin.md))
+    * Sogenactif ([example](./docs/example/sogenactif-bin.md))
+* [Atos Sips POST](./src/Gateway/AtosSipsPostPaymentGateway.php)
+    * Mercanet ([example](./docs/example/mercanet-post.md))
+    * Sogenactif ([example](./docs/example/sogenactif-post.md))
+* [Atos Sips JSON](./src/Gateway/AtosSipsJsonPaymentGateway.php)
+    * Mercanet ([example](./docs/example/mercanet-json.md))
+    * Sogenactif ([example](./docs/example/sogenactif-json.md))
+* [Worldline](./src/Gateway/WorldlinePaymentGateway.php) ([example](./docs/example/worldline.md))
 
 For testing purpose:
-- [Parameters](./Resources/docs/test-parameters.md)
-- [Cards](./Resources/docs/test-cards.md)
+- [Parameters](./docs/test-parameters.md)
+- [Cards](./docs/test-cards.md)
 
 Command
 -------
@@ -162,7 +163,7 @@ Add test routing :
 # config/routes/dev/idci_payment.yaml
 
 _test_payment:
-    resource: '@IDCIPaymentBundle/Resources/config/routing_test.yml'
+    resource: '@IDCIPaymentBundle/config/routing_test.yaml'
     prefix:   /_test/
 
 ```
@@ -174,4 +175,4 @@ Resources
 
 ##### UML Diagram
 
-![UML Diagram](./Resources/docs/uml-schema.png)
+![UML Diagram](./docs/uml-schema.png)

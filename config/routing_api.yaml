@@ -1,0 +1,3 @@
+idci_payment_api_transaction:
+    resource: IDCI\Bundle\PaymentBundle\Controller\Api\ApiTransactionController
+    type: attribute

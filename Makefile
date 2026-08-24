@@ -1,6 +1,7 @@
 # Variables
 
 php_sources ?= .
+php_fixer_version = 3-php8.5
 
 # Utils
 
@@ -19,25 +20,13 @@ composer-update:
 composer-install:
 	docker-compose run --rm php composer install $(options)
 
-.PHONY: phploc
-phploc:
-	docker run -i -v `pwd`:/project jolicode/phaudit bash -c "phploc $(php_sources); exit $$?"
+.PHONY: cs-check
+cs-check:
+	docker run -it --rm -v `pwd`:/code ghcr.io/php-cs-fixer/php-cs-fixer:$(php_fixer_version) fix $(php_sources) --rules=@Symfony --dry-run
 
-.PHONY: phpcs
-phpcs:
-	docker run -i -v `pwd`:/project jolicode/phaudit bash -c "phpcs $(php_sources) --extensions=php --ignore=vendor,app/cache,Tests/cache --standard=PSR2; exit $$?"
-
-.PHONY: phpcpd
-phpcpd:
-	docker run -i -v `pwd`:/project jolicode/phaudit bash -c "phpcpd $(php_sources); exit $$?"
-
-.PHONY: phpdcd
-phpdcd:
-	docker run -i -v `pwd`:/project jolicode/phaudit bash -c "phpdcd $(php_sources); exit $$?"
-
-.PHONY: phpcs-fix
-phpcs-fix:
-	docker run --rm -i -v `pwd`:`pwd` -w `pwd` grachev/php-cs-fixer --rules=@Symfony --verbose fix $(php_sources)
+.PHONY: cs-fix
+cs-fix:
+	docker run -it --rm -v `pwd`:/code ghcr.io/php-cs-fixer/php-cs-fixer:$(php_fixer_version) fix $(php_sources) --rules=@Symfony
 
 # PHPUnit commands
 

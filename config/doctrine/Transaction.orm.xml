@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="IDCI\Bundle\PaymentBundle\Entity\Transaction" table="idci_transaction">
+        <id name="id" type="string" column="id"></id>
+        <field name="reference" type="string" column="reference" />
+        <field name="number" type="integer" column="number" />
+        <field name="paymentGatewayConfigurationAlias" type="string" column="gateway_configuration_alias" />
+        <field name="paymentMethod" type="string" column="payment_method" nullable="true" />
+        <field name="itemReference" type="string" column="item_reference" />
+        <field name="customerReference" type="string" column="customer_reference" nullable="true" />
+        <field name="customerEmail" type="string" column="customer_email" nullable="true" />
+        <field name="status" type="string" column="status" />
+        <field name="amount" type="integer" column="amount" />
+        <field name="currencyCode" type="string" column="currency_code" />
+        <field name="description" type="text" column="description" nullable="true" />
+        <field name="metadata" type="json" column="metadata" />
+        <field name="createdAt" type="datetime" column="created_at" />
+        <field name="updatedAt" type="datetime" column="updated_at" />
+
+        <one-to-many field="notifications" target-entity="IDCI\Bundle\PaymentBundle\Entity\TransactionNotification" mapped-by="transaction" fetch="EXTRA_LAZY">
+            <cascade>
+                <cascade-all />
+            </cascade>
+            <order-by>
+                <order-by-field name="createdAt" direction="DESC" />
+            </order-by>
+        </one-to-many>
+
+        <lifecycle-callbacks>
+            <lifecycle-callback type="prePersist" method="onPrePersist" />
+            <lifecycle-callback type="preUpdate" method="onPreUpdate" />
+        </lifecycle-callbacks>
+    </entity>
+</doctrine-mapping>
