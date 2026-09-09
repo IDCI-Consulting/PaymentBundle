@@ -2,21 +2,38 @@
 
 namespace IDCI\Bundle\PaymentBundle\Gateway;
 
+use IDCI\Bundle\PaymentBundle\Exception\Gateway\GatewayException;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
 use IDCI\Bundle\PaymentBundle\Model\Transaction;
 use IDCI\Bundle\PaymentBundle\Payment\PaymentStatus;
 use Payplug;
+use Payplug\Exception\PayplugException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Exception\InvalidOptionException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Intl\Countries;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Twig\Environment;
 
 class PayPlugPaymentGateway extends AbstractPaymentGateway
 {
     const MODE_HOSTED = 'hosted';
     const MODE_LIGHTBOX = 'lightbox';
     const MODE_INTEGRATED = 'integrated';
+
+    private $logger;
+
+    public function __construct(
+        Environment $templating,
+        EventDispatcherInterface $dispatcher,
+        LoggerInterface $logger
+    ) {
+        parent::__construct($templating, $dispatcher);
+
+        $this->logger = $logger;
+    }
 
     /**
      * {@inheritdoc}
@@ -26,19 +43,25 @@ class PayPlugPaymentGateway extends AbstractPaymentGateway
         Transaction $transaction,
         array $options = []
     ): array {
-        Payplug\Payplug::init(array(
-            'apiVersion' => $paymentGatewayConfiguration->get('version'),
-            'secretKey' => $paymentGatewayConfiguration->get('secret_key'),
-        ));
+        try {
+            Payplug\Payplug::init(array(
+                'apiVersion' => $paymentGatewayConfiguration->get('version'),
+                'secretKey' => $paymentGatewayConfiguration->get('secret_key'),
+            ));
 
-        $payment = Payplug\Payment::create(array_replace_recursive(
-            $this->resolvePaymentOptions($paymentGatewayConfiguration, $transaction, $options),
-            [
-                'metadata' => [
-                    'transaction_id' => $transaction->getId(),
-                ],
-            ]
-        ));
+            $payment = Payplug\Payment::create(array_replace_recursive(
+                $this->resolvePaymentOptions($paymentGatewayConfiguration, $transaction, $options),
+                [
+                    'metadata' => [
+                        'transaction_id' => $transaction->getId(),
+                    ],
+                ]
+            ));
+        } catch (PayplugException $e) {
+            $this->logger->error((string) $e);
+
+            throw new GatewayException((string) $e);
+        }
 
         return [
             'mode' => $paymentGatewayConfiguration->get('mode'),
