@@ -237,14 +237,78 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
                     ->setDefined('expires_after')->setAllowedTypes('expires_after', ['int'])
                     ->setDefined('capture_method')->setAllowedValues('capture_method', ['manual', 'automatic'])
                     ->setDefined('failure_return_url')->setAllowedTypes('failure_return_url', ['string'])
-                    ->setDefined('cart', function (OptionsResolver $cartResolver) {
-                        $cartResolver
-                            ->setDefined('title')->setAllowedTypes('title', ['string'])
-                            ->setDefined('quantity')->setAllowedTypes('quantity', ['int'])
-                            ->setDefined('line_price')->setAllowedTypes('line_price', ['int'])
-                            ->setDefined('picture_url')->setAllowedTypes('picture_url', ['string'])
-                        ;
-                    })
+                    ->setDefined('cart')->setAllowedTypes('failure_return_url', ['array'])
+                        ->setNormalizer('cart', function (Options $options, array $value) {
+                            $itemResolver = (new OptionsResolver())
+                                ->setDefined('sku')->setAllowedTypes('sku', ['string'])
+                                ->setDefined('vendor')->setAllowedTypes('vendor', ['string'])
+                                ->setRequired('title')->setAllowedTypes('title', ['string'])
+                                ->setDefined('variant_title')->setAllowedTypes('variant_title', ['string'])
+                                ->setRequired('quantity')->setAllowedTypes('quantity', ['int'])
+                                ->setRequired('unit_price')->setAllowedTypes('unit_price', ['int'])
+                                ->setRequired('line_price')->setAllowedTypes('line_price', ['int'])
+                                ->setDefined('is_gift')->setAllowedTypes('is_gift', ['bool'])
+                                ->setDefined('categories')->setAllowedTypes('categories', ['array'])
+                                ->setDefined('url')->setAllowedTypes('url', ['string'])
+                                ->setDefined('picture_url')->setAllowedTypes('picture_url', ['string'])
+                                ->setRequired('requires_shipping')->setAllowedTypes('requires_shipping', ['bool'])
+                                ->setRequired('tax_included')->setAllowedTypes('tax_included', ['bool'])
+                                ->setDefined('extra_data')->setAllowedTypes('extra_data', ['array'])
+                                ->setDefined('marketplace_seller')->setAllowedTypes('marketplace_seller', ['array'])
+                            ;
+
+                            $discountResolver = (new OptionsResolver())
+                                ->setDefined('title')->setAllowedTypes('title', ['string'])
+                                ->setDefined('amount')->setAllowedTypes('amount', ['int'])
+                                ->setDefined('amounts')->setAllowedTypes('amounts', ['int'])
+                            ;
+
+                            $cartResolver = (new OptionsResolver())
+                                ->setRequired('items')->setAllowedTypes('items', ['array'])
+                                    ->setNormalizer('items', function (Options $options, $value) use ($itemResolver) {
+                                        return array_map(function (array $item) use ($itemResolver) {
+                                            return $itemResolver->resolve($item);
+                                        }, $value);
+                                    })
+                                ->setDefined('discounts')->setAllowedTypes('discounts', ['array'])
+                                    ->setNormalizer('discounts', function (Options $options, $value) use ($discountResolver) {
+                                        return array_map(function (array $discount) use ($discountResolver) {
+                                            return $discountResolver->resolve($discount);
+                                        }, $value);
+                                    })
+                            ;
+
+                            return $cartResolver->resolve($value);
+                        })
+                    ->setDefined('shipping_info')->setAllowedTypes('shipping_info', ['array'])
+                        ->setNormalizer('shipping_info', function (Options $options, array $value) {
+                            $shippingOptionResolver = (new OptionsResolver())
+                                ->setRequired('title')->setAllowedTypes('title', ['string'])
+                                ->setRequired('amount')->setAllowedTypes('amount', ['int'])
+                                ->setDefined('carrier')->setAllowedTypes('carrier', ['string'])
+                                ->setDefined('express_delivery')->setAllowedTypes('express_delivery', ['bool'])
+                                ->setDefined('pickup_delivery')->setAllowedTypes('pickup_delivery', ['bool'])
+                                ->setDefined('shipping_method')->setAllowedValues('shipping_method', ['instore', 'pickup_store', 'pickup_point', 'postal'])
+                            ;
+
+                            $shippingInfoResolver = (new OptionsResolver())
+                                ->setDefined('selected_options')->setAllowedTypes('selected_options', ['array'])
+                                    ->setNormalizer('selected_options', function (Options $options, $value) use ($shippingOptionResolver) {
+                                        return array_map(function (array $option) use ($shippingOptionResolver) {
+                                            return $shippingOptionResolver->resolve($option);
+                                        }, $value);
+                                    })
+                                ->setDefined('available_options')->setAllowedTypes('available_options', ['array'])
+                                    ->setNormalizer('available_options', function (Options $options, $value) use ($shippingOptionResolver) {
+                                        return array_map(function (array $option) use ($shippingOptionResolver) {
+                                            return $shippingOptionResolver->resolve($option);
+                                        }, $value);
+                                    })
+                            ;
+
+                            return $shippingInfoResolver->resolve($value);
+                        })
+                    ->setDefault('integration_origin', 'IDCI')->setAllowedTypes('integration_origin', ['string'])
                     ->setDefined('merchant_covers_all_fees')->setAllowedTypes('merchant_covers_all_fees', ['bool'])
                 ;
             })
