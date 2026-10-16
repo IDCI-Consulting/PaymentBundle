@@ -55,6 +55,8 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
             );
         } catch (RequestError $e) {
             $this->logger->error(sprintf('Error: %s. Context: %s', $e->getMessage(), json_encode($e->response->json)));
+
+            throw new GatewayException(sprintf('Error: %s. Context: %s', $e->getMessage(), json_encode($e->response->json)));
         }
     }
 
