@@ -4,6 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use Alma\API\Client;
 use Alma\API\RequestError;
+use IDCI\Bundle\PaymentBundle\Exception\Gateway\GatewayException;
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AlmaStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
@@ -54,9 +55,9 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
                 )
             );
         } catch (RequestError $e) {
-            $this->logger->error(sprintf('Error: %s. Context: %s', $e->getMessage(), json_encode($e->response->json)));
+            $this->logger->error(sprintf('Error: %s. Context: %s', $e->getMessage(), json_encode($e->response->json, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)));
 
-            throw new GatewayException(sprintf('Error: %s. Context: %s', $e->getMessage(), json_encode($e->response->json)));
+            throw new GatewayException(sprintf('Error: %s. Context: %s', $e->getMessage(), json_encode($e->response->json, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)));
         }
     }
 
