@@ -4,6 +4,7 @@ namespace IDCI\Bundle\PaymentBundle\Gateway;
 
 use Alma\API\Client;
 use Alma\API\RequestError;
+use IDCI\Bundle\PaymentBundle\Exception\Gateway\GatewayException;
 use IDCI\Bundle\PaymentBundle\Gateway\StatusCode\AlmaStatusCode;
 use IDCI\Bundle\PaymentBundle\Model\GatewayResponse;
 use IDCI\Bundle\PaymentBundle\Model\PaymentGatewayConfigurationInterface;
@@ -54,7 +55,9 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
                 )
             );
         } catch (RequestError $e) {
-            $this->logger->error(sprintf('Error: %s. Context: %s', $e->getMessage(), json_encode($e->response->json)));
+            $this->logger->error(sprintf('Error: %s. Context: %s', $e->getMessage(), json_encode($e->response->json, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)));
+
+            throw new GatewayException(sprintf('Error: %s. Context: %s', $e->getMessage(), json_encode($e->response->json, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)));
         }
     }
 
@@ -234,15 +237,87 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
                         ;
                     })
                     ->setDefined('locale')->setAllowedTypes('locale', ['string'])
-                    ->setDefined('deferred')->setAllowedValues('deferred', ['trigger'])
-                    ->setDefined('deferred_description')->setAllowedTypes('deferred_description', ['string'])
                     ->setDefined('expires_after')->setAllowedTypes('expires_after', ['int'])
+                    ->setDefined('capture_method')->setAllowedValues('capture_method', ['manual', 'automatic'])
+                    ->setDefined('failure_return_url')->setAllowedTypes('failure_return_url', ['string'])
+                    ->setDefined('cart')->setAllowedTypes('failure_return_url', ['array'])
+                        ->setNormalizer('cart', function (Options $options, array $value) {
+                            $itemResolver = (new OptionsResolver())
+                                ->setDefined('sku')->setAllowedTypes('sku', ['string'])
+                                ->setDefined('vendor')->setAllowedTypes('vendor', ['string'])
+                                ->setRequired('title')->setAllowedTypes('title', ['string'])
+                                ->setDefined('variant_title')->setAllowedTypes('variant_title', ['string'])
+                                ->setRequired('quantity')->setAllowedTypes('quantity', ['int'])
+                                ->setRequired('unit_price')->setAllowedTypes('unit_price', ['int'])
+                                ->setRequired('line_price')->setAllowedTypes('line_price', ['int'])
+                                ->setDefined('is_gift')->setAllowedTypes('is_gift', ['bool'])
+                                ->setDefined('categories')->setAllowedTypes('categories', ['array'])
+                                ->setDefined('url')->setAllowedTypes('url', ['string'])
+                                ->setDefined('picture_url')->setAllowedTypes('picture_url', ['string'])
+                                ->setRequired('requires_shipping')->setAllowedTypes('requires_shipping', ['bool'])
+                                ->setRequired('tax_included')->setAllowedTypes('tax_included', ['bool'])
+                                ->setDefined('extra_data')->setAllowedTypes('extra_data', ['array'])
+                                ->setDefined('marketplace_seller')->setAllowedTypes('marketplace_seller', ['array'])
+                            ;
+
+                            $discountResolver = (new OptionsResolver())
+                                ->setDefined('title')->setAllowedTypes('title', ['string'])
+                                ->setDefined('amount')->setAllowedTypes('amount', ['int'])
+                                ->setDefined('amounts')->setAllowedTypes('amounts', ['int'])
+                            ;
+
+                            $cartResolver = (new OptionsResolver())
+                                ->setRequired('items')->setAllowedTypes('items', ['array'])
+                                    ->setNormalizer('items', function (Options $options, $value) use ($itemResolver) {
+                                        return array_map(function (array $item) use ($itemResolver) {
+                                            return $itemResolver->resolve($item);
+                                        }, $value);
+                                    })
+                                ->setDefined('discounts')->setAllowedTypes('discounts', ['array'])
+                                    ->setNormalizer('discounts', function (Options $options, $value) use ($discountResolver) {
+                                        return array_map(function (array $discount) use ($discountResolver) {
+                                            return $discountResolver->resolve($discount);
+                                        }, $value);
+                                    })
+                            ;
+
+                            return $cartResolver->resolve($value);
+                        })
+                    ->setDefined('shipping_info')->setAllowedTypes('shipping_info', ['array'])
+                        ->setNormalizer('shipping_info', function (Options $options, array $value) {
+                            $shippingOptionResolver = (new OptionsResolver())
+                                ->setRequired('title')->setAllowedTypes('title', ['string'])
+                                ->setRequired('amount')->setAllowedTypes('amount', ['int'])
+                                ->setDefined('carrier')->setAllowedTypes('carrier', ['string'])
+                                ->setDefined('express_delivery')->setAllowedTypes('express_delivery', ['bool'])
+                                ->setDefined('pickup_delivery')->setAllowedTypes('pickup_delivery', ['bool'])
+                                ->setDefined('shipping_method')->setAllowedValues('shipping_method', ['instore', 'pickup_store', 'pickup_point', 'postal'])
+                            ;
+
+                            $shippingInfoResolver = (new OptionsResolver())
+                                ->setDefined('selected_options')->setAllowedTypes('selected_options', ['array'])
+                                    ->setNormalizer('selected_options', function (Options $options, $value) use ($shippingOptionResolver) {
+                                        return array_map(function (array $option) use ($shippingOptionResolver) {
+                                            return $shippingOptionResolver->resolve($option);
+                                        }, $value);
+                                    })
+                                ->setDefined('available_options')->setAllowedTypes('available_options', ['array'])
+                                    ->setNormalizer('available_options', function (Options $options, $value) use ($shippingOptionResolver) {
+                                        return array_map(function (array $option) use ($shippingOptionResolver) {
+                                            return $shippingOptionResolver->resolve($option);
+                                        }, $value);
+                                    })
+                            ;
+
+                            return $shippingInfoResolver->resolve($value);
+                        })
+                    ->setDefault('integration_origin', 'IDCI')->setAllowedTypes('integration_origin', ['string'])
+                    ->setDefined('merchant_covers_all_fees')->setAllowedTypes('merchant_covers_all_fees', ['bool'])
                 ;
             })
             ->setDefault('customer', function (OptionsResolver $customerResolver) use ($transaction) {
                 $customerResolver
                     ->setDefined('id')->setAllowedTypes('id', ['string'])
-                    ->setDefault('identifier', $transaction->getCustomerId())->setAllowedTypes('identifier', ['string'])
                     ->setDefined('created')->setAllowedTypes('created', [\DateTimeInterface::class, 'string'])
                     ->setNormalizer('created', function (Options $options, $value) {
                         if (is_string($value)) {
@@ -257,46 +332,33 @@ class AlmaPaymentGateway extends AbstractPaymentGateway
                     ->setDefault('email', $transaction->getCustomerEmail())->setAllowedTypes('email', ['string'])
                     ->setDefined('phone')->setAllowedTypes('phone', ['string'])
                     ->setDefined('birth_date')->setAllowedTypes('birth_date', ['string'])
-                    ->setDefined('birth_place')->setAllowedTypes('birth_place', ['string'])
-                    ->setDefault('card', function (OptionsResolver $cardResolver) {
-                        $cardResolver
-                            ->setDefined('id')->setAllowedTypes('id', ['string'])
-                            ->setDefined('created')->setAllowedTypes('created', [\DateTimeInterface::class, 'string'])
-                                ->setNormalizer('created', function (Options $options, $value) {
-                                    if (is_string($value)) {
-                                        $value = new \DateTime($value);
-                                    }
-
-                                    return $value->format('U');
-                                })
-                            ->setDefined('exp_month')->setAllowedTypes('exp_month', ['int'])
-                            ->setDefined('exp_year')->setAllowedTypes('exp_year', ['int'])
-                            ->setDefined('last4')->setAllowedTypes('last4', ['string'])
-                            ->setDefined('country')->setAllowedTypes('country', ['string'])
-                            ->setDefined('funding')->setAllowedValues('funding', ['debit', 'credit', 'unknown'])
-                            ->setDefined('brand')->setAllowedValues('brand', ['visa', 'mastercard', 'american express'])
-                            ->setDefined('three_d_secure_possible')->setAllowedTypes('three_d_secure_possible', ['bool'])
-                            ->setDefined('verified')->setAllowedTypes('verified', ['bool'])
-                        ;
-                    })
                     ->setDefined('banking_data_collected')->setAllowedTypes('banking_data_collected', ['bool'])
                     ->setDefined('is_business')->setAllowedTypes('is_business', ['bool'])
                     ->setDefined('business_id_number')->setAllowedTypes('business_id_number', ['string'])
                     ->setDefined('business_name')->setAllowedTypes('business_name', ['string'])
+                    ->setDefault('account_id', $transaction->getCustomerId())->setAllowedTypes('account_id', ['string'])
+                    ->setDefined('account_created')->setAllowedTypes('account_created', [\DateTimeInterface::class, 'string'])
+                        ->setNormalizer('account_created', function (Options $options, $value) {
+                            if (is_string($value)) {
+                                $value = new \DateTime($value);
+                            }
+
+                            return $value->format('U');
+                        })
+                    ->setDefined('previous_orders_count')->setAllowedTypes('previous_orders_count', ['int'])
+                    ->setDefined('gender')->setAllowedValues('gender', ['male', 'female'])
+                    ->setDefined('national_identifier', function (OptionsResolver $cartResolver) {
+                        $cartResolver
+                            ->setDefined('type')->setAllowedValues('type', ['NIF_ES', 'codice_fiscale'])
+                            ->setDefined('value')->setAllowedTypes('value', ['string'])
+                        ;
+                    })
                 ;
             })
             ->setDefault('order', function (OptionsResolver $orderResolver) use ($transaction) {
                 $orderResolver
                     ->setDefault('merchant_reference', $transaction->getId())->setAllowedTypes('merchant_reference', ['string'])
                     ->setDefined('merchant_url')->setAllowedTypes('merchant_url', ['string'])
-                    ->setDefined('data')->setAllowedTypes('data', ['string', 'array'])
-                        ->setNormalizer('data', function (Options $options, $value) {
-                            if (is_string($value)) {
-                                $value = json_decode($value, true);
-                            }
-
-                            return $value;
-                        })
                     ->setDefined('customer_url')->setAllowedTypes('customer_url', ['string'])
                     ->setDefined('comment')->setAllowedTypes('comment', ['string'])
                 ;
